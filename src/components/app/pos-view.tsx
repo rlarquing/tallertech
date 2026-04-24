@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
+import { useAppStore } from '@/lib/store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -97,6 +98,8 @@ interface SaleResponse {
 // ============================================================
 
 export function PosView() {
+  const setCartItemCount = useAppStore((s) => s.setCartItemCount)
+
   // Cart state
   const [cart, setCart] = useState<CartItem[]>([])
   const [customerId, setCustomerId] = useState<string>('')
@@ -126,6 +129,11 @@ export function PosView() {
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>()
   const customerSearchTimeout = useRef<ReturnType<typeof setTimeout>>()
+
+  // Sync cart count with global store for mobile nav badge
+  useEffect(() => {
+    setCartItemCount(cart.length)
+  }, [cart.length, setCartItemCount])
 
   // ============================================================
   // Product search

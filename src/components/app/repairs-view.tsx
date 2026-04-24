@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { useAppStore } from '@/lib/store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -171,6 +172,8 @@ const formatCurrency = (amount: number) =>
 // ============================================================
 
 export function RepairsView() {
+  const setPendingRepairsCount = useAppStore((s) => s.setPendingRepairsCount)
+
   // Filters
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -260,6 +263,34 @@ export function RepairsView() {
   useEffect(() => {
     fetchRepairs()
   }, [fetchRepairs])
+
+  // Sync pending repairs count with global store for mobile nav badge
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const res = await fetch('/api/repairs?limit=1&status=received')
+        if (res.ok) {
+          const received = await res.json()
+          const res2 = await fetch('/api/repairs?limit=1&status=diagnosing')
+          if (res2.ok) {
+            const diagnosing = await res2.json()
+            const res3 = await fetch('/api/repairs?limit=1&status=repairing')
+            if (res3.ok) {
+              const repairing = await res3.json()
+              const total = (received.total || 0) + (diagnosing.total || 0) + (repairing.total || 0)
+              setPendingRepairsCount(total)
+            }
+          }
+        }
+      } catch {
+        // Ignore - badge is non-critical
+      }
+    }
+    fetchPendingCount()
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchPendingCount, 60000)
+    return () => clearInterval(interval)
+  }, [setPendingRepairsCount, fetchRepairs])
 
   // Debounced search
   useEffect(() => {

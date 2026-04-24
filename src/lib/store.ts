@@ -38,6 +38,12 @@ interface AppState {
   // Mobile
   isMobile: boolean
   setIsMobile: (mobile: boolean) => void
+
+  // Mobile nav badges
+  cartItemCount: number
+  setCartItemCount: (count: number) => void
+  pendingRepairsCount: number
+  setPendingRepairsCount: (count: number) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -57,6 +63,12 @@ export const useAppStore = create<AppState>((set) => ({
   // Mobile
   isMobile: false,
   setIsMobile: (mobile) => set({ isMobile: mobile }),
+
+  // Mobile nav badges
+  cartItemCount: 0,
+  setCartItemCount: (count) => set({ cartItemCount: count }),
+  pendingRepairsCount: 0,
+  setPendingRepairsCount: (count) => set({ pendingRepairsCount: count }),
 }))
 
 // View labels in Spanish

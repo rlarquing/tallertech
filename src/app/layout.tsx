@@ -19,8 +19,15 @@ export const metadata: Metadata = {
   description: "Sistema de gestión integral para talleres de reparación de teléfonos celulares. Inventario, ventas, reparaciones y más.",
   keywords: ["TallerTech", "taller", "reparación", "celulares", "gestión", "inventario"],
   authors: [{ name: "TallerTech" }],
+  manifest: "/manifest.json",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/icon-192.png",
+    apple: "/icon-192.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TallerTech",
   },
 };
 
@@ -31,6 +38,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#059669" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
