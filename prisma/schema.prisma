@@ -15,9 +15,11 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
-  password  String
+  password  String   @default("") // Empty for OAuth users
   role      String   @default("admin") // admin, employee
   active    Boolean  @default(true)
+  image     String?  // Profile image (Google OAuth)
+  provider  String   @default("credentials") // credentials, google
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -225,4 +227,20 @@ model Setting {
   id    String @id @default(cuid())
   key   String @unique
   value String
+}
+
+// ============================================================
+// AUDIT LOG / TRACEABILITY
+// ============================================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  userName  String
+  action    String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, REGISTER, STATUS_CHANGE, STOCK_ADJUSTMENT, BACKUP, RESTORE, EXPORT, CANCEL
+  entity    String   // user, product, sale, repair, customer, expense, category, supplier, setting, backup
+  entityId  String?
+  details   String?  // JSON string with change details
+  ip        String?
+  createdAt DateTime @default(now())
 }

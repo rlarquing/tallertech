@@ -20,7 +20,14 @@ export async function getSessionUser() {
   }
 }
 
-export function createSessionCookie(user: { id: string; email: string; name: string; role: string }) {
+export function createSessionCookie(user: {
+  id: string
+  email: string
+  name: string
+  role: string
+  image?: string | null
+  provider?: string
+}) {
   const value = Buffer.from(JSON.stringify(user)).toString('base64');
   return { name: SESSION_COOKIE, value, httpOnly: true, path: '/', maxAge: 60 * 60 * 24 * 7 };
 }

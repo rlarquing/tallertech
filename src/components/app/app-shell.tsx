@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/s
 import { AppSidebar } from '@/components/app/app-sidebar'
 import { MobileNav } from '@/components/app/mobile-nav'
 import { Separator } from '@/components/ui/separator'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -28,6 +28,7 @@ import { SettingsView } from '@/components/app/settings-view'
 import { PosView } from '@/components/app/pos-view'
 import { SalesView } from '@/components/app/sales-view'
 import { RepairsView } from '@/components/app/repairs-view'
+import { AuditView } from '@/components/app/audit-view'
 import { OfflineBanner } from '@/components/app/offline-banner'
 import { PwaInstallPrompt } from '@/components/app/pwa-install-prompt'
 import { initializeOfflineCache } from '@/lib/init-cache'
@@ -60,6 +61,8 @@ function ViewRenderer({ currentView }: { currentView: ViewType }) {
       return <SalesView />
     case 'repairs':
       return <RepairsView />
+    case 'audit':
+      return <AuditView />
     default:
       return <PlaceholderView view={currentView} />
   }
@@ -70,20 +73,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
     <div className="flex flex-1 items-center justify-center p-6">
       <div className="text-center space-y-3">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-          <span className="text-2xl">
-            {view === 'dashboard' ? '📊' :
-             view === 'products' ? '📦' :
-             view === 'categories' ? '🏷️' :
-             view === 'suppliers' ? '🚚' :
-             view === 'sales' ? '💰' :
-             view === 'pos' ? '🛒' :
-             view === 'repairs' ? '🔧' :
-             view === 'customers' ? '👥' :
-             view === 'reports' ? '📈' :
-             view === 'expenses' ? '💵' :
-             view === 'settings' ? '⚙️' :
-             view === 'inventory' ? '📦' : '📋'}
-          </span>
+          <span className="text-2xl">📋</span>
         </div>
         <h2 className="text-xl font-semibold text-foreground">{viewLabels[view]}</h2>
         <p className="text-sm text-muted-foreground">
@@ -175,6 +165,9 @@ export function AppShell() {
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('expenses')}>
                     💵 Gastos
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('audit')}>
+                    🔍 Auditoría
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('settings')}>
                     ⚙️ Configuración
                   </DropdownMenuItem>
@@ -218,6 +211,9 @@ export function AppShell() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative size-8 rounded-full">
                   <Avatar className="size-8">
+                    {user?.image ? (
+                      <AvatarImage src={user.image} alt={user.name} />
+                    ) : null}
                     <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                       {userInitials}
                     </AvatarFallback>
@@ -227,6 +223,9 @@ export function AppShell() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex items-center gap-2 p-2">
                   <Avatar className="size-8">
+                    {user?.image ? (
+                      <AvatarImage src={user.image} alt={user.name} />
+                    ) : null}
                     <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                       {userInitials}
                     </AvatarFallback>

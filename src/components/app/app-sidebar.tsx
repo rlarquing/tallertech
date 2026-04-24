@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { useAppStore, type ViewType } from '@/lib/store'
 import {
   Sidebar,
@@ -24,8 +24,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   LayoutDashboard,
   Package,
@@ -37,8 +36,9 @@ import {
   Settings,
   ChevronRight,
   LogOut,
-  Wrench as WrenchIcon,
+  Shield,
 } from 'lucide-react'
+import Image from 'next/image'
 
 interface NavItem {
   id: ViewType
@@ -93,6 +93,11 @@ const navItems: NavItem[] = [
     icon: Receipt,
   },
   {
+    id: 'audit',
+    label: 'Auditoría',
+    icon: Shield,
+  },
+  {
     id: 'settings',
     label: 'Configuración',
     icon: Settings,
@@ -131,8 +136,14 @@ export function AppSidebar() {
               className="hover:bg-sidebar-accent"
               onClick={() => setCurrentView('dashboard')}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <WrenchIcon className="size-4" />
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden">
+                <Image
+                  src="/logo-small.png"
+                  alt="TallerTech"
+                  width={32}
+                  height={32}
+                  className="size-8 rounded-lg object-cover"
+                />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-bold">TallerTech</span>
@@ -225,6 +236,9 @@ export function AppSidebar() {
               className="hover:bg-sidebar-accent"
             >
               <Avatar className="size-8">
+                {user?.image ? (
+                  <AvatarImage src={user.image} alt={user.name} />
+                ) : null}
                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                   {userInitials}
                 </AvatarFallback>

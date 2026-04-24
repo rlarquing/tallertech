@@ -6,11 +6,11 @@ export async function GET() {
     const user = await getSessionUser();
     if (!user) {
       return NextResponse.json(
-        { error: 'No autenticado' },
+        { isAuthenticated: false },
         { status: 401 }
       );
     }
-    return NextResponse.json({ user });
+    return NextResponse.json({ isAuthenticated: true, user });
   } catch (error) {
     console.error('Session error:', error);
     return NextResponse.json(

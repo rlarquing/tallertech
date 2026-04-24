@@ -13,12 +13,15 @@ export type ViewType =
   | 'reports'
   | 'expenses'
   | 'settings'
+  | 'audit'
 
 export interface UserInfo {
   id: string
   email: string
   name: string
   role: string
+  image?: string | null
+  provider?: string
 }
 
 interface AppState {
@@ -85,4 +88,5 @@ export const viewLabels: Record<ViewType, string> = {
   reports: 'Reportes',
   expenses: 'Gastos',
   settings: 'Configuración',
+  audit: 'Auditoría',
 }
