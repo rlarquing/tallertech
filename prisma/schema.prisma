@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// AUTH & USERS
+// ============================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("admin") // admin, employee
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// CATEGORIES & SUPPLIERS
+// ============================================================
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  type        String    @default("product") // product, service, part
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  notes     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  products  Product[]
+}
+
+// ============================================================
+// PRODUCTS / INVENTORY
+// ============================================================
+
+model Product {
+  id           String     @id @default(cuid())
+  name         String
+  sku          String?    @unique
+  description  String?
+  categoryId   String?
+  category     Category?  @relation(fields: [categoryId], references: [id])
+  supplierId   String?
+  supplier     Supplier?  @relation(fields: [supplierId], references: [id])
+  costPrice    Float      @default(0)
+  salePrice    Float      @default(0)
+  quantity     Int        @default(0)
+  minStock     Int        @default(5)
+  unit         String     @default("unidad") // unidad, metro, litro
+  type         String     @default("product") // product, service, part
+  brand        String?
+  model        String?    // Modelo de celular compatible
+  location     String?    // Ubicación en el taller/almacén
+  active       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  saleItems    SaleItem[]
+  repairParts  RepairPart[]
+  stockMoves   StockMovement[]
+}
+
+// ============================================================
+// CUSTOMERS
+// ============================================================
+
+model Customer {
+  id           String        @id @default(cuid())
+  name         String
+  phone        String?
+  email        String?
+  address      String?
+  dni          String?       // Carnet de identidad
+  notes        String?
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  sales        Sale[]
+  repairOrders RepairOrder[]
+}
+
+// ============================================================
+// SALES / POS
+// ============================================================
+
+model Sale {
+  id           String     @id @default(cuid())
+  code         String     @unique
+  customerId   String?
+  customer     Customer?  @relation(fields: [customerId], references: [id])
+  userId       String
+  userName     String
+  subtotal     Float      @default(0)
+  discount     Float      @default(0)
+  tax          Float      @default(0)
+  total        Float      @default(0)
+  paymentMethod String    @default("efectivo") // efectivo, transferencia, mixto
+  status       String     @default("completed") // completed, cancelled, pending
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  items        SaleItem[]
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+  name      String
+  quantity  Int     @default(1)
+  unitPrice Float   @default(0)
+  discount  Float   @default(0)
+  total     Float   @default(0)
+  type      String  @default("product") // product, service, part
+}
+
+// ============================================================
+// REPAIR ORDERS
+// ============================================================
+
+model RepairOrder {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  userId         String
+  userName       String
+  device         String        // Modelo del dispositivo
+  brand          String?
+  imei           String?
+  issue          String        // Problema reportado
+  diagnosis      String?       // Diagnóstico técnico
+  solution       String?       // Solución aplicada
+  status         String        @default("received") // received, diagnosing, waiting_parts, repairing, ready, delivered, cancelled
+  priority       String        @default("normal") // low, normal, high, urgent
+  costEstimate   Float         @default(0)
+  laborCost      Float         @default(0)
+  partsCost      Float         @default(0)
+  totalCost      Float         @default(0)
+  paymentMethod  String        @default("efectivo")
+  paid           Boolean       @default(false)
+  receivedAt     DateTime      @default(now())
+  estimatedReady DateTime?
+  completedAt    DateTime?
+  deliveredAt    DateTime?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  parts          RepairPart[]
+}
+
+model RepairPart {
+  id            String       @id @default(cuid())
+  repairOrderId String
+  repairOrder   RepairOrder  @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+  productId     String?
+  product       Product?     @relation(fields: [productId], references: [id])
+  name          String
+  quantity      Int          @default(1)
+  unitPrice     Float        @default(0)
+  total         Float        @default(0)
+}
+
+// ============================================================
+// STOCK MOVEMENTS (Inventory tracking)
+// ============================================================
+
+model StockMovement {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  type      String   // in, out, adjustment, return
+  quantity  Int
+  reason    String?
+  reference String?  // Sale code, Repair code, etc.
+  userId    String
+  userName  String
+  createdAt DateTime @default(now())
+}
+
+// ============================================================
+// EXPENSES
+// ============================================================
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String   // supplies, rent, salary, utilities, other
+  description String
+  amount      Float
+  userId      String
+  userName    String
+  date        DateTime @default(now())
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================
+// BUSINESS SETTINGS
+// ============================================================
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
