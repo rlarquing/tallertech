@@ -4,7 +4,7 @@
 // ============================================================
 
 import type { SessionPort, BackupPort } from '@/application/ports'
-import type { BackupListResponse } from '@/application/dtos'
+import type { BackupRecordDTO } from '@/application/dtos'
 import { ValidationError } from '@/domain/errors'
 
 export class ListBackupsUseCase {
@@ -13,7 +13,7 @@ export class ListBackupsUseCase {
     private sessionPort: SessionPort,
   ) {}
 
-  async execute(sessionRequest?: Request): Promise<BackupListResponse[]> {
+  async execute(sessionRequest?: Request): Promise<BackupRecordDTO[]> {
     // 1. Authenticate
     const user = sessionRequest
       ? await this.sessionPort.getSessionUser(sessionRequest)
@@ -22,10 +22,19 @@ export class ListBackupsUseCase {
       throw new ValidationError('No autenticado')
     }
 
-    // 2. List backups
-    const backups = await this.backupPort.listBackups()
+    // 2. Get backup history from filesystem
+    const history = await this.backupPort.getBackupHistory()
 
-    // 3. Return result
-    return backups
+    // 3. Return as DTOs
+    return history.map((record) => ({
+      id: record.id,
+      filename: record.filename,
+      format: record.format,
+      description: record.description,
+      size: record.size,
+      checksum: record.checksum,
+      stats: record.stats,
+      createdAt: record.createdAt,
+    }))
   }
 }

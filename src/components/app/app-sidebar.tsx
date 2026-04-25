@@ -38,6 +38,7 @@ import {
   LogOut,
   Shield,
   Building2,
+  Database,
 } from 'lucide-react'
 import Image from 'next/image'
 import { offlineFetch } from '@/lib/offline-fetch'
@@ -108,6 +109,11 @@ const navItems: NavItem[] = [
     id: 'audit',
     label: 'Auditoría',
     icon: Shield,
+  },
+  {
+    id: 'backup',
+    label: 'Backup',
+    icon: Database,
   },
   {
     id: 'settings',

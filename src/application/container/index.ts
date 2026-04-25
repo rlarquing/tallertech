@@ -83,6 +83,8 @@ import { ExportDataUseCase } from '@/application/use-cases/export/export-data.us
 import { CreateBackupUseCase } from '@/application/use-cases/backup/create-backup.use-case'
 import { ListBackupsUseCase } from '@/application/use-cases/backup/list-backups.use-case'
 import { GetBackupStatsUseCase } from '@/application/use-cases/backup/get-backup-stats.use-case'
+import { RestoreBackupUseCase } from '@/application/use-cases/backup/restore-backup.use-case'
+import { DeleteBackupUseCase } from '@/application/use-cases/backup/delete-backup.use-case'
 
 import { CreateWorkshopUseCase } from '@/application/use-cases/workshops/create-workshop.use-case'
 import { GetWorkshopsUseCase } from '@/application/use-cases/workshops/get-workshops.use-case'
@@ -510,6 +512,22 @@ export class UseCaseContainer {
     )
   }
 
+  get restoreBackup() {
+    return new RestoreBackupUseCase(
+      this.deps.backupPort,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  get deleteBackup() {
+    return new DeleteBackupUseCase(
+      this.deps.backupPort,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
   // ─── Workshops ──────────────────────────────────────────────
 
   get createWorkshop() {
@@ -668,6 +686,8 @@ export class UseCaseContainer {
       createBackup: this.createBackup,
       listBackups: this.listBackups,
       getBackupStats: this.getBackupStats,
+      restoreBackup: this.restoreBackup,
+      deleteBackup: this.deleteBackup,
       // Workshops
       createWorkshop: this.createWorkshop,
       getWorkshops: this.getWorkshops,

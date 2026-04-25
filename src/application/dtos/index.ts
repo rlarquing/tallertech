@@ -253,12 +253,40 @@ export type DashboardRequest = Record<string, never>
 export interface BackupStatsResponse {
   fileSize: number
   tables: Record<string, number>
+  lastBackup: string | null
 }
 
 export interface BackupListResponse {
   name: string
   size: number
   createdAt: Date
+}
+
+export interface BackupRecordDTO {
+  id: string
+  filename: string
+  format: 'json' | 'sqlite'
+  description: string
+  size: number
+  checksum: string
+  stats: Record<string, number>
+  createdAt: string
+}
+
+export interface CreateBackupRequest {
+  format?: 'json' | 'sqlite'
+  description?: string
+}
+
+export interface RestoreBackupRequest {
+  format: 'json' | 'sqlite'
+  data?: any // JSON backup data
+}
+
+export interface RestoreBackupResponse {
+  success: boolean
+  message: string
+  stats?: Record<string, number>
 }
 
 // ─── Workshop DTOs ───────────────────────────────────────────

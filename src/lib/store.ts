@@ -16,6 +16,7 @@ export type ViewType =
   | 'audit'
   | 'workshops'
   | 'workshop-bi'
+  | 'backup'
 
 export interface UserInfo {
   id: string
@@ -113,4 +114,5 @@ export const viewLabels: Record<ViewType, string> = {
   audit: 'Auditoría',
   workshops: 'Talleres',
   'workshop-bi': 'BI Taller',
+  backup: 'Backup',
 }

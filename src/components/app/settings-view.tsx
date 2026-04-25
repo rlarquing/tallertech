@@ -265,7 +265,7 @@ export function SettingsView() {
   const handleBackup = async () => {
     setBackingUp(true)
     try {
-      const res = await offlineFetch('/api/backup')
+      const res = await offlineFetch('/api/backup?format=json')
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.error || 'Error al crear backup')
@@ -274,7 +274,9 @@ export function SettingsView() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `TallerTech_backup_${new Date().toISOString().split('T')[0]}.db`
+      const contentDisposition = res.headers.get('content-disposition')
+      const filenameMatch = contentDisposition?.match(/filename="?(.+?)"?$/)
+      a.download = filenameMatch?.[1] || `TallerTech_backup_${new Date().toISOString().split('T')[0]}.json`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -304,7 +306,7 @@ export function SettingsView() {
       const formData = new FormData()
       formData.append('file', fileInput.files[0])
 
-      const res = await offlineFetch('/api/backup', {
+      const res = await offlineFetch('/api/backup/restore', {
         method: 'POST',
         body: formData,
       })
@@ -662,7 +664,7 @@ export function SettingsView() {
                   <Input
                     ref={fileInputRef}
                     type="file"
-                    accept=".db,.sqlite,.sqlite3"
+                    accept=".json,.db,.sqlite,.sqlite3"
                     className="flex-1"
                   />
                   <Button

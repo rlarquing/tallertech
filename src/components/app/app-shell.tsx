@@ -31,6 +31,7 @@ import { RepairsView } from '@/components/app/repairs-view'
 import { AuditView } from '@/components/app/audit-view'
 import { WorkshopsView } from '@/components/app/workshops-view'
 import { WorkshopBIView } from '@/components/app/workshop-bi-view'
+import { BackupView } from '@/components/app/backup-view'
 import { OfflineBanner } from '@/components/app/offline-banner'
 import { PwaInstallPrompt } from '@/components/app/pwa-install-prompt'
 import { initializeOfflineCache } from '@/lib/init-cache'
@@ -70,6 +71,8 @@ function ViewRenderer({ currentView }: { currentView: ViewType }) {
       return <WorkshopsView />
     case 'workshop-bi':
       return <WorkshopBIView />
+    case 'backup':
+      return <BackupView />
     default:
       return <PlaceholderView view={currentView} />
   }
@@ -181,6 +184,9 @@ export function AppShell() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('audit')}>
                     🔍 Auditoría
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('backup')}>
+                    💾 Backup
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('settings')}>
                     ⚙️ Configuración

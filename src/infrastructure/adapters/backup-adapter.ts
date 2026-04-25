@@ -3,7 +3,7 @@
 // Clean Architecture: Infrastructure Layer - Adapters
 // ============================================================
 
-import type { BackupPort } from '@/application/ports'
+import type { BackupPort, BackupRecord } from '@/application/ports'
 import { BackupService } from '@/infrastructure/services/backup-service'
 
 export class BackupAdapter implements BackupPort {
@@ -13,26 +13,51 @@ export class BackupAdapter implements BackupPort {
     this.service = new BackupService()
   }
 
-  async createBackup(): Promise<string> {
-    const result = await this.service.createBackup()
+  async createBackup(description?: string): Promise<string> {
+    const result = await this.service.createSqliteBackup(description)
     return result.path
   }
 
+  async createJsonBackup(description?: string): Promise<{
+    filename: string
+    size: number
+    checksum: string
+    stats: Record<string, number>
+  }> {
+    return this.service.createJsonBackup(description)
+  }
+
   async listBackups(): Promise<Array<{ name: string; size: number; createdAt: Date }>> {
-    const backups = await this.service.listBackups()
-    return backups.map((b) => ({
+    const history = await this.service.getBackupHistory()
+    return history.map((b: BackupRecord) => ({
       name: b.filename,
       size: b.size,
       createdAt: new Date(b.createdAt),
     }))
   }
 
-  async getDatabaseStats(): Promise<{ fileSize: number; tables: Record<string, number> }> {
+  async getBackupHistory(): Promise<BackupRecord[]> {
+    return this.service.getBackupHistory()
+  }
+
+  async getDatabaseStats(): Promise<{ fileSize: number; tables: Record<string, number>; lastBackup: string | null }> {
     const stats = await this.service.getDatabaseStats()
     const tablesMap: Record<string, number> = {}
     for (const table of stats.tables) {
       tablesMap[table.name] = table.count
     }
-    return { fileSize: stats.fileSize, tables: tablesMap }
+    return { fileSize: stats.fileSize, tables: tablesMap, lastBackup: stats.lastBackup }
+  }
+
+  async restoreFromJsonBackup(backupData: any): Promise<{
+    success: boolean
+    message: string
+    stats?: Record<string, number>
+  }> {
+    return this.service.restoreFromJsonBackup(backupData)
+  }
+
+  async deleteBackup(filename: string): Promise<boolean> {
+    return this.service.deleteBackup(filename)
   }
 }
