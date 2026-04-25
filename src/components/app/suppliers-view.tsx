@@ -27,6 +27,7 @@ import {
   Users,
   StickyNote,
 } from 'lucide-react'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // Types
 interface Supplier {
@@ -80,7 +81,7 @@ export function SuppliersView() {
   const fetchSuppliers = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/suppliers')
+      const res = await offlineFetch('/api/suppliers')
       if (res.ok) {
         const data = await res.json()
         setSuppliers(data.data || [])
@@ -151,7 +152,7 @@ export function SuppliersView() {
       const url = editingSupplier ? `/api/suppliers/${editingSupplier.id}` : '/api/suppliers'
       const method = editingSupplier ? 'PUT' : 'POST'
 
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -184,7 +185,7 @@ export function SuppliersView() {
     setSubmitting(true)
 
     try {
-      const res = await fetch(`/api/suppliers/${deletingSupplier.id}`, { method: 'DELETE' })
+      const res = await offlineFetch(`/api/suppliers/${deletingSupplier.id}`, { method: 'DELETE' })
       const data = await res.json()
 
       if (!res.ok) {

@@ -23,6 +23,7 @@ import {
   Loader2,
   FolderOpen,
 } from 'lucide-react'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // Types
 interface Category {
@@ -87,7 +88,7 @@ export function CategoriesView() {
   const fetchCategories = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/categories')
+      const res = await offlineFetch('/api/categories')
       if (res.ok) {
         const data = await res.json()
         setCategories(data.data || [])
@@ -142,7 +143,7 @@ export function CategoriesView() {
       const url = editingCategory ? `/api/categories/${editingCategory.id}` : '/api/categories'
       const method = editingCategory ? 'PUT' : 'POST'
 
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -175,7 +176,7 @@ export function CategoriesView() {
     setSubmitting(true)
 
     try {
-      const res = await fetch(`/api/categories/${deletingCategory.id}`, { method: 'DELETE' })
+      const res = await offlineFetch(`/api/categories/${deletingCategory.id}`, { method: 'DELETE' })
       const data = await res.json()
 
       if (!res.ok) {

@@ -30,6 +30,7 @@ import {
   Loader2,
   PackageOpen,
 } from 'lucide-react'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // Types
 interface Category {
@@ -169,7 +170,7 @@ export function ProductsView() {
       params.set('limit', limit.toString())
       params.set('active', 'true')
 
-      const res = await fetch(`/api/products?${params}`)
+      const res = await offlineFetch(`/api/products?${params}`)
       if (res.ok) {
         const data: ProductsResponse = await res.json()
         setProducts(data.data)
@@ -186,8 +187,8 @@ export function ProductsView() {
   const fetchOptions = useCallback(async () => {
     try {
       const [catRes, supRes] = await Promise.all([
-        fetch('/api/categories'),
-        fetch('/api/suppliers'),
+        offlineFetch('/api/categories'),
+        offlineFetch('/api/suppliers'),
       ])
       if (catRes.ok) {
         const catData = await catRes.json()
@@ -285,7 +286,7 @@ export function ProductsView() {
       const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products'
       const method = editingProduct ? 'PUT' : 'POST'
 
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -318,7 +319,7 @@ export function ProductsView() {
     setSubmitting(true)
 
     try {
-      const res = await fetch(`/api/products/${deletingProduct.id}`, { method: 'DELETE' })
+      const res = await offlineFetch(`/api/products/${deletingProduct.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json()
         toast({ title: 'Error', description: data.error || 'Error al eliminar', variant: 'destructive' })
@@ -343,7 +344,7 @@ export function ProductsView() {
     setSubmitting(true)
 
     try {
-      const res = await fetch('/api/stock', {
+      const res = await offlineFetch('/api/stock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

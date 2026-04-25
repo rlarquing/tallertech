@@ -52,6 +52,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 interface SettingsMap {
   shop_name?: string
@@ -112,7 +113,7 @@ export function SettingsView() {
   const fetchSettings = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/settings')
+      const res = await offlineFetch('/api/settings')
       if (res.ok) {
         const data = await res.json()
         const settings = data.data as SettingsMap
@@ -135,7 +136,7 @@ export function SettingsView() {
 
   const fetchDbStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/backup/stats')
+      const res = await offlineFetch('/api/backup/stats')
       if (res.ok) {
         const data = await res.json()
         setDbStats(data)
@@ -155,7 +156,7 @@ export function SettingsView() {
 
   const saveSetting = async (key: string, value: string) => {
     try {
-      const res = await fetch('/api/settings', {
+      const res = await offlineFetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, value }),
@@ -243,7 +244,7 @@ export function SettingsView() {
   const handleResetData = async () => {
     setResetting(true)
     try {
-      const res = await fetch('/api/seed?force=true', { method: 'POST' })
+      const res = await offlineFetch('/api/seed?force=true', { method: 'POST' })
       const data = await res.json()
       if (!res.ok) {
         toast({ title: 'Error', description: data.error || 'Error al reiniciar datos', variant: 'destructive' })
@@ -264,7 +265,7 @@ export function SettingsView() {
   const handleBackup = async () => {
     setBackingUp(true)
     try {
-      const res = await fetch('/api/backup')
+      const res = await offlineFetch('/api/backup')
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.error || 'Error al crear backup')
@@ -303,7 +304,7 @@ export function SettingsView() {
       const formData = new FormData()
       formData.append('file', fileInput.files[0])
 
-      const res = await fetch('/api/backup', {
+      const res = await offlineFetch('/api/backup', {
         method: 'POST',
         body: formData,
       })
@@ -337,7 +338,7 @@ export function SettingsView() {
         format: exportFormat,
         entity: exportEntity,
       })
-      const res = await fetch(`/api/export?${params}`)
+      const res = await offlineFetch(`/api/export?${params}`)
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.error || 'Error al exportar')

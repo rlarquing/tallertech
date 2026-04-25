@@ -3,5 +3,5 @@
 // Clean Architecture: Infrastructure Layer - HTTP
 // ============================================================
 
-// Re-export everything from the original offline-fetch implementation
-export * from './offline-fetch'
+// Re-export from the canonical location
+export { offlineFetch, OfflineResponse } from './offline-fetch'

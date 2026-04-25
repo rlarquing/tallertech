@@ -47,6 +47,7 @@ import {
   Loader2,
   Warehouse,
 } from 'lucide-react'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -289,7 +290,7 @@ export function WorkshopBIView() {
       if (selectedWorkshopId) params.set('workshopId', selectedWorkshopId)
       params.set('range', dateRange)
 
-      const res = await fetch(`/api/workshops/bi?${params}`)
+      const res = await offlineFetch(`/api/workshops/bi?${params}`)
       if (res.ok) {
         const result = await res.json()
         setData(result.data || result)

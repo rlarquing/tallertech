@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Wrench, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, setUser, isAuthenticated, setWorkshops, setCurrentWorkshopId, currentWorkshopId } = useAppStore()
@@ -27,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check session on mount
   const checkSession = useCallback(async () => {
     try {
-      const res = await fetch('/api/auth/session')
+      const res = await offlineFetch('/api/auth/session')
       if (res.ok) {
         const data = await res.json()
         if (data.isAuthenticated && data.user) {
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch user's workshops
   const fetchWorkshops = useCallback(async () => {
     try {
-      const res = await fetch('/api/workshops')
+      const res = await offlineFetch('/api/workshops')
       if (res.ok) {
         const data = await res.json()
         const ws = (data.data || []) as WorkshopInfo[]
@@ -77,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSubmitting(true)
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await offlineFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
@@ -93,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.user as UserInfo)
       // Fetch workshops after successful login
       try {
-        const wsRes = await fetch('/api/workshops')
+        const wsRes = await offlineFetch('/api/workshops')
         if (wsRes.ok) {
           const wsData = await wsRes.json()
           const ws = (wsData.data || []) as WorkshopInfo[]
@@ -118,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSubmitting(true)
 
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await offlineFetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.user as UserInfo)
       // Fetch workshops after successful registration
       try {
-        const wsRes = await fetch('/api/workshops')
+        const wsRes = await offlineFetch('/api/workshops')
         if (wsRes.ok) {
           const wsData = await wsRes.json()
           const ws = (wsData.data || []) as WorkshopInfo[]
@@ -184,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Handle Google credential response
   const handleGoogleCredential = useCallback(async (response: { credential: string }) => {
     try {
-      const res = await fetch('/api/auth/google', {
+      const res = await offlineFetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: response.credential }),
@@ -200,7 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.user as UserInfo)
       // Fetch workshops after Google auth
       try {
-        const wsRes = await fetch('/api/workshops')
+        const wsRes = await offlineFetch('/api/workshops')
         if (wsRes.ok) {
           const wsData = await wsRes.json()
           const ws = (wsData.data || []) as WorkshopInfo[]

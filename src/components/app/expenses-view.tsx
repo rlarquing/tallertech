@@ -64,6 +64,7 @@ import {
   Filter,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 interface Expense {
   id: string
@@ -174,7 +175,7 @@ export function ExpensesView() {
       if (to) params.set('dateTo', to)
       if (categoryFilter && categoryFilter !== 'all') params.set('category', categoryFilter)
 
-      const res = await fetch(`/api/expenses?${params}`)
+      const res = await offlineFetch(`/api/expenses?${params}`)
       if (res.ok) {
         const data = await res.json()
         setExpenses(data.data)
@@ -234,7 +235,7 @@ export function ExpensesView() {
     try {
       const url = editingExpense ? `/api/expenses/${editingExpense.id}` : '/api/expenses'
       const method = editingExpense ? 'PUT' : 'POST'
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -266,7 +267,7 @@ export function ExpensesView() {
   const handleDelete = async () => {
     if (!deleteExpense) return
     try {
-      const res = await fetch(`/api/expenses/${deleteExpense.id}`, { method: 'DELETE' })
+      const res = await offlineFetch(`/api/expenses/${deleteExpense.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json()
         toast({ title: 'Error', description: data.error || 'Error al eliminar', variant: 'destructive' })

@@ -53,6 +53,7 @@ import {
   Printer,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // ============================================================
 // Types
@@ -186,7 +187,7 @@ export function SalesView() {
       if (to) params.set('dateTo', to)
       if (searchQuery) params.set('search', searchQuery)
 
-      const res = await fetch(`/api/sales?${params}`)
+      const res = await offlineFetch(`/api/sales?${params}`)
       if (res.ok) {
         const data = await res.json()
         setSales(data.data || [])
@@ -222,7 +223,7 @@ export function SalesView() {
     setDetailOpen(true)
     setDetailLoading(true)
     try {
-      const res = await fetch(`/api/sales/${saleId}`)
+      const res = await offlineFetch(`/api/sales/${saleId}`)
       if (res.ok) {
         const data = await res.json()
         setSelectedSale(data)
@@ -242,7 +243,7 @@ export function SalesView() {
     if (!cancelId) return
     setCancelling(true)
     try {
-      const res = await fetch(`/api/sales/${cancelId}`, {
+      const res = await offlineFetch(`/api/sales/${cancelId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'cancelled' }),

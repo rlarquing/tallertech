@@ -35,6 +35,7 @@ import {
   Loader2,
   AlertTriangle,
 } from 'lucide-react'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 const COLORS = [
   'oklch(0.508 0.164 160)',
@@ -85,11 +86,11 @@ export function ReportsView() {
     setLoading(true)
     try {
       const [dashRes, salesRes, repairsRes, productsRes, expensesRes] = await Promise.all([
-        fetch('/api/dashboard'),
-        fetch('/api/sales?limit=100'),
-        fetch('/api/repairs?limit=100'),
-        fetch('/api/products?limit=100'),
-        fetch('/api/expenses?limit=100'),
+        offlineFetch('/api/dashboard'),
+        offlineFetch('/api/sales?limit=100'),
+        offlineFetch('/api/repairs?limit=100'),
+        offlineFetch('/api/products?limit=100'),
+        offlineFetch('/api/expenses?limit=100'),
       ])
 
       if (dashRes.ok) setDashboardData(await dashRes.json())

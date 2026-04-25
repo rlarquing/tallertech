@@ -41,6 +41,7 @@ import {
   TrendingUp,
   Phone,
 } from 'lucide-react'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -268,7 +269,7 @@ export function DashboardView() {
   const setCurrentView = useAppStore((s) => s.setCurrentView)
 
   useEffect(() => {
-    fetch('/api/dashboard')
+    offlineFetch('/api/dashboard')
       .then((r) => r.json())
       .then((d) => setData(d))
       .catch(console.error)

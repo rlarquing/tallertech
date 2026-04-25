@@ -68,6 +68,7 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // ============================================================
 // Types
@@ -247,7 +248,7 @@ export function RepairsView() {
       if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter)
       if (searchQuery) params.set('search', searchQuery)
 
-      const res = await fetch(`/api/repairs?${params}`)
+      const res = await offlineFetch(`/api/repairs?${params}`)
       if (res.ok) {
         const data = await res.json()
         setRepairs(data.data || [])
@@ -268,13 +269,13 @@ export function RepairsView() {
   useEffect(() => {
     const fetchPendingCount = async () => {
       try {
-        const res = await fetch('/api/repairs?limit=1&status=received')
+        const res = await offlineFetch('/api/repairs?limit=1&status=received')
         if (res.ok) {
           const received = await res.json()
-          const res2 = await fetch('/api/repairs?limit=1&status=diagnosing')
+          const res2 = await offlineFetch('/api/repairs?limit=1&status=diagnosing')
           if (res2.ok) {
             const diagnosing = await res2.json()
-            const res3 = await fetch('/api/repairs?limit=1&status=repairing')
+            const res3 = await offlineFetch('/api/repairs?limit=1&status=repairing')
             if (res3.ok) {
               const repairing = await res3.json()
               const total = (received.total || 0) + (diagnosing.total || 0) + (repairing.total || 0)
@@ -314,7 +315,7 @@ export function RepairsView() {
     }
     setCustomersLoading(true)
     try {
-      const res = await fetch(`/api/customers?search=${encodeURIComponent(query)}&limit=20`)
+      const res = await offlineFetch(`/api/customers?search=${encodeURIComponent(query)}&limit=20`)
       if (res.ok) {
         const data = await res.json()
         setCustomers(data.data || [])
@@ -348,7 +349,7 @@ export function RepairsView() {
     }
     setPartProductsLoading(true)
     try {
-      const res = await fetch(`/api/products?search=${encodeURIComponent(query)}&limit=20&active=true`)
+      const res = await offlineFetch(`/api/products?search=${encodeURIComponent(query)}&limit=20&active=true`)
       if (res.ok) {
         const data = await res.json()
         setPartProducts(data.data || [])
@@ -382,7 +383,7 @@ export function RepairsView() {
     }
     setCreating(true)
     try {
-      const res = await fetch('/api/repairs', {
+      const res = await offlineFetch('/api/repairs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -432,7 +433,7 @@ export function RepairsView() {
     setDetailLoading(true)
     setEditRepairOpen(true)
     try {
-      const res = await fetch(`/api/repairs/${repairId}`)
+      const res = await offlineFetch(`/api/repairs/${repairId}`)
       if (res.ok) {
         const data: RepairOrder = await res.json()
         setEditingRepair(data)
@@ -454,7 +455,7 @@ export function RepairsView() {
     if (!editingRepair) return
     setSaving(true)
     try {
-      const res = await fetch(`/api/repairs/${editingRepair.id}`, {
+      const res = await offlineFetch(`/api/repairs/${editingRepair.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -487,7 +488,7 @@ export function RepairsView() {
 
   const changeStatus = async (repairId: string, newStatus: string) => {
     try {
-      const res = await fetch(`/api/repairs/${repairId}`, {
+      const res = await offlineFetch(`/api/repairs/${repairId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -512,7 +513,7 @@ export function RepairsView() {
     setDetailOpen(true)
     setDetailLoading(true)
     try {
-      const res = await fetch(`/api/repairs/${repairId}`)
+      const res = await offlineFetch(`/api/repairs/${repairId}`)
       if (res.ok) {
         const data = await res.json()
         setDetailRepair(data)
@@ -532,7 +533,7 @@ export function RepairsView() {
     if (!addPartsRepairId) return
     setAddingPart(true)
     try {
-      const res = await fetch(`/api/repairs/${addPartsRepairId}/parts`, {
+      const res = await offlineFetch(`/api/repairs/${addPartsRepairId}/parts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

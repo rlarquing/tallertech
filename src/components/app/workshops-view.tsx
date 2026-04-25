@@ -36,6 +36,7 @@ import {
   UserPlus,
   AlertTriangle,
 } from 'lucide-react'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -190,7 +191,7 @@ export function WorkshopsView() {
   const fetchWorkshops = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/workshops')
+      const res = await offlineFetch('/api/workshops')
       if (res.ok) {
         const data = await res.json()
         const list = data.data || []
@@ -249,7 +250,7 @@ export function WorkshopsView() {
     setMembersOpen(true)
     setMembersLoading(true)
     try {
-      const res = await fetch(`/api/workshops/${workshop.id}/members`)
+      const res = await offlineFetch(`/api/workshops/${workshop.id}/members`)
       if (res.ok) {
         const data = await res.json()
         setMembers(data.data || [])
@@ -293,7 +294,7 @@ export function WorkshopsView() {
       const url = editingWorkshop ? `/api/workshops/${editingWorkshop.id}` : '/api/workshops'
       const method = editingWorkshop ? 'PUT' : 'POST'
 
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -328,7 +329,7 @@ export function WorkshopsView() {
     setSubmitting(true)
 
     try {
-      const res = await fetch(`/api/workshops/${deactivatingWorkshop.id}`, {
+      const res = await offlineFetch(`/api/workshops/${deactivatingWorkshop.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: !deactivatingWorkshop.active }),
@@ -363,7 +364,7 @@ export function WorkshopsView() {
     setAddingMember(true)
 
     try {
-      const res = await fetch(`/api/workshops/${selectedWorkshop.id}/members`, {
+      const res = await offlineFetch(`/api/workshops/${selectedWorkshop.id}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: newMemberEmail.trim(), role: newMemberRole }),
@@ -380,7 +381,7 @@ export function WorkshopsView() {
       setNewMemberEmail('')
       setNewMemberRole('employee')
       // Refresh members
-      const membersRes = await fetch(`/api/workshops/${selectedWorkshop.id}/members`)
+      const membersRes = await offlineFetch(`/api/workshops/${selectedWorkshop.id}/members`)
       if (membersRes.ok) {
         const membersData = await membersRes.json()
         setMembers(membersData.data || [])
@@ -398,7 +399,7 @@ export function WorkshopsView() {
     setChangingRole(memberId)
 
     try {
-      const res = await fetch(`/api/workshops/${selectedWorkshop.id}/members/${memberId}`, {
+      const res = await offlineFetch(`/api/workshops/${selectedWorkshop.id}/members/${memberId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
@@ -426,7 +427,7 @@ export function WorkshopsView() {
     if (!selectedWorkshop) return
 
     try {
-      const res = await fetch(`/api/workshops/${selectedWorkshop.id}/members/${memberId}`, {
+      const res = await offlineFetch(`/api/workshops/${selectedWorkshop.id}/members/${memberId}`, {
         method: 'DELETE',
       })
 

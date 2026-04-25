@@ -59,6 +59,7 @@ import {
   Wrench,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 interface Customer {
   id: string
@@ -145,7 +146,7 @@ export function CustomersView() {
         page: String(page),
         limit: String(limit),
       })
-      const res = await fetch(`/api/customers?${params}`)
+      const res = await offlineFetch(`/api/customers?${params}`)
       if (res.ok) {
         const data = await res.json()
         setCustomers(data.data)
@@ -160,7 +161,7 @@ export function CustomersView() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/customers?limit=9999')
+      const res = await offlineFetch('/api/customers?limit=9999')
       if (res.ok) {
         const data = await res.json()
         setTotalCustomers(data.total)
@@ -208,7 +209,7 @@ export function CustomersView() {
     setDetailOpen(true)
     setDetailLoading(true)
     try {
-      const res = await fetch(`/api/customers/${customer.id}`)
+      const res = await offlineFetch(`/api/customers/${customer.id}`)
       if (res.ok) {
         const data = await res.json()
         setDetailCustomer(data)
@@ -230,7 +231,7 @@ export function CustomersView() {
     try {
       const url = editingCustomer ? `/api/customers/${editingCustomer.id}` : '/api/customers'
       const method = editingCustomer ? 'PUT' : 'POST'
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -257,7 +258,7 @@ export function CustomersView() {
   const handleDelete = async () => {
     if (!deleteCustomer) return
     try {
-      const res = await fetch(`/api/customers/${deleteCustomer.id}`, { method: 'DELETE' })
+      const res = await offlineFetch(`/api/customers/${deleteCustomer.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json()
         toast({ title: 'Error', description: data.error || 'Error al eliminar', variant: 'destructive' })

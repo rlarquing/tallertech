@@ -34,6 +34,7 @@ import { WorkshopBIView } from '@/components/app/workshop-bi-view'
 import { OfflineBanner } from '@/components/app/offline-banner'
 import { PwaInstallPrompt } from '@/components/app/pwa-install-prompt'
 import { initializeOfflineCache } from '@/lib/init-cache'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // ============================================================
 // View Renderer
@@ -115,7 +116,7 @@ export function AppShell() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await offlineFetch('/api/auth/logout', { method: 'POST' })
     } catch {
       // Ignore
     }

@@ -36,6 +36,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -140,7 +141,7 @@ export function AuditView() {
       if (actionFilter !== 'all') params.set('action', actionFilter)
       if (entityFilter !== 'all') params.set('entity', entityFilter)
 
-      const res = await fetch(`/api/audit?${params}`)
+      const res = await offlineFetch(`/api/audit?${params}`)
       if (res.ok) {
         const data = await res.json()
         setLogs(data.data || [])
@@ -155,7 +156,7 @@ export function AuditView() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/audit/stats')
+      const res = await offlineFetch('/api/audit/stats')
       if (res.ok) {
         const data = await res.json()
         setStats(data)

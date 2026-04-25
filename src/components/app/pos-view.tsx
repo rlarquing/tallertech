@@ -38,6 +38,7 @@ import {
   Package,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 // ============================================================
 // Types
@@ -146,7 +147,7 @@ export function PosView() {
     }
     setProductsLoading(true)
     try {
-      const res = await fetch(`/api/products?search=${encodeURIComponent(query)}&limit=30&active=true`)
+      const res = await offlineFetch(`/api/products?search=${encodeURIComponent(query)}&limit=30&active=true`)
       if (res.ok) {
         const data = await res.json()
         setProducts(data.data || [])
@@ -179,7 +180,7 @@ export function PosView() {
     }
     setCustomersLoading(true)
     try {
-      const res = await fetch(`/api/customers?search=${encodeURIComponent(query)}&limit=20`)
+      const res = await offlineFetch(`/api/customers?search=${encodeURIComponent(query)}&limit=20`)
       if (res.ok) {
         const data = await res.json()
         setCustomers(data.data || [])
@@ -288,7 +289,7 @@ export function PosView() {
       return
     }
     try {
-      const res = await fetch('/api/customers', {
+      const res = await offlineFetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newCustomerName, phone: newCustomerPhone || undefined }),
@@ -321,7 +322,7 @@ export function PosView() {
     }
     setSubmitting(true)
     try {
-      const res = await fetch('/api/sales', {
+      const res = await offlineFetch('/api/sales', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

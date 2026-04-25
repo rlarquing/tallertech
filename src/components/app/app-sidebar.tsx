@@ -40,6 +40,7 @@ import {
   Building2,
 } from 'lucide-react'
 import Image from 'next/image'
+import { offlineFetch } from '@/lib/offline-fetch'
 
 interface NavItem {
   id: ViewType
@@ -120,7 +121,7 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await offlineFetch('/api/auth/logout', { method: 'POST' })
     } catch {
       // Ignore logout errors
     }
