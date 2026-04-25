@@ -4,14 +4,30 @@
 // Supports both JSON (structured, validatable) and SQLite (raw) formats
 // ============================================================
 
-import { readFile, writeFile, copyFile, mkdir, unlink, readdir } from 'fs/promises'
+import { readFile, writeFile, copyFile, mkdir, unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import path from 'path'
 import { createHash } from 'crypto'
 import { prisma } from '../persistence/prisma/prisma-client'
 
-const DB_PATH = path.join(process.cwd(), 'db', 'custom.db')
-const BACKUP_DIR = path.join(process.cwd(), 'db', 'backups')
+// Resolve DB path from DATABASE_URL env variable (supports both absolute and relative paths)
+function resolveDbPath(): string {
+  const dbUrl = process.env.DATABASE_URL || ''
+  // Handle file: URLs: file:/absolute/path or file:./relative/path
+  if (dbUrl.startsWith('file:')) {
+    const filePath = dbUrl.slice(5) // Remove 'file:'
+    if (path.isAbsolute(filePath)) {
+      return filePath
+    }
+    return path.resolve(process.cwd(), filePath)
+  }
+  // Fallback: look for db/custom.db relative to cwd
+  return path.join(process.cwd(), 'db', 'custom.db')
+}
+
+const DB_PATH = resolveDbPath()
+const DB_DIR = path.dirname(DB_PATH)
+const BACKUP_DIR = path.join(DB_DIR, 'backups')
 const HISTORY_FILE = path.join(BACKUP_DIR, 'backup-history.json')
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -182,15 +198,10 @@ export class BackupService {
         'Auto-backup antes de restauración'
       )
 
-      // Disconnect Prisma to release DB lock
-      await prisma.$disconnect()
-
       try {
         // Delete all existing data in correct order (respecting foreign keys)
+        // Must happen while Prisma is still connected
         await this.deleteAllData()
-
-        // Reconnect for inserts
-        await prisma.$connect()
 
         // Import data in correct order (respecting foreign key dependencies)
         await this.importAllData(backupData.data)
@@ -214,12 +225,9 @@ export class BackupService {
           stats,
         }
       } catch (innerError) {
-        // Try to reconnect if disconnected
-        try { await prisma.$connect() } catch { /* ignore */ }
         throw innerError
       }
     } catch (error) {
-      try { await prisma.$connect() } catch { /* ignore */ }
       return {
         success: false,
         message: `Error al restaurar: ${error instanceof Error ? error.message : 'Error desconocido'}`,
@@ -294,8 +302,13 @@ export class BackupService {
         'Auto-backup antes de restauración SQLite'
       )
 
+      // Disconnect Prisma to release DB file lock so we can overwrite it
       await prisma.$disconnect()
+
+      // Write the new database file
       await writeFile(DB_PATH, buffer)
+
+      // Reconnect Prisma to the new database
       await prisma.$connect()
 
       return {
@@ -303,6 +316,7 @@ export class BackupService {
         message: `Base de datos restaurada exitosamente. Backup de seguridad: ${safetyBackup.filename}`,
       }
     } catch (error) {
+      // Ensure Prisma is reconnected even on error
       try { await prisma.$connect() } catch { /* ignore */ }
       return {
         success: false,
@@ -508,82 +522,84 @@ export class BackupService {
 
   /**
    * Import data in correct order (respecting foreign key dependencies)
+   * Note: SQLite does not support skipDuplicates in createMany,
+   * but since we deleteAllData() first, there should be no duplicates.
    */
   private async importAllData(data: JsonBackupData['data']) {
     // Order: parent tables first, then children
     // 1. Users (no FK dependencies)
     if (data.users.length > 0) {
-      await prisma.user.createMany({ data: data.users, skipDuplicates: true })
+      await prisma.user.createMany({ data: data.users })
     }
 
     // 2. Workshops (no FK dependencies)
     if (data.workshops.length > 0) {
-      await prisma.workshop.createMany({ data: data.workshops, skipDuplicates: true })
+      await prisma.workshop.createMany({ data: data.workshops })
     }
 
     // 3. WorkshopUsers (depends on User + Workshop)
     if (data.workshopUsers.length > 0) {
-      await prisma.workshopUser.createMany({ data: data.workshopUsers, skipDuplicates: true })
+      await prisma.workshopUser.createMany({ data: data.workshopUsers })
     }
 
     // 4. Categories (depends on Workshop)
     if (data.categories.length > 0) {
-      await prisma.category.createMany({ data: data.categories, skipDuplicates: true })
+      await prisma.category.createMany({ data: data.categories })
     }
 
     // 5. Suppliers (depends on Workshop)
     if (data.suppliers.length > 0) {
-      await prisma.supplier.createMany({ data: data.suppliers, skipDuplicates: true })
+      await prisma.supplier.createMany({ data: data.suppliers })
     }
 
     // 6. Products (depends on Workshop, Category, Supplier)
     if (data.products.length > 0) {
-      await prisma.product.createMany({ data: data.products, skipDuplicates: true })
+      await prisma.product.createMany({ data: data.products })
     }
 
     // 7. Customers (depends on Workshop)
     if (data.customers.length > 0) {
-      await prisma.customer.createMany({ data: data.customers, skipDuplicates: true })
+      await prisma.customer.createMany({ data: data.customers })
     }
 
     // 8. Sales (depends on Workshop, Customer)
     if (data.sales.length > 0) {
-      await prisma.sale.createMany({ data: data.sales, skipDuplicates: true })
+      await prisma.sale.createMany({ data: data.sales })
     }
 
     // 9. SaleItems (depends on Sale, Product)
     if (data.saleItems.length > 0) {
-      await prisma.saleItem.createMany({ data: data.saleItems, skipDuplicates: true })
+      await prisma.saleItem.createMany({ data: data.saleItems })
     }
 
     // 10. RepairOrders (depends on Workshop, Customer)
     if (data.repairOrders.length > 0) {
-      await prisma.repairOrder.createMany({ data: data.repairOrders, skipDuplicates: true })
+      await prisma.repairOrder.createMany({ data: data.repairOrders })
     }
 
     // 11. RepairParts (depends on RepairOrder, Product)
     if (data.repairParts.length > 0) {
-      await prisma.repairPart.createMany({ data: data.repairParts, skipDuplicates: true })
+      await prisma.repairPart.createMany({ data: data.repairParts })
     }
 
     // 12. Expenses (depends on Workshop)
     if (data.expenses.length > 0) {
-      await prisma.expense.createMany({ data: data.expenses, skipDuplicates: true })
+      await prisma.expense.createMany({ data: data.expenses })
     }
 
     // 13. StockMovements (depends on Product)
     if (data.stockMovements.length > 0) {
-      await prisma.stockMovement.createMany({ data: data.stockMovements, skipDuplicates: true })
+      await prisma.stockMovement.createMany({ data: data.stockMovements })
     }
 
     // 14. Settings (depends on Workshop)
     if (data.settings.length > 0) {
-      await prisma.setting.createMany({ data: data.settings, skipDuplicates: true })
+      await prisma.setting.createMany({ data: data.settings })
     }
 
     // 15. AuditLogs (depends on Workshop)
     if (data.auditLogs.length > 0) {
-      await prisma.auditLog.createMany({ data: data.auditLogs, skipDuplicates: true })
+      await prisma.auditLog.createMany({ data: data.auditLogs })
     }
   }
 }
