@@ -14,6 +14,8 @@ export type ViewType =
   | 'expenses'
   | 'settings'
   | 'audit'
+  | 'workshops'
+  | 'workshop-bi'
 
 export interface UserInfo {
   id: string
@@ -22,6 +24,14 @@ export interface UserInfo {
   role: string
   image?: string | null
   provider?: string
+}
+
+export interface WorkshopInfo {
+  id: string
+  name: string
+  slug: string
+  role: string
+  active: boolean
 }
 
 interface AppState {
@@ -47,6 +57,12 @@ interface AppState {
   setCartItemCount: (count: number) => void
   pendingRepairsCount: number
   setPendingRepairsCount: (count: number) => void
+
+  // Workshop multi-tenancy
+  currentWorkshopId: string | null
+  setCurrentWorkshopId: (id: string | null) => void
+  workshops: WorkshopInfo[]
+  setWorkshops: (workshops: WorkshopInfo[]) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -72,6 +88,12 @@ export const useAppStore = create<AppState>((set) => ({
   setCartItemCount: (count) => set({ cartItemCount: count }),
   pendingRepairsCount: 0,
   setPendingRepairsCount: (count) => set({ pendingRepairsCount: count }),
+
+  // Workshop multi-tenancy
+  currentWorkshopId: null,
+  setCurrentWorkshopId: (id) => set({ currentWorkshopId: id }),
+  workshops: [],
+  setWorkshops: (workshops) => set({ workshops }),
 }))
 
 // View labels in Spanish
@@ -89,4 +111,6 @@ export const viewLabels: Record<ViewType, string> = {
   expenses: 'Gastos',
   settings: 'Configuración',
   audit: 'Auditoría',
+  workshops: 'Talleres',
+  'workshop-bi': 'BI Taller',
 }

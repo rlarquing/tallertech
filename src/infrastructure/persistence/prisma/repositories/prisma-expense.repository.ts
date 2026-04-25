@@ -19,8 +19,13 @@ export class PrismaExpenseRepository implements ExpenseRepository {
     skip?: number
     take?: number
     filters?: Record<string, string>
+    workshopId?: string
   }): Promise<{ data: Expense[]; total: number }> {
     const where: Record<string, unknown> = {}
+
+    if (params?.workshopId) {
+      where.workshopId = params.workshopId
+    }
 
     if (params?.search) {
       where.OR = [
@@ -70,6 +75,7 @@ export class PrismaExpenseRepository implements ExpenseRepository {
     const plain = data.toPlainObject()
     const expense = await prisma.expense.create({
       data: {
+        workshopId: plain.workshopId || '',
         category: plain.category,
         description: plain.description,
         amount: plain.amount,
@@ -101,14 +107,16 @@ export class PrismaExpenseRepository implements ExpenseRepository {
     await prisma.expense.delete({ where: { id } })
   }
 
-  async findByDateRange(from: Date, to: Date): Promise<Expense[]> {
-    const expenses = await prisma.expense.findMany({
-      where: {
-        date: {
-          gte: from,
-          lte: to,
-        },
+  async findByDateRange(from: Date, to: Date, workshopId?: string): Promise<Expense[]> {
+    const where: Record<string, unknown> = {
+      date: {
+        gte: from,
+        lte: to,
       },
+    }
+    if (workshopId) where.workshopId = workshopId
+    const expenses = await prisma.expense.findMany({
+      where,
       orderBy: { date: 'desc' },
     })
     return expenses.map((e) => ExpenseMapper.toDomain(e))
@@ -116,9 +124,11 @@ export class PrismaExpenseRepository implements ExpenseRepository {
 
   async getByCategory(
     from?: Date,
-    to?: Date
+    to?: Date,
+    workshopId?: string,
   ): Promise<{ category: string; total: number }[]> {
     const where: Record<string, unknown> = {}
+    if (workshopId) where.workshopId = workshopId
     if (from || to) {
       where.date = {}
       if (from) (where.date as Record<string, unknown>).gte = from

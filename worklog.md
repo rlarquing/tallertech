@@ -496,3 +496,193 @@ Stage Summary:
 - Consistent error handling via DomainError → HTTP status mapping
 - Zero lint errors
 - Zero new TypeScript compilation errors
+
+---
+Task ID: 4
+Agent: frontend-developer
+Task: Implement Workshop (Taller) multi-tenancy FRONTEND
+
+Work Log:
+- Read worklog.md and all reference files (store.ts, dashboard-view.tsx, products-view.tsx, app-sidebar.tsx, app-shell.tsx, auth-provider.tsx, mobile-nav.tsx, settings-view.tsx)
+- Updated Zustand Store (src/lib/store.ts):
+  - Added 'workshops' and 'workshop-bi' to ViewType union
+  - Added 'Talleres' and 'BI Taller' to viewLabels
+  - Added WorkshopInfo interface (id, name, slug, role, active)
+  - Added currentWorkshopId, setCurrentWorkshopId to store state
+  - Added workshops array, setWorkshops to store state
+- Created Workshops View (src/components/app/workshops-view.tsx):
+  - Full CRUD view for managing workshops
+  - Header with "Mis Talleres" title and "Nuevo Taller" button
+  - Workshop Cards Grid showing: name, slug, address, phone, email, currency badge, role badge (owner/admin/employee with Crown/Shield/UserCircle icons and color-coded), member count, active/inactive status, action buttons (Edit, Members, BI, Deactivate/Activate)
+  - Empty state with illustration when no workshops
+  - Create Workshop Dialog with: name (required), description, address, phone, email, currency select, timezone select, auto-generate slug from name
+  - Edit Workshop Dialog with same fields pre-filled
+  - Members Management Dialog with: table of members (name, email, role badge, joined date), role dropdown to change role, remove member button, add member section (email + role + add button)
+  - BI button navigates to 'workshop-bi' view and sets currentWorkshopId
+  - Toggle active/inactive with confirmation dialog
+- Created Workshop BI View (src/components/app/workshop-bi-view.tsx):
+  - Owner Dashboard with "Panel de Dueño" title or per-workshop BI header
+  - Workshop selector dropdown (if multiple workshops) with "Todos los Talleres" option
+  - Date range selector (7d, 30d, 90d, 1y)
+  - KPI Cards Row: Ingresos Totales (with trend), Gastos Totales (with trend), Ganancia Neta (green/red), Talleres Activos or Reparaciones Pendientes
+  - Revenue vs Expenses Area Chart (Recharts) with gradient fills
+  - All-workshop view: Workshop Comparison horizontal bar chart + detail table
+  - Per-workshop view: Top Products table, Sales by Payment Method pie chart, Repairs by Status donut chart, Expenses by Category horizontal bar chart, Pending Repairs alert card, Low Stock alert card
+  - Trends section: Revenue trend, Most Profitable Workshop (all view), Best Selling Product
+  - Fallback data generator when API is unavailable
+- Updated App Sidebar (src/components/app/app-sidebar.tsx):
+  - Added Building2 icon import
+  - Added "Mis Talleres" nav item (Building2 icon) - navigates to 'workshops' view
+  - Added "BI Taller" nav item (BarChart3 icon) - navigates to 'workshop-bi' view
+  - Placed after Dashboard in navigation order
+- Updated App Shell (src/components/app/app-shell.tsx):
+  - Added WorkshopsView and WorkshopBIView imports
+  - Added 'workshops' → <WorkshopsView /> and 'workshop-bi' → <WorkshopBIView /> cases to ViewRenderer
+  - Added Building2 icon import
+  - Added Workshop Switcher dropdown in header area:
+    - Shows current workshop name with Building2 icon
+    - "Todos los Talleres" option for aggregated view
+    - Lists all workshops user belongs to
+    - Selecting a workshop sets currentWorkshopId in store
+    - Only visible when authenticated and workshops exist
+  - Added "Mis Talleres" and "BI Taller" items to mobile hamburger menu
+- Updated Auth Provider (src/components/app/auth-provider.tsx):
+  - Added WorkshopInfo import
+  - Added fetchWorkshops callback that calls GET /api/workshops
+  - Added useEffect to fetch workshops when authenticated
+  - After successful login: fetch workshops and set first as current
+  - After successful registration: fetch workshops and set first as current
+  - After successful Google auth: fetch workshops and set first as current
+  - Fallback: silently fails if workshops API unavailable
+- Updated Mobile Nav (src/components/app/mobile-nav.tsx):
+  - Added Building2 icon import
+  - Replaced "Clientes" tab with "Talleres" tab (Building2 icon)
+  - Added isActive mapping for 'workshops' view (also covers 'workshop-bi')
+- All lint checks pass
+- Dev server runs correctly
+
+Stage Summary:
+- Complete workshop multi-tenancy frontend with CRUD management and BI dashboard
+- Zustand store extended with workshop state (currentWorkshopId, workshops array)
+- WorkshopsView: full CRUD with cards grid, create/edit dialogs, members management
+- WorkshopBIView: rich BI dashboard with KPI cards, charts (area, bar, pie, donut), comparison tables, alert cards
+- Navigation updated in sidebar, header switcher, mobile nav, and hamburger menu
+- Auth flow fetches and sets workshop context on login/register/Google auth
+- Responsive design with shadcn/ui components and Recharts
+- Spanish language throughout
+
+---
+Task ID: 3
+Agent: backend-workshop-implementer
+Task: Implement Workshop (Taller) multi-tenancy BACKEND - Clean Architecture all layers
+
+Work Log:
+- Read worklog.md, all existing domain entities, repository interfaces, application use cases, infrastructure implementations, and controllers for reference patterns
+- Implemented Domain Layer:
+  - Created Workshop entity (src/domain/entities/workshop.ts): create() factory with validation, generateSlug(), updateDetails(), deactivate()/activate(), toPlainObject()
+  - Created WorkshopMember interface (src/domain/entities/workshop-member.ts): WorkshopRole type, member with id/workshopId/userId/userName/userEmail/userImage/role/joinedAt
+  - Added WorkshopWithRole interface extending Workshop plain object with userRole
+  - Updated src/domain/entities/index.ts: Added exports for Workshop, WorkshopMember, WorkshopWithRole, WorkshopRole
+  - Updated BaseRepository interface: Added workshopId? to findMany params
+  - Updated SaleRepository: Added workshopId? to findByDateRange and getSalesStats
+  - Updated RepairRepository: Added workshopId? to findByStatus
+  - Updated ExpenseRepository: Added workshopId? to findByDateRange and getByCategory
+  - Updated AuditRepository: Added workshopId? to findMany params
+  - Updated SettingsRepository: Added workshopId? to get/set/getAll/delete
+  - Created WorkshopRepository interface: findById, findBySlug, findMany, create, update, delete, findByUserId, findMembers, addMember, updateMemberRole, removeMember, getMemberRole
+- Implemented Application Layer:
+  - Added Workshop DTOs: CreateWorkshopRequest, UpdateWorkshopRequest, AddWorkshopMemberRequest, UpdateWorkshopMemberRequest, WorkshopFilters
+  - Added BI DTOs: WorkshopBI (with revenueChart, topProducts, expensesByCategory, salesByPaymentMethod, repairsByStatus), OwnerDashboard (aggregate across workshops)
+  - Created 9 Workshop Use Cases (src/application/use-cases/workshops/):
+    - create-workshop.use-case.ts: Creates workshop + adds creator as owner member, logs audit
+    - get-workshops.use-case.ts: List workshops for current user with filters and pagination
+    - get-workshop.use-case.ts: Get single workshop by ID with user's role
+    - update-workshop.use-case.ts: Update workshop details (owner/admin only), logs audit
+    - delete-workshop.use-case.ts: Deactivate workshop (owner only), logs audit
+    - add-workshop-member.use-case.ts: Add member (owner/admin only), validates not already member, logs audit
+    - remove-workshop-member.use-case.ts: Remove member (owner only), cannot remove owner, logs audit
+    - get-workshop-members.use-case.ts: List members (must be a member), returns WorkshopMember[]
+    - update-workshop-member.use-case.ts: Update member role (owner only), cannot change own role, logs audit
+  - Created 2 BI Use Cases (src/application/use-cases/bi/):
+    - get-workshop-bi.use-case.ts: Get BI for single workshop (aggregated from sale/expense/repair/product/customer repos, filtered by workshopId)
+    - get-owner-dashboard.use-case.ts: Get BI across ALL workshops the user belongs to, loops through user's workshops, aggregates data
+  - Updated DI Container (src/application/container/index.ts):
+    - Added WorkshopRepository to AppDependencies
+    - Added 11 new use case getters: createWorkshop, getWorkshops, getWorkshop, updateWorkshop, deleteWorkshop, addWorkshopMember, removeWorkshopMember, getWorkshopMembers, updateWorkshopMember, getWorkshopBI, getOwnerDashboard
+    - Updated all getter to include new use cases
+- Implemented Infrastructure Layer:
+  - Created Workshop Mapper (src/infrastructure/persistence/prisma/mappers/workshop.mapper.ts): toDomain/toPrisma
+  - Created PrismaWorkshopRepository (src/infrastructure/persistence/prisma/repositories/prisma-workshop.repository.ts):
+    - findById, findBySlug, findMany with search/active/pagination
+    - create with optional id (for Prisma auto-generate)
+    - update with partial data, delete
+    - findByUserId: queries WorkshopUser + includes Workshop, returns WorkshopWithRole[]
+    - findMembers: queries WorkshopUser + includes User, returns WorkshopMember[]
+    - addMember: creates WorkshopUser record, includes User for response
+    - updateMemberRole: updates WorkshopUser using compound unique key (workshopId_userId)
+    - removeMember: deletes WorkshopUser using compound unique key
+    - getMemberRole: finds WorkshopUser record and returns role string
+  - Updated mappers index.ts: Added WorkshopMapper export
+  - Updated repositories index.ts: Added PrismaWorkshopRepository export
+  - Updated infrastructure container.ts: Added PrismaWorkshopRepository to deps
+  - Updated all existing Prisma repositories with workshopId support:
+    - PrismaProductRepository: findMany supports workshopId filter
+    - PrismaCategoryRepository: findMany supports workshopId, create sets workshopId
+    - PrismaSupplierRepository: findMany supports workshopId, create sets workshopId
+    - PrismaCustomerRepository: findMany supports workshopId, create sets workshopId
+    - PrismaSaleRepository: findMany/create/createWithItems support workshopId, findByDateRange/getSalesStats accept optional workshopId
+    - PrismaRepairRepository: findMany/create support workshopId, findByStatus accepts optional workshopId
+    - PrismaExpenseRepository: findMany/create support workshopId, findByDateRange/getByCategory accept optional workshopId
+    - PrismaAuditRepository: log sets workshopId, findMany supports workshopId filter
+    - PrismaSettingsRepository: Rewritten to support workshopId in get/set/getAll/delete using compound unique key (workshopId_key)
+- Implemented Interface Adapters Layer:
+  - Created Workshop Controller (src/interfaces/http/controllers/workshop.controller.ts):
+    - list: GET workshops with search/active/pagination
+    - getById: GET workshop with user role
+    - create: POST create workshop (adds creator as owner)
+    - update: PUT update workshop details
+    - delete: DELETE deactivate workshop
+    - getMembers: GET workshop members
+    - addMember: POST add member to workshop
+    - removeMember: DELETE remove member from workshop
+    - updateMember: PUT update member role
+  - Created BI Controller (src/interfaces/http/controllers/bi.controller.ts):
+    - getWorkshopBI: GET single workshop BI
+    - getOwnerDashboard: GET all workshops BI for owner
+- Created API Routes (6 route files):
+  - /api/workshops/route.ts: GET (list), POST (create)
+  - /api/workshops/[id]/route.ts: GET, PUT, DELETE
+  - /api/workshops/[id]/members/route.ts: GET (list members), POST (add member)
+  - /api/workshops/[id]/members/[userId]/route.ts: PUT (update role), DELETE (remove)
+  - /api/bi/route.ts: GET (owner dashboard, all workshops BI)
+  - /api/bi/[workshopId]/route.ts: GET (single workshop BI)
+- Updated Seed Route (/api/seed/route.ts):
+  - Creates default workshop "TallerTech Principal" first
+  - Adds admin user as owner, employee as employee of default workshop
+  - All created records (categories, suppliers, products, customers, sales, repairs, expenses, settings) now include workshopId
+  - Force reset also clears WorkshopUser and Workshop tables
+  - Added workshopId to audit log and settings
+- All lint checks pass (bun run lint)
+- Database schema pushed (bun run db:push)
+- Prisma client regenerated
+
+Architecture Rules Followed:
+- Workshop use cases follow existing pattern: authenticate → validate → business logic → persist → audit
+- Authorization checks use WorkshopRepository.getMemberRole() for workshop-level permissions
+- Owner-only operations: deactivate workshop, remove members, change member roles
+- Owner/Admin operations: update workshop, add members
+- Member operations: view workshop details, view members, view BI
+- All API routes are MAX 10 lines each - only delegate to controller
+- Controllers parse HTTP request → map to DTO → call use case → return via ResponsePresenter
+- Domain entities are independent (no infrastructure imports)
+- Use Cases depend ONLY on domain entities, repository interfaces, ports, and DTOs
+
+Stage Summary:
+- COMPLETE Workshop multi-tenancy backend across all 4 Clean Architecture layers
+- Domain: Workshop entity with business logic, WorkshopRepository interface
+- Application: 11 new use cases (9 workshop + 2 BI), DTOs, DI container updated
+- Infrastructure: PrismaWorkshopRepository, WorkshopMapper, all existing repos updated with workshopId
+- Interface Adapters: WorkshopController, BIController
+- 6 new API routes for workshops and BI
+- Seed route updated with default workshop and workshopId on all records
+- Zero lint errors

@@ -19,8 +19,13 @@ export class PrismaCategoryRepository implements CategoryRepository {
     skip?: number
     take?: number
     filters?: Record<string, string>
+    workshopId?: string
   }): Promise<{ data: Category[]; total: number }> {
     const where: Record<string, unknown> = {}
+
+    if (params?.workshopId) {
+      where.workshopId = params.workshopId
+    }
 
     if (params?.search) {
       where.OR = [
@@ -61,6 +66,7 @@ export class PrismaCategoryRepository implements CategoryRepository {
     const plain = data.toPlainObject()
     const category = await prisma.category.create({
       data: {
+        workshopId: plain.workshopId || '',
         name: plain.name,
         description: plain.description,
         type: plain.type,

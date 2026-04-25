@@ -25,8 +25,13 @@ export class PrismaRepairRepository implements RepairRepository {
     skip?: number
     take?: number
     filters?: Record<string, string>
+    workshopId?: string
   }): Promise<{ data: RepairOrder[]; total: number }> {
     const where: Record<string, unknown> = {}
+
+    if (params?.workshopId) {
+      where.workshopId = params.workshopId
+    }
 
     if (params?.search) {
       where.OR = [
@@ -77,6 +82,7 @@ export class PrismaRepairRepository implements RepairRepository {
     const plain = data.toPlainObject()
     const repair = await prisma.repairOrder.create({
       data: {
+        workshopId: plain.workshopId || '',
         code: plain.code,
         customerId: plain.customerId,
         userId: plain.userId,
@@ -150,9 +156,11 @@ export class PrismaRepairRepository implements RepairRepository {
     await prisma.repairOrder.delete({ where: { id } })
   }
 
-  async findByStatus(status: string): Promise<RepairOrder[]> {
+  async findByStatus(status: string, workshopId?: string): Promise<RepairOrder[]> {
+    const where: Record<string, unknown> = { status }
+    if (workshopId) where.workshopId = workshopId
     const repairs = await prisma.repairOrder.findMany({
-      where: { status },
+      where,
       include: {
         customer: { select: { name: true } },
         parts: true,

@@ -13,6 +13,7 @@ export class PrismaAuditRepository implements AuditRepository {
     const plain = entry.toPlainObject()
     const log = await prisma.auditLog.create({
       data: {
+        workshopId: plain.workshopId || '',
         userId: plain.userId,
         userName: plain.userName,
         action: plain.action,
@@ -31,6 +32,7 @@ export class PrismaAuditRepository implements AuditRepository {
     action?: string
     dateFrom?: Date
     dateTo?: Date
+    workshopId?: string
     skip?: number
     take?: number
   }): Promise<{ data: AuditLog[]; total: number }> {
@@ -39,6 +41,7 @@ export class PrismaAuditRepository implements AuditRepository {
     if (params?.userId) where.userId = params.userId
     if (params?.entity) where.entity = params.entity
     if (params?.action) where.action = params.action
+    if (params?.workshopId) where.workshopId = params.workshopId
     if (params?.dateFrom || params?.dateTo) {
       where.createdAt = {}
       if (params.dateFrom) {

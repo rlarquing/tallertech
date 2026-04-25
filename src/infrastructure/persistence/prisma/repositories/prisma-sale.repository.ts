@@ -27,8 +27,13 @@ export class PrismaSaleRepository implements SaleRepository {
     skip?: number
     take?: number
     filters?: Record<string, string>
+    workshopId?: string
   }): Promise<{ data: Sale[]; total: number }> {
     const where: Record<string, unknown> = {}
+
+    if (params?.workshopId) {
+      where.workshopId = params.workshopId
+    }
 
     if (params?.search) {
       where.OR = [
@@ -83,6 +88,7 @@ export class PrismaSaleRepository implements SaleRepository {
     const plain = data.toPlainObject()
     const sale = await prisma.sale.create({
       data: {
+        workshopId: plain.workshopId || '',
         code: plain.code,
         customerId: plain.customerId,
         userId: plain.userId,
@@ -146,6 +152,7 @@ export class PrismaSaleRepository implements SaleRepository {
       // Create sale with items
       const newSale = await tx.sale.create({
         data: {
+          workshopId: plain.workshopId || '',
           code: plain.code,
           customerId: plain.customerId,
           userId: plain.userId,
@@ -216,14 +223,16 @@ export class PrismaSaleRepository implements SaleRepository {
     return SaleMapper.toDomain(sale)
   }
 
-  async findByDateRange(from: Date, to: Date): Promise<Sale[]> {
-    const sales = await prisma.sale.findMany({
-      where: {
-        createdAt: {
-          gte: from,
-          lte: to,
-        },
+  async findByDateRange(from: Date, to: Date, workshopId?: string): Promise<Sale[]> {
+    const where: Record<string, unknown> = {
+      createdAt: {
+        gte: from,
+        lte: to,
       },
+    }
+    if (workshopId) where.workshopId = workshopId
+    const sales = await prisma.sale.findMany({
+      where,
       include: {
         customer: true,
         items: true,
@@ -233,7 +242,7 @@ export class PrismaSaleRepository implements SaleRepository {
     return sales.map((s) => SaleMapper.toDomain(s))
   }
 
-  async getSalesStats(from?: Date, to?: Date): Promise<{
+  async getSalesStats(from?: Date, to?: Date, workshopId?: string): Promise<{
     totalRevenue: number
     totalSales: number
     byPaymentMethod: Record<string, number>
@@ -242,6 +251,8 @@ export class PrismaSaleRepository implements SaleRepository {
     const where: Record<string, unknown> = {
       status: 'completed',
     }
+
+    if (workshopId) where.workshopId = workshopId
 
     if (from || to) {
       where.createdAt = {}

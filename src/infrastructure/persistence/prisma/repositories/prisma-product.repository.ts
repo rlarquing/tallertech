@@ -19,9 +19,14 @@ export class PrismaProductRepository implements ProductRepository {
     skip?: number
     take?: number
     filters?: Record<string, string>
+    workshopId?: string
   }): Promise<{ data: Product[]; total: number }> {
     const where: Record<string, unknown> = {}
     const lowStock = params?.filters?.lowStock === 'true'
+
+    if (params?.workshopId) {
+      where.workshopId = params.workshopId
+    }
 
     if (params?.search) {
       where.OR = [

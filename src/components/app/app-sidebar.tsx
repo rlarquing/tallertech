@@ -37,6 +37,7 @@ import {
   ChevronRight,
   LogOut,
   Shield,
+  Building2,
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -52,6 +53,16 @@ const navItems: NavItem[] = [
     id: 'dashboard',
     label: 'Panel Principal',
     icon: LayoutDashboard,
+  },
+  {
+    id: 'workshops',
+    label: 'Mis Talleres',
+    icon: Building2,
+  },
+  {
+    id: 'workshop-bi',
+    label: 'BI Taller',
+    icon: BarChart3,
   },
   {
     id: 'inventory',

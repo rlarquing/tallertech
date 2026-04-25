@@ -19,6 +19,8 @@ export { StockMovement, STOCK_MOVEMENT_TYPES } from './stock-movement'
 export type { StockMovementType } from './stock-movement'
 export { AuditLog } from './audit-log'
 export { Setting } from './setting'
+export { Workshop } from './workshop'
+export type { WorkshopMember, WorkshopWithRole, WorkshopRole } from './workshop'
 
 // ─── Value Object Re-exports (for convenience) ──────────────────
 export { RepairStatus, REPAIR_STATUSES } from '../value-objects'

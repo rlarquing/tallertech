@@ -260,3 +260,75 @@ export interface BackupListResponse {
   size: number
   createdAt: Date
 }
+
+// ─── Workshop DTOs ───────────────────────────────────────────
+
+export interface CreateWorkshopRequest {
+  name: string
+  slug?: string
+  description?: string
+  address?: string
+  phone?: string
+  email?: string
+  currency?: string
+  timezone?: string
+}
+
+export interface UpdateWorkshopRequest {
+  id: string
+  name?: string
+  description?: string
+  address?: string
+  phone?: string
+  email?: string
+  currency?: string
+  timezone?: string
+  active?: boolean
+}
+
+export interface AddWorkshopMemberRequest {
+  workshopId: string
+  userId: string
+  role: 'owner' | 'admin' | 'employee'
+}
+
+export interface UpdateWorkshopMemberRequest {
+  workshopId: string
+  userId: string
+  role: 'owner' | 'admin' | 'employee'
+}
+
+export interface WorkshopFilters extends PaginationParams {
+  active?: boolean
+}
+
+// ─── BI DTOs ─────────────────────────────────────────────────
+
+export interface WorkshopBI {
+  workshopId: string
+  workshopName: string
+  period: string
+  totalRevenue: number
+  totalExpenses: number
+  netProfit: number
+  salesCount: number
+  repairsCount: number
+  customersCount: number
+  productsCount: number
+  lowStockCount: number
+  pendingRepairsCount: number
+  completedRepairsToday: number
+  revenueChart: { date: string; revenue: number; expenses: number }[]
+  topProducts: { name: string; total: number; quantity: number }[]
+  expensesByCategory: { category: string; total: number }[]
+  salesByPaymentMethod: { method: string; total: number; count: number }[]
+  repairsByStatus: Record<string, number>
+}
+
+export interface OwnerDashboard {
+  totalWorkshops: number
+  totalRevenue: number
+  totalExpenses: number
+  totalNetProfit: number
+  workshops: WorkshopBI[]
+}

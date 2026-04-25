@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   Wrench,
   Users,
+  Building2,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -26,7 +27,7 @@ export function MobileNav() {
     { view: 'products', label: 'Inventario', icon: Package },
     { view: 'pos', label: 'Venta', icon: ShoppingCart, badge: cartItemCount },
     { view: 'repairs', label: 'Reparar', icon: Wrench, badge: pendingRepairsCount },
-    { view: 'customers', label: 'Clientes', icon: Users },
+    { view: 'workshops', label: 'Talleres', icon: Building2 },
   ]
 
   const isActive = (view: ViewType) => {
@@ -34,7 +35,7 @@ export function MobileNav() {
     if (view === 'products') return ['products', 'categories', 'suppliers', 'inventory'].includes(currentView)
     if (view === 'pos') return currentView === 'pos' || currentView === 'sales'
     if (view === 'repairs') return currentView === 'repairs'
-    if (view === 'customers') return currentView === 'customers'
+    if (view === 'workshops') return ['workshops', 'workshop-bi'].includes(currentView)
     return false
   }
 

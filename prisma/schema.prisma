@@ -12,16 +12,60 @@ datasource db {
 // ============================================================
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String   @default("") // Empty for OAuth users
-  role      String   @default("admin") // admin, employee
-  active    Boolean  @default(true)
-  image     String?  // Profile image (Google OAuth)
-  provider  String   @default("credentials") // credentials, google
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String          @id @default(cuid())
+  email        String          @unique
+  name         String
+  password     String          @default("") // Empty for OAuth users
+  role         String          @default("admin") // owner, admin, employee
+  active       Boolean         @default(true)
+  image        String?         // Profile image (Google OAuth)
+  provider     String          @default("credentials") // credentials, google
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  workshops    WorkshopUser[]
+}
+
+// ============================================================
+// WORKSHOPS (Talleres) - Multi-tenancy
+// ============================================================
+
+model Workshop {
+  id          String         @id @default(cuid())
+  name        String         // Nombre del taller
+  slug        String         @unique // Identificador único para URL
+  description String?
+  address     String?
+  phone       String?
+  email       String?
+  logo        String?        // URL del logo del taller
+  active      Boolean        @default(true)
+  currency    String         @default("USD") // USD, CUP, MLC, EUR
+  timezone    String         @default("America/Havana")
+  settings    String         @default("{}") // JSON con configuraciones específicas del taller
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  members     WorkshopUser[]
+  categories  Category[]
+  suppliers   Supplier[]
+  products    Product[]
+  customers   Customer[]
+  sales       Sale[]
+  repairs     RepairOrder[]
+  expenses    Expense[]
+  settings_kv Setting[]
+  auditLogs   AuditLog[]
+}
+
+model WorkshopUser {
+  id         String   @id @default(cuid())
+  workshopId String
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       String   @default("employee") // owner, admin, employee
+  joinedAt   DateTime @default(now())
+
+  @@unique([workshopId, userId])
 }
 
 // ============================================================
@@ -30,6 +74,8 @@ model User {
 
 model Category {
   id          String    @id @default(cuid())
+  workshopId  String
+  workshop    Workshop  @relation(fields: [workshopId], references: [id])
   name        String
   description String?
   type        String    @default("product") // product, service, part
@@ -40,16 +86,18 @@ model Category {
 }
 
 model Supplier {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String?
-  email     String?
-  address   String?
-  notes     String?
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  products  Product[]
+  id         String    @id @default(cuid())
+  workshopId String
+  workshop   Workshop  @relation(fields: [workshopId], references: [id])
+  name       String
+  phone      String?
+  email      String?
+  address    String?
+  notes      String?
+  active     Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  products   Product[]
 }
 
 // ============================================================
@@ -58,8 +106,10 @@ model Supplier {
 
 model Product {
   id           String     @id @default(cuid())
+  workshopId   String
+  workshop     Workshop   @relation(fields: [workshopId], references: [id])
   name         String
-  sku          String?    @unique
+  sku          String?
   description  String?
   categoryId   String?
   category     Category?  @relation(fields: [categoryId], references: [id])
@@ -88,6 +138,8 @@ model Product {
 
 model Customer {
   id           String        @id @default(cuid())
+  workshopId   String
+  workshop     Workshop      @relation(fields: [workshopId], references: [id])
   name         String
   phone        String?
   email        String?
@@ -107,6 +159,8 @@ model Customer {
 
 model Sale {
   id           String     @id @default(cuid())
+  workshopId   String
+  workshop     Workshop   @relation(fields: [workshopId], references: [id])
   code         String     @unique
   customerId   String?
   customer     Customer?  @relation(fields: [customerId], references: [id])
@@ -144,6 +198,8 @@ model SaleItem {
 
 model RepairOrder {
   id             String        @id @default(cuid())
+  workshopId     String
+  workshop       Workshop      @relation(fields: [workshopId], references: [id])
   code           String        @unique
   customerId     String
   customer       Customer      @relation(fields: [customerId], references: [id])
@@ -208,6 +264,8 @@ model StockMovement {
 
 model Expense {
   id          String   @id @default(cuid())
+  workshopId  String
+  workshop    Workshop @relation(fields: [workshopId], references: [id])
   category    String   // supplies, rent, salary, utilities, other
   description String
   amount      Float
@@ -224,9 +282,13 @@ model Expense {
 // ============================================================
 
 model Setting {
-  id    String @id @default(cuid())
-  key   String @unique
-  value String
+  id         String   @id @default(cuid())
+  workshopId String
+  workshop   Workshop @relation(fields: [workshopId], references: [id])
+  key        String
+  value      String
+
+  @@unique([workshopId, key])
 }
 
 // ============================================================
@@ -234,13 +296,15 @@ model Setting {
 // ============================================================
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String
-  userName  String
-  action    String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, REGISTER, STATUS_CHANGE, STOCK_ADJUSTMENT, BACKUP, RESTORE, EXPORT, CANCEL
-  entity    String   // user, product, sale, repair, customer, expense, category, supplier, setting, backup
-  entityId  String?
-  details   String?  // JSON string with change details
-  ip        String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  workshopId String
+  workshop   Workshop @relation(fields: [workshopId], references: [id])
+  userId     String
+  userName   String
+  action     String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, REGISTER, STATUS_CHANGE, STOCK_ADJUSTMENT, BACKUP, RESTORE, EXPORT, CANCEL
+  entity     String   // user, product, sale, repair, customer, expense, category, supplier, setting, backup, workshop
+  entityId   String?
+  details    String?  // JSON string with change details
+  ip         String?
+  createdAt  DateTime @default(now())
 }

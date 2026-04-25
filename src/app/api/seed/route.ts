@@ -30,6 +30,9 @@ export async function POST(request: NextRequest) {
         db.category.deleteMany(),
         db.supplier.deleteMany(),
         db.setting.deleteMany(),
+        db.auditLog.deleteMany(),
+        db.workshopUser.deleteMany(),
+        db.workshop.deleteMany(),
         db.user.deleteMany(),
       ]);
     }
@@ -53,29 +56,64 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Create default workshop
+    const workshop = await db.workshop.create({
+      data: {
+        name: 'TallerTech Principal',
+        slug: 'tallertech-principal',
+        description: 'Taller principal de reparación de celulares',
+        address: 'Av. Siempre Viva 742, Buenos Aires',
+        phone: '+54 11 5555-9999',
+        email: 'info@tallertech.com',
+        currency: 'ARS',
+        timezone: 'America/Havana',
+      },
+    });
+
+    // Add admin as owner of the default workshop
+    await db.workshopUser.create({
+      data: {
+        workshopId: workshop.id,
+        userId: admin.id,
+        role: 'owner',
+      },
+    });
+
+    // Add employee as employee of the default workshop
+    await db.workshopUser.create({
+      data: {
+        workshopId: workshop.id,
+        userId: employee.id,
+        role: 'employee',
+      },
+    });
+
+    const workshopId = workshop.id;
+
     // Create categories
     const categories = await Promise.all([
-      db.category.create({ data: { name: 'Pantallas', description: 'Pantallas y displays para celulares', type: 'part' } }),
-      db.category.create({ data: { name: 'Baterías', description: 'Baterías de reemplazo', type: 'part' } }),
-      db.category.create({ data: { name: 'Cables y Conectores', description: 'Cables flex, conectores de carga', type: 'part' } }),
-      db.category.create({ data: { name: 'Carcasas', description: 'Carcasas y marcos', type: 'part' } }),
-      db.category.create({ data: { name: 'Cámaras', description: 'Módulos de cámara', type: 'part' } }),
-      db.category.create({ data: { name: 'Accesorios', description: 'Fundas, protectores, cargadores', type: 'product' } }),
-      db.category.create({ data: { name: 'Servicios', description: 'Servicios de reparación', type: 'service' } }),
-      db.category.create({ data: { name: 'Herramientas', description: 'Herramientas de reparación', type: 'product' } }),
+      db.category.create({ data: { workshopId, name: 'Pantallas', description: 'Pantallas y displays para celulares', type: 'part' } }),
+      db.category.create({ data: { workshopId, name: 'Baterías', description: 'Baterías de reemplazo', type: 'part' } }),
+      db.category.create({ data: { workshopId, name: 'Cables y Conectores', description: 'Cables flex, conectores de carga', type: 'part' } }),
+      db.category.create({ data: { workshopId, name: 'Carcasas', description: 'Carcasas y marcos', type: 'part' } }),
+      db.category.create({ data: { workshopId, name: 'Cámaras', description: 'Módulos de cámara', type: 'part' } }),
+      db.category.create({ data: { workshopId, name: 'Accesorios', description: 'Fundas, protectores, cargadores', type: 'product' } }),
+      db.category.create({ data: { workshopId, name: 'Servicios', description: 'Servicios de reparación', type: 'service' } }),
+      db.category.create({ data: { workshopId, name: 'Herramientas', description: 'Herramientas de reparación', type: 'product' } }),
     ]);
 
     // Create suppliers
     const suppliers = await Promise.all([
-      db.supplier.create({ data: { name: 'TechParts LATAM', phone: '+54 11 5555-0001', email: 'ventas@techparts.com', address: 'Buenos Aires, Argentina' } }),
-      db.supplier.create({ data: { name: 'MobileFix Supply', phone: '+54 11 5555-0002', email: 'info@mobilefix.com', address: 'Córdoba, Argentina' } }),
-      db.supplier.create({ data: { name: 'Pantallas Express', phone: '+54 11 5555-0003', email: 'ventas@pantallasexpress.com', address: 'Rosario, Argentina' } }),
+      db.supplier.create({ data: { workshopId, name: 'TechParts LATAM', phone: '+54 11 5555-0001', email: 'ventas@techparts.com', address: 'Buenos Aires, Argentina' } }),
+      db.supplier.create({ data: { workshopId, name: 'MobileFix Supply', phone: '+54 11 5555-0002', email: 'info@mobilefix.com', address: 'Córdoba, Argentina' } }),
+      db.supplier.create({ data: { workshopId, name: 'Pantallas Express', phone: '+54 11 5555-0003', email: 'ventas@pantallasexpress.com', address: 'Rosario, Argentina' } }),
     ]);
 
     // Create products
     const products = await Promise.all([
       db.product.create({
         data: {
+          workshopId,
           name: 'Pantalla iPhone 13',
           sku: 'PAN-IP13-001',
           description: 'Pantalla LCD completa para iPhone 13',
@@ -93,6 +131,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Pantalla Samsung A54',
           sku: 'PAN-SA54-001',
           description: 'Pantalla AMOLED para Samsung Galaxy A54',
@@ -110,6 +149,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Batería iPhone 13',
           sku: 'BAT-IP13-001',
           description: 'Batería de reemplazo para iPhone 13',
@@ -127,6 +167,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Batería Samsung S23',
           sku: 'BAT-SS23-001',
           description: 'Batería de reemplazo para Samsung S23',
@@ -144,6 +185,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Conector de Carga USB-C',
           sku: 'CAB-USBC-001',
           description: 'Conector de carga USB-C genérico',
@@ -159,6 +201,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Flex Cable iPhone 14',
           sku: 'CAB-IP14-FLEX',
           description: 'Cable flex de botón home para iPhone 14',
@@ -176,6 +219,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Carcaza iPhone 13 Pro',
           sku: 'CAR-IP13P-001',
           description: 'Carcaza trasera para iPhone 13 Pro',
@@ -193,6 +237,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Cámara Frontal iPhone 14',
           sku: 'CAM-IP14-F',
           description: 'Módulo de cámara frontal para iPhone 14',
@@ -210,6 +255,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Protector Pantalla Templado',
           sku: 'ACC-PROT-001',
           description: 'Protector de pantalla templado universal',
@@ -225,6 +271,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Funda Silicona Universal',
           sku: 'ACC-FUND-001',
           description: 'Funda de silicona genérica',
@@ -240,6 +287,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Kit Herramientas Reparación',
           sku: 'HER-KIT-001',
           description: 'Kit completo de herramientas para reparación de celulares',
@@ -255,6 +303,7 @@ export async function POST(request: NextRequest) {
       }),
       db.product.create({
         data: {
+          workshopId,
           name: 'Servicio Cambio de Pantalla',
           sku: 'SRV-PANT',
           description: 'Servicio de reemplazo de pantalla',
@@ -289,11 +338,11 @@ export async function POST(request: NextRequest) {
 
     // Create sample customers
     const customers = await Promise.all([
-      db.customer.create({ data: { name: 'María López', phone: '+54 11 6666-0001', email: 'maria@email.com', dni: '12345678' } }),
-      db.customer.create({ data: { name: 'Juan Pérez', phone: '+54 11 6666-0002', email: 'juan@email.com', dni: '23456789' } }),
-      db.customer.create({ data: { name: 'Ana Martínez', phone: '+54 11 6666-0003', email: 'ana@email.com', dni: '34567890' } }),
-      db.customer.create({ data: { name: 'Roberto Sánchez', phone: '+54 11 6666-0004', dni: '45678901' } }),
-      db.customer.create({ data: { name: 'Laura Torres', phone: '+54 11 6666-0005', email: 'laura@email.com', dni: '56789012' } }),
+      db.customer.create({ data: { workshopId, name: 'María López', phone: '+54 11 6666-0001', email: 'maria@email.com', dni: '12345678' } }),
+      db.customer.create({ data: { workshopId, name: 'Juan Pérez', phone: '+54 11 6666-0002', email: 'juan@email.com', dni: '23456789' } }),
+      db.customer.create({ data: { workshopId, name: 'Ana Martínez', phone: '+54 11 6666-0003', email: 'ana@email.com', dni: '34567890' } }),
+      db.customer.create({ data: { workshopId, name: 'Roberto Sánchez', phone: '+54 11 6666-0004', dni: '45678901' } }),
+      db.customer.create({ data: { workshopId, name: 'Laura Torres', phone: '+54 11 6666-0005', email: 'laura@email.com', dni: '56789012' } }),
     ]);
 
     // Create some sample sales
@@ -356,6 +405,7 @@ export async function POST(request: NextRequest) {
 
       const sale = await db.sale.create({
         data: {
+          workshopId,
           code,
           customerId: customers[saleData.customerIdx].id,
           userId: admin.id,
@@ -443,6 +493,7 @@ export async function POST(request: NextRequest) {
       const code = `REP-${(Date.now() - rd.daysAgo * 86400000).toString(36).slice(-4).toUpperCase()}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
 
       const repairCreateData: Record<string, unknown> = {
+        workshopId,
         code,
         customerId: customers[rd.customerIdx].id,
         userId: admin.id,
@@ -490,6 +541,7 @@ export async function POST(request: NextRequest) {
 
       await db.expense.create({
         data: {
+          workshopId,
           category: exp.category,
           description: exp.description,
           amount: exp.amount,
@@ -503,13 +555,13 @@ export async function POST(request: NextRequest) {
     // Create default settings
     await db.setting.createMany({
       data: [
-        { key: 'shop_name', value: 'TallerTech' },
-        { key: 'shop_phone', value: '+54 11 5555-9999' },
-        { key: 'shop_address', value: 'Av. Siempre Viva 742, Buenos Aires' },
-        { key: 'shop_email', value: 'info@tallertech.com' },
-        { key: 'currency', value: 'ARS' },
-        { key: 'tax_rate', value: '21' },
-        { key: 'receipt_footer', value: 'Gracias por su compra!' },
+        { workshopId, key: 'shop_name', value: 'TallerTech' },
+        { workshopId, key: 'shop_phone', value: '+54 11 5555-9999' },
+        { workshopId, key: 'shop_address', value: 'Av. Siempre Viva 742, Buenos Aires' },
+        { workshopId, key: 'shop_email', value: 'info@tallertech.com' },
+        { workshopId, key: 'currency', value: 'ARS' },
+        { workshopId, key: 'tax_rate', value: '21' },
+        { workshopId, key: 'receipt_footer', value: 'Gracias por su compra!' },
       ],
     });
 
@@ -517,6 +569,7 @@ export async function POST(request: NextRequest) {
       message: 'Base de datos inicializada exitosamente',
       data: {
         users: 2,
+        workshops: 1,
         categories: categories.length,
         suppliers: suppliers.length,
         products: products.length,

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { useAppStore, type UserInfo } from '@/lib/store'
+import { useAppStore, type UserInfo, type WorkshopInfo } from '@/lib/store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,7 @@ import { Wrench, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, setUser, isAuthenticated } = useAppStore()
+  const { user, setUser, isAuthenticated, setWorkshops, setCurrentWorkshopId, currentWorkshopId } = useAppStore()
   const [loading, setLoading] = useState(true)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   const [submitting, setSubmitting] = useState(false)
@@ -43,9 +43,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [setUser])
 
+  // Fetch user's workshops
+  const fetchWorkshops = useCallback(async () => {
+    try {
+      const res = await fetch('/api/workshops')
+      if (res.ok) {
+        const data = await res.json()
+        const ws = (data.data || []) as WorkshopInfo[]
+        setWorkshops(ws)
+        if (ws.length > 0 && !currentWorkshopId) {
+          setCurrentWorkshopId(ws[0].id)
+        }
+      }
+    } catch {
+      // Silently fail - workshops are optional
+    }
+  }, [setWorkshops, setCurrentWorkshopId, currentWorkshopId])
+
   useEffect(() => {
     checkSession()
   }, [checkSession])
+
+  // Fetch workshops when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchWorkshops()
+    }
+  }, [isAuthenticated, user, fetchWorkshops])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,6 +91,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(data.user as UserInfo)
+      // Fetch workshops after successful login
+      try {
+        const wsRes = await fetch('/api/workshops')
+        if (wsRes.ok) {
+          const wsData = await wsRes.json()
+          const ws = (wsData.data || []) as WorkshopInfo[]
+          setWorkshops(ws)
+          if (ws.length > 0) {
+            setCurrentWorkshopId(ws[0].id)
+          }
+        }
+      } catch {
+        // Silently fail
+      }
     } catch {
       setError('Error de conexión. Intente de nuevo.')
     } finally {
@@ -98,6 +136,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(data.user as UserInfo)
+      // Fetch workshops after successful registration
+      try {
+        const wsRes = await fetch('/api/workshops')
+        if (wsRes.ok) {
+          const wsData = await wsRes.json()
+          const ws = (wsData.data || []) as WorkshopInfo[]
+          setWorkshops(ws)
+          if (ws.length > 0) {
+            setCurrentWorkshopId(ws[0].id)
+          }
+        }
+      } catch {
+        // Silently fail
+      }
     } catch {
       setError('Error de conexión. Intente de nuevo.')
     } finally {
@@ -146,12 +198,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(data.user as UserInfo)
+      // Fetch workshops after Google auth
+      try {
+        const wsRes = await fetch('/api/workshops')
+        if (wsRes.ok) {
+          const wsData = await wsRes.json()
+          const ws = (wsData.data || []) as WorkshopInfo[]
+          setWorkshops(ws)
+          if (ws.length > 0) {
+            setCurrentWorkshopId(ws[0].id)
+          }
+        }
+      } catch {
+        // Silently fail
+      }
     } catch {
       setError('Error de conexión con Google.')
     } finally {
       setSubmitting(false)
     }
-  }, [setUser])
+  }, [setUser, setWorkshops, setCurrentWorkshopId])
 
   // Initialize Google Sign-In
   useEffect(() => {

@@ -14,6 +14,7 @@ import type {
   ExpenseRepository,
   AuditRepository,
   SettingsRepository,
+  WorkshopRepository,
 } from '@/domain/repositories'
 
 import type {
@@ -83,6 +84,19 @@ import { CreateBackupUseCase } from '@/application/use-cases/backup/create-backu
 import { ListBackupsUseCase } from '@/application/use-cases/backup/list-backups.use-case'
 import { GetBackupStatsUseCase } from '@/application/use-cases/backup/get-backup-stats.use-case'
 
+import { CreateWorkshopUseCase } from '@/application/use-cases/workshops/create-workshop.use-case'
+import { GetWorkshopsUseCase } from '@/application/use-cases/workshops/get-workshops.use-case'
+import { GetWorkshopUseCase } from '@/application/use-cases/workshops/get-workshop.use-case'
+import { UpdateWorkshopUseCase } from '@/application/use-cases/workshops/update-workshop.use-case'
+import { DeleteWorkshopUseCase } from '@/application/use-cases/workshops/delete-workshop.use-case'
+import { AddWorkshopMemberUseCase } from '@/application/use-cases/workshops/add-workshop-member.use-case'
+import { RemoveWorkshopMemberUseCase } from '@/application/use-cases/workshops/remove-workshop-member.use-case'
+import { GetWorkshopMembersUseCase } from '@/application/use-cases/workshops/get-workshop-members.use-case'
+import { UpdateWorkshopMemberUseCase } from '@/application/use-cases/workshops/update-workshop-member.use-case'
+
+import { GetWorkshopBIUseCase } from '@/application/use-cases/bi/get-workshop-bi.use-case'
+import { GetOwnerDashboardUseCase } from '@/application/use-cases/bi/get-owner-dashboard.use-case'
+
 // ─── Dependencies Interface ──────────────────────────────────
 
 export interface AppDependencies {
@@ -97,6 +111,7 @@ export interface AppDependencies {
   expenseRepository: ExpenseRepository
   auditRepository: AuditRepository
   settingsRepository: SettingsRepository
+  workshopRepository: WorkshopRepository
 
   // Ports
   auditPort: AuditPort
@@ -495,6 +510,103 @@ export class UseCaseContainer {
     )
   }
 
+  // ─── Workshops ──────────────────────────────────────────────
+
+  get createWorkshop() {
+    return new CreateWorkshopUseCase(
+      this.deps.workshopRepository,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  get getWorkshops() {
+    return new GetWorkshopsUseCase(
+      this.deps.workshopRepository,
+      this.deps.sessionPort,
+    )
+  }
+
+  get getWorkshop() {
+    return new GetWorkshopUseCase(
+      this.deps.workshopRepository,
+      this.deps.sessionPort,
+    )
+  }
+
+  get updateWorkshop() {
+    return new UpdateWorkshopUseCase(
+      this.deps.workshopRepository,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  get deleteWorkshop() {
+    return new DeleteWorkshopUseCase(
+      this.deps.workshopRepository,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  get addWorkshopMember() {
+    return new AddWorkshopMemberUseCase(
+      this.deps.workshopRepository,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  get removeWorkshopMember() {
+    return new RemoveWorkshopMemberUseCase(
+      this.deps.workshopRepository,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  get getWorkshopMembers() {
+    return new GetWorkshopMembersUseCase(
+      this.deps.workshopRepository,
+      this.deps.sessionPort,
+    )
+  }
+
+  get updateWorkshopMember() {
+    return new UpdateWorkshopMemberUseCase(
+      this.deps.workshopRepository,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  // ─── BI ────────────────────────────────────────────────────
+
+  get getWorkshopBI() {
+    return new GetWorkshopBIUseCase(
+      this.deps.workshopRepository,
+      this.deps.saleRepository,
+      this.deps.repairRepository,
+      this.deps.productRepository,
+      this.deps.expenseRepository,
+      this.deps.customerRepository,
+      this.deps.sessionPort,
+    )
+  }
+
+  get getOwnerDashboard() {
+    return new GetOwnerDashboardUseCase(
+      this.deps.workshopRepository,
+      this.deps.saleRepository,
+      this.deps.repairRepository,
+      this.deps.productRepository,
+      this.deps.expenseRepository,
+      this.deps.customerRepository,
+      this.deps.sessionPort,
+    )
+  }
+
   // ─── All Use Cases ─────────────────────────────────────────
 
   get all() {
@@ -556,6 +668,19 @@ export class UseCaseContainer {
       createBackup: this.createBackup,
       listBackups: this.listBackups,
       getBackupStats: this.getBackupStats,
+      // Workshops
+      createWorkshop: this.createWorkshop,
+      getWorkshops: this.getWorkshops,
+      getWorkshop: this.getWorkshop,
+      updateWorkshop: this.updateWorkshop,
+      deleteWorkshop: this.deleteWorkshop,
+      addWorkshopMember: this.addWorkshopMember,
+      removeWorkshopMember: this.removeWorkshopMember,
+      getWorkshopMembers: this.getWorkshopMembers,
+      updateWorkshopMember: this.updateWorkshopMember,
+      // BI
+      getWorkshopBI: this.getWorkshopBI,
+      getOwnerDashboard: this.getOwnerDashboard,
     }
   }
 }

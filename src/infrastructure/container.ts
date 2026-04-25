@@ -18,6 +18,7 @@ import { PrismaRepairRepository } from '@/infrastructure/persistence/prisma/repo
 import { PrismaExpenseRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-expense.repository'
 import { PrismaAuditRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-audit.repository'
 import { PrismaSettingsRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-settings.repository'
+import { PrismaWorkshopRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-workshop.repository'
 
 // Port adapters (bridge infrastructure services to application ports)
 import { AuditAdapter } from '@/infrastructure/adapters/audit-adapter'
@@ -43,6 +44,7 @@ const deps: AppDependencies = {
   expenseRepository: new PrismaExpenseRepository(),
   auditRepository: new PrismaAuditRepository(),
   settingsRepository: new PrismaSettingsRepository(),
+  workshopRepository: new PrismaWorkshopRepository(),
 
   // Ports (adapters & direct implementations)
   auditPort: new AuditAdapter(),

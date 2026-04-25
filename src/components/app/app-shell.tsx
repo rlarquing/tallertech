@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings, Moon, Sun, Menu } from 'lucide-react'
+import { LogOut, User, Settings, Moon, Sun, Menu, Building2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { ProductsView } from '@/components/app/products-view'
 import { CategoriesView } from '@/components/app/categories-view'
@@ -29,6 +29,8 @@ import { PosView } from '@/components/app/pos-view'
 import { SalesView } from '@/components/app/sales-view'
 import { RepairsView } from '@/components/app/repairs-view'
 import { AuditView } from '@/components/app/audit-view'
+import { WorkshopsView } from '@/components/app/workshops-view'
+import { WorkshopBIView } from '@/components/app/workshop-bi-view'
 import { OfflineBanner } from '@/components/app/offline-banner'
 import { PwaInstallPrompt } from '@/components/app/pwa-install-prompt'
 import { initializeOfflineCache } from '@/lib/init-cache'
@@ -63,6 +65,10 @@ function ViewRenderer({ currentView }: { currentView: ViewType }) {
       return <RepairsView />
     case 'audit':
       return <AuditView />
+    case 'workshops':
+      return <WorkshopsView />
+    case 'workshop-bi':
+      return <WorkshopBIView />
     default:
       return <PlaceholderView view={currentView} />
   }
@@ -89,7 +95,7 @@ function PlaceholderView({ view }: { view: ViewType }) {
 // ============================================================
 
 export function AppShell() {
-  const { currentView, user, setIsMobile } = useAppStore()
+  const { currentView, user, setIsMobile, workshops, currentWorkshopId, setCurrentWorkshopId } = useAppStore()
   const { setTheme, theme } = useTheme()
 
   // Detect mobile viewport
@@ -159,6 +165,13 @@ export function AppShell() {
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('dashboard')}>
                     📊 Panel Principal
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('workshops')}>
+                    🏢 Mis Talleres
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('workshop-bi')}>
+                    📈 BI Taller
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('reports')}>
                     📈 Reportes
                   </DropdownMenuItem>
@@ -193,6 +206,42 @@ export function AppShell() {
             <h1 className="flex-1 text-sm font-semibold text-foreground truncate">
               {viewLabels[currentView]}
             </h1>
+
+            {/* Workshop Switcher */}
+            {workshops.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="hidden sm:flex gap-2 max-w-[180px] h-8 text-xs">
+                    <Building2 className="size-3.5 shrink-0 text-emerald-600" />
+                    <span className="truncate">
+                      {currentWorkshopId
+                        ? workshops.find((w) => w.id === currentWorkshopId)?.name || 'Taller'
+                        : 'Todos los Talleres'}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem
+                    onClick={() => setCurrentWorkshopId(null)}
+                    className={!currentWorkshopId ? 'bg-accent' : ''}
+                  >
+                    <Building2 className="mr-2 size-4" />
+                    Todos los Talleres
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {workshops.map((w) => (
+                    <DropdownMenuItem
+                      key={w.id}
+                      onClick={() => setCurrentWorkshopId(w.id)}
+                      className={currentWorkshopId === w.id ? 'bg-accent' : ''}
+                    >
+                      <Building2 className="mr-2 size-4 text-emerald-600" />
+                      {w.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             {/* Theme Toggle */}
             <Button

@@ -19,8 +19,13 @@ export class PrismaSupplierRepository implements SupplierRepository {
     skip?: number
     take?: number
     filters?: Record<string, string>
+    workshopId?: string
   }): Promise<{ data: Supplier[]; total: number }> {
     const where: Record<string, unknown> = {}
+
+    if (params?.workshopId) {
+      where.workshopId = params.workshopId
+    }
 
     if (params?.search) {
       where.OR = [
@@ -59,6 +64,7 @@ export class PrismaSupplierRepository implements SupplierRepository {
     const plain = data.toPlainObject()
     const supplier = await prisma.supplier.create({
       data: {
+        workshopId: plain.workshopId || '',
         name: plain.name,
         phone: plain.phone,
         email: plain.email,
