@@ -60,8 +60,8 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  outputFileTracingRoot: path.join(__dirname),
+  // Note: 'standalone' output is not needed for Vercel deployment
+  // Vercel handles the build output automatically
   typescript: {
     ignoreBuildErrors: true,
   },

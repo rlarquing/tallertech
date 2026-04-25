@@ -17,6 +17,9 @@ node_modules
 /.next/
 /out/
 
+# prisma generated client (Prisma 7 generates to src/)
+/src/generated/
+
 # production
 /build
 

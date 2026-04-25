@@ -1,7 +1,8 @@
 // ============================================================
 // Backup Service Infrastructure - Complete database backup and restore
 // Clean Architecture: Infrastructure Layer - Services
-// Supports both JSON (structured, validatable) and SQLite (raw) formats
+// Supports JSON (primary) and SQLite file (local-only) formats
+// Compatible with both local SQLite and Turso cloud databases
 // ============================================================
 
 import { readFile, writeFile, copyFile, mkdir, unlink } from 'fs/promises'
@@ -10,23 +11,31 @@ import path from 'path'
 import { createHash } from 'crypto'
 import { prisma } from '../persistence/prisma/prisma-client'
 
-// Resolve DB path from DATABASE_URL env variable (supports both absolute and relative paths)
-function resolveDbPath(): string {
+// ─── Environment Detection ────────────────────────────────────
+
+function isTurso(): boolean {
+  const url = process.env.DATABASE_URL || ''
+  return url.startsWith('libsql://')
+}
+
+function isLocalSqlite(): boolean {
+  const url = process.env.DATABASE_URL || ''
+  return url.startsWith('file:')
+}
+
+// Resolve DB path from DATABASE_URL env variable (local SQLite only)
+function resolveDbPath(): string | null {
+  if (!isLocalSqlite()) return null
   const dbUrl = process.env.DATABASE_URL || ''
-  // Handle file: URLs: file:/absolute/path or file:./relative/path
-  if (dbUrl.startsWith('file:')) {
-    const filePath = dbUrl.slice(5) // Remove 'file:'
-    if (path.isAbsolute(filePath)) {
-      return filePath
-    }
-    return path.resolve(process.cwd(), filePath)
+  const filePath = dbUrl.slice(5) // Remove 'file:'
+  if (path.isAbsolute(filePath)) {
+    return filePath
   }
-  // Fallback: look for db/custom.db relative to cwd
-  return path.join(process.cwd(), 'db', 'custom.db')
+  return path.resolve(process.cwd(), filePath)
 }
 
 const DB_PATH = resolveDbPath()
-const DB_DIR = path.dirname(DB_PATH)
+const DB_DIR = DB_PATH ? path.dirname(DB_PATH) : path.join(process.cwd(), 'db')
 const BACKUP_DIR = path.join(DB_DIR, 'backups')
 const HISTORY_FILE = path.join(BACKUP_DIR, 'backup-history.json')
 
@@ -72,11 +81,12 @@ export interface BackupRecord {
 // ─── Backup Service ─────────────────────────────────────────────
 
 export class BackupService {
-  // ─── JSON Backup (Primary) ──────────────────────────────────
+  // ─── JSON Backup (Primary - works with both local & Turso) ──
 
   /**
    * Create a structured JSON backup of all database data
    * This format is validatable, human-readable, and version-independent
+   * Works with both local SQLite and Turso cloud databases
    */
   async createJsonBackup(description?: string): Promise<{
     filename: string
@@ -177,6 +187,7 @@ export class BackupService {
 
   /**
    * Restore database from a JSON backup
+   * Works with both local SQLite and Turso cloud databases
    */
   async restoreFromJsonBackup(backupData: JsonBackupData): Promise<{
     success: boolean
@@ -198,34 +209,29 @@ export class BackupService {
         'Auto-backup antes de restauración'
       )
 
-      try {
-        // Delete all existing data in correct order (respecting foreign keys)
-        // Must happen while Prisma is still connected
-        await this.deleteAllData()
+      // Delete all existing data in correct order (respecting foreign keys)
+      await this.deleteAllData()
 
-        // Import data in correct order (respecting foreign key dependencies)
-        await this.importAllData(backupData.data)
+      // Import data in correct order (respecting foreign key dependencies)
+      await this.importAllData(backupData.data)
 
-        // Record the restore in history
-        const stats = this.calculateStats(backupData.data)
-        await this.addToHistory({
-          id: `restore_${new Date().toISOString().replace(/[:.]/g, '-')}`,
-          filename: 'restore',
-          format: 'json',
-          description: `Restauración desde backup (seguridad: ${safetyBackup.filename})`,
-          size: 0,
-          checksum: '',
-          stats,
-          createdAt: new Date().toISOString(),
-        })
+      // Record the restore in history
+      const stats = this.calculateStats(backupData.data)
+      await this.addToHistory({
+        id: `restore_${new Date().toISOString().replace(/[:.]/g, '-')}`,
+        filename: 'restore',
+        format: 'json',
+        description: `Restauración desde backup (seguridad: ${safetyBackup.filename})`,
+        size: 0,
+        checksum: '',
+        stats,
+        createdAt: new Date().toISOString(),
+      })
 
-        return {
-          success: true,
-          message: `Base de datos restaurada exitosamente. Backup de seguridad: ${safetyBackup.filename}`,
-          stats,
-        }
-      } catch (innerError) {
-        throw innerError
+      return {
+        success: true,
+        message: `Base de datos restaurada exitosamente. Backup de seguridad: ${safetyBackup.filename}`,
+        stats,
       }
     } catch (error) {
       return {
@@ -235,16 +241,21 @@ export class BackupService {
     }
   }
 
-  // ─── SQLite Backup (Legacy/Raw) ────────────────────────────
+  // ─── SQLite Backup (Local-only - NOT available with Turso) ───
 
   /**
    * Create a raw SQLite file backup
+   * Only available when using local SQLite (not Turso)
    */
   async createSqliteBackup(description?: string): Promise<{
     filename: string
     size: number
     path: string
   }> {
+    if (isTurso() || !DB_PATH) {
+      throw new Error('SQLite file backup no está disponible con Turso. Use JSON backup en su lugar.')
+    }
+
     await this.ensureBackupDir()
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -273,8 +284,12 @@ export class BackupService {
 
   /**
    * Get the raw database file buffer for download (SQLite)
+   * Only available when using local SQLite
    */
   async getDatabaseBuffer(): Promise<Buffer> {
+    if (isTurso() || !DB_PATH) {
+      throw new Error('Descarga de archivo SQLite no disponible con Turso. Use JSON backup.')
+    }
     return readFile(DB_PATH)
   }
 
@@ -291,11 +306,16 @@ export class BackupService {
 
   /**
    * Restore from uploaded SQLite backup buffer
+   * Only available when using local SQLite
    */
   async restoreFromBuffer(buffer: Buffer): Promise<{
     success: boolean
     message: string
   }> {
+    if (isTurso() || !DB_PATH) {
+      throw new Error('Restauración de archivo SQLite no disponible con Turso. Use JSON restore.')
+    }
+
     try {
       // Create safety backup before restoring
       const safetyBackup = await this.createJsonBackup(
@@ -356,13 +376,23 @@ export class BackupService {
 
   /**
    * Get database statistics
+   * Compatible with both local SQLite and Turso
    */
   async getDatabaseStats(): Promise<{
     fileSize: number
     tables: Array<{ name: string; count: number }>
     lastBackup: string | null
   }> {
-    const buffer = await readFile(DB_PATH)
+    // Get file size (only for local SQLite)
+    let fileSize = 0
+    if (DB_PATH && existsSync(DB_PATH)) {
+      const buffer = await readFile(DB_PATH)
+      fileSize = buffer.length
+    } else if (isTurso()) {
+      // For Turso, estimate size from record counts
+      fileSize = -1 // Indicates cloud database, size not available
+    }
+
     const tables = [
       { name: 'usuarios', count: await prisma.user.count() },
       { name: 'talleres', count: await prisma.workshop.count() },
@@ -379,7 +409,21 @@ export class BackupService {
     const history = await this.getBackupHistory()
     const lastBackup = history.length > 0 ? history[0].createdAt : null
 
-    return { fileSize: buffer.length, tables, lastBackup }
+    return { fileSize, tables, lastBackup }
+  }
+
+  /**
+   * Check if SQLite file operations are available
+   */
+  isSqliteFileAvailable(): boolean {
+    return !isTurso() && DB_PATH !== null
+  }
+
+  /**
+   * Check if using Turso cloud database
+   */
+  isUsingTurso(): boolean {
+    return isTurso()
   }
 
   // ─── Private Helpers ───────────────────────────────────────

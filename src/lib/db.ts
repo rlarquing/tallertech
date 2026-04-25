@@ -1,13 +1,6 @@
-import { PrismaClient } from '@prisma/client'
+// ============================================================
+// Database Client - Re-export from infrastructure layer
+// This file exists for backward compatibility with seed route
+// ============================================================
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: ['query'],
-  })
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+export { prisma as db } from '@/infrastructure/persistence/prisma/prisma-client'
