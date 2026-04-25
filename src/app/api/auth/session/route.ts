@@ -1,21 +1,6 @@
-import { NextResponse } from 'next/server';
-import { getSessionUser } from '@/lib/auth';
+import { NextRequest } from 'next/server'
+import { AuthController } from '@/interfaces/http/controllers/auth.controller'
 
-export async function GET() {
-  try {
-    const user = await getSessionUser();
-    if (!user) {
-      return NextResponse.json(
-        { isAuthenticated: false },
-        { status: 401 }
-      );
-    }
-    return NextResponse.json({ isAuthenticated: true, user });
-  } catch (error) {
-    console.error('Session error:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener sesión' },
-      { status: 500 }
-    );
-  }
+export async function GET(request: NextRequest) {
+  return AuthController.session(request)
 }

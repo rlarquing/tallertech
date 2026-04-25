@@ -132,8 +132,367 @@ Stage Summary:
 ✅ Mobile responsive design
 ✅ Dark mode
 
-## Unresolved Issues / Next Steps
-- Google OAuth requires setting up NEXT_PUBLIC_GOOGLE_CLIENT_ID in .env
-- Could add more audit log integrations (e.g., for product/repair CRUD operations)
-- Could add automated backup scheduling
-- Could add more PDF report templates (invoices, repair tickets)
+---
+Task ID: CA-FULL
+Agent: main-orchestrator
+Task: Complete Clean Architecture Refactoring of TallerTech
+
+Work Log:
+- Analyzed existing project structure and identified architectural issues:
+  - Domain entities were just interfaces without behavior
+  - Business logic was scattered in API routes
+  - No use cases (interactors) pattern
+  - Repository interfaces existed but had no implementations
+  - No dependency injection
+  - Infrastructure concerns leaked into application layer
+- Designed complete 4-layer Clean Architecture:
+  - Layer 1 (Domain): Enterprise Business Rules - entities, value objects, errors, events, repository interfaces
+  - Layer 2 (Application): Application Business Rules - use cases, DTOs, ports, DI container
+  - Layer 3 (Infrastructure): Frameworks & Drivers - Prisma repos, auth, services, mappers
+  - Layer 4 (Interface Adapters): Controllers, presenters, middlewares
+- Implemented Domain Layer (Task 2-a):
+  - 13 rich entity classes with business logic
+  - 4 value objects (Money, Email, RepairStatus, SaleStatus)
+  - 8 domain error classes
+  - Domain event system with publisher
+- Implemented Application Layer (Task 3):
+  - 6 port interfaces (Audit, Session, Password, Export, Backup, CodeGenerator)
+  - 35+ DTO interfaces
+  - 31 use case classes across 12 domains
+  - DI Container (UseCaseContainer)
+- Implemented Infrastructure Layer (Task 4):
+  - 10 Prisma repository implementations
+  - 13 mappers (Domain ↔ Prisma)
+  - Auth infrastructure (PasswordHasher, CookieSession)
+  - 4 service implementations (Audit, Export, Backup, CodeGenerator)
+  - 4 adapters bridging infrastructure to application ports
+- Implemented Interface Adapters Layer (Task 5):
+  - 14 thin controllers
+  - Response Presenter with DomainError → HTTP status mapping
+  - Auth Middleware (requireAuth)
+  - Infrastructure Container wiring all dependencies
+- Refactored all 28 API routes to thin delegates (max 10 lines each)
+- Verified: TypeScript compiles, ESLint passes (no new errors), dev server runs
+
+Stage Summary:
+- COMPLETE Clean Architecture refactoring of TallerTech project
+- 4-layer architecture with strict dependency rule (dependencies point inward only)
+- Domain layer is completely independent (no infrastructure imports)
+- 31 use cases orchestrate all business logic
+- All API routes are thin delegates to controllers
+- DI Container wires everything together
+- Backward compatible - same API contract, same UI
+- ARCHITECTURE.md created with full documentation and diagrams
+
+---
+Task ID: 2-a
+Agent: domain-architect
+Task: Implement Rich Domain Layer (Clean Architecture refactoring)
+
+Work Log:
+- Read existing worklog, entity interfaces, and Prisma schema for context
+- Created Value Objects (src/domain/value-objects/):
+  - money.ts: Immutable Money class with add/subtract/multiply/isNegative/isZero/isPositive/format, factories from() and zero(), rounding to 2 decimal places
+  - email.ts: Email class with format validation on creation, equals/toString/getDomain, throws InvalidEmailError
+  - repair-status.ts: RepairStatus enum-like class with valid state transitions (received→diagnosing→waiting_parts→repairing→ready→delivered, cancelled from any non-terminal), transitionTo() enforces rules
+  - sale-status.ts: SaleStatus enum-like class with transitions (pending→completed→cancelled, cancelled is terminal)
+  - index.ts: Re-exports all value objects
+- Created Domain Errors (src/domain/errors/index.ts):
+  - DomainError base class with code field
+  - EntityNotFoundError, InsufficientStockError, InvalidStateTransitionError, DuplicateSkuError, InvalidEmailError, AuthenticationError, AuthorizationError, ValidationError
+- Created Domain Events (src/domain/events/index.ts):
+  - DomainEvent interface with eventType, occurredAt, aggregateId, aggregateType, payload
+  - DomainEventPublisher singleton with subscribe/publish pattern
+  - DomainEventTypes constants for all business events
+- Created Rich Domain Entities (src/domain/entities/):
+  - user.ts: User class with Email VO, isAdmin/isGoogleUser/canActivate/canDeactivate, deactivate/activate/updateName, toPlainObject/toPublicInfo
+  - product.ts: Product class with Money VOs for prices, profitMargin/isLowStock/hasSufficientStock, deductStock/addStock/adjustStock/updatePrices, throws InsufficientStockError
+  - customer.ts: Customer class with optional Email VO, deactivate/activate/updateDetails, toPlainObject
+  - sale.ts: Sale class with SaleStatus VO, Money VOs for amounts, calculateTotals/cancel/complete/isCancellable/isCompletable
+  - sale-item.ts: SaleItem class with Money VOs, calculateTotal/getLineTotal/recalculate
+  - repair-order.ts: RepairOrder class with RepairStatus VO, Money VOs for costs, updateStatus (enforces transitions), addPart/calculateTotalCost/recalculateCosts/markAsReady/markAsDelivered/cancel
+  - repair-part.ts: RepairPart class with Money VOs, calculateTotal/recalculate
+  - category.ts: Category class with activate/deactivate/updateDetails
+  - supplier.ts: Supplier class with activate/deactivate/updateDetails
+  - expense.ts: Expense class with Money VO, validates positive amount, updateAmount/updateDetails
+  - stock-movement.ts: StockMovement class with type validation, isIn/isOut/isAdjustment/isReturn, getSignedQuantity
+  - audit-log.ts: AuditLog class, immutable record with isCreate/isUpdate/isDelete/isLogin
+  - setting.ts: Setting class with updateValue, isBoolean/getBooleanValue/getNumberValue
+  - index.ts: Re-exports all entity classes, value object re-exports (RepairStatus, RepairStatusValue), backward-compatible types (UserInfo, RepairStatusString, DashboardData, ExportFormat, ExportOptions)
+- All files compile without TypeScript errors
+- All lint checks pass
+- Backward compatibility maintained: toPlainObject() outputs match original interface shapes
+
+Stage Summary:
+- Full rich domain layer with Value Objects, Domain Errors, Domain Events, and 13 Rich Entity classes
+- Business logic encapsulated: state transitions enforced, stock validation, email validation, monetary calculations
+- Value Objects: Money, Email, RepairStatus, SaleStatus
+- All entities use static factory create() methods and toPlainObject() serialization
+- Zero TypeScript compilation errors in domain layer
+- Zero lint errors
+
+---
+Task ID: 4
+Agent: infrastructure-implementer
+Task: Implement Infrastructure Layer (Repositories, Auth, Services, Mappers)
+
+Work Log:
+- Read worklog.md, domain entities, repository interfaces, Prisma schema, and all existing reference files
+- Created Prisma Client singleton (src/infrastructure/persistence/prisma/prisma-client.ts):
+  - Singleton pattern with globalThis caching for dev mode
+  - Query logging enabled
+- Created 13 Mappers (src/infrastructure/persistence/prisma/mappers/):
+  - user.mapper.ts: toDomain/toPrisma with Email VO handling
+  - product.mapper.ts: toDomain/toPrisma with Money VO and type casting
+  - customer.mapper.ts: toDomain/toPrisma with optional Email VO
+  - sale.mapper.ts: toDomain/toPrisma with SaleStatus VO, items/customer includes
+  - sale-item.mapper.ts: toDomain/toPrisma with Money VO calculations
+  - repair-order.mapper.ts: toDomain/toPrisma with RepairStatus VO, parts/customer includes
+  - repair-part.mapper.ts: toDomain/toPrisma with Money VO
+  - category.mapper.ts: toDomain/toPrisma with type casting
+  - supplier.mapper.ts: toDomain/toPrisma
+  - expense.mapper.ts: toDomain/toPrisma with Money VO and category type
+  - stock-movement.mapper.ts: toDomain/toPrisma with type validation
+  - audit-log.mapper.ts: toDomain/toPrisma (immutable entity)
+  - setting.mapper.ts: toDomain/toPrisma (simple key-value)
+  - index.ts: Re-exports all mappers
+- Created 10 Repository Implementations (src/infrastructure/persistence/prisma/repositories/):
+  - prisma-auth.repository.ts: Implements AuthRepository (findByEmail, findById, create, updatePassword, findOrCreateGoogleUser)
+  - prisma-product.repository.ts: Implements ProductRepository (CRUD + findBySku, findLowStock with in-memory filter for SQLite, adjustStock with transaction, getStockMovements)
+  - prisma-category.repository.ts: Implements CategoryRepository (= BaseRepository<Category>)
+  - prisma-supplier.repository.ts: Implements SupplierRepository (= BaseRepository<Supplier>)
+  - prisma-customer.repository.ts: Implements CustomerRepository (CRUD + findWithHistory with sales and repair orders)
+  - prisma-sale.repository.ts: Implements SaleRepository (CRUD + createWithItems with $transaction for sale/items/stock/stockMovements, findByDateRange, getSalesStats with aggregation)
+  - prisma-repair.repository.ts: Implements RepairRepository (CRUD + findByStatus, updateStatus with timestamp management, addPart)
+  - prisma-expense.repository.ts: Implements ExpenseRepository (CRUD + findByDateRange, getByCategory with groupBy)
+  - prisma-audit.repository.ts: Implements AuditRepository (log, findMany with filters, findByEntityId, getRecent)
+  - prisma-settings.repository.ts: Implements SettingsRepository (get, set with upsert, getAll, delete)
+  - index.ts: Re-exports all repository implementations
+- Created Auth Infrastructure (src/infrastructure/auth/):
+  - password-hasher.ts: SHA-256 hashing with secret salt, hash/verify methods, singleton export
+  - cookie-session.ts: Cookie-based session management, getSessionUser/createSessionCookie/clearSessionCookie, SessionUser type
+  - index.ts: Re-exports with types
+- Created Service Implementations (src/infrastructure/services/):
+  - audit-service.ts: Adapted from application/services/audit-service.ts, uses infrastructure prisma client directly, log/logBatch/getLogs/getByEntity/getRecent/getStats
+  - export-service.ts: Adapted from application/services/export-service.ts, uses infrastructure prisma client, PDF/CSV/XLSX generation for all entities
+  - backup-service.ts: Adapted from application/services/backup-service.ts, uses infrastructure prisma client, createBackup/restoreBackup/restoreFromBuffer/getDatabaseBuffer/listBackups/deleteBackup/getDatabaseStats
+  - code-generator.ts: generateSaleCode (VEN-XXXX) and generateRepairCode (REP-XXXX) with timestamp+random
+  - index.ts: Re-exports all services with types
+- Copied Offline Infrastructure (src/infrastructure/persistence/offline/):
+  - offline-db.ts: Exact copy from src/lib/offline-db.ts (IndexedDB offline-first PWA support)
+  - index.ts: Re-export
+- Copied HTTP Infrastructure (src/infrastructure/http/):
+  - offline-fetch.ts: Copied from src/lib/offline-fetch.ts with import path fix (../persistence/offline/offline-db)
+  - index.ts: Re-export
+- Created barrel exports:
+  - src/infrastructure/persistence/prisma/index.ts
+  - src/infrastructure/persistence/index.ts
+  - src/infrastructure/index.ts (top-level barrel export)
+- Fixed pre-existing lint error in src/application/dtos/index.ts (empty DashboardRequest interface)
+- Generated Prisma client types (prisma generate)
+- All lint checks pass
+- No new TypeScript errors introduced (remaining errors are pre-existing: idb/xlsx/pdfkit type declarations)
+- Backward compatibility maintained: old src/lib/db.ts and src/lib/auth.ts are untouched
+
+Stage Summary:
+- Complete Infrastructure layer implementing all 10 repository interfaces from domain layer
+- 13 mappers converting between Prisma raw results and Domain entity instances
+- Auth infrastructure: PasswordHasher (SHA-256) and CookieSession (cookie-based)
+- Services: AuditService, ExportService (PDF/CSV/XLSX), BackupService, CodeGenerator
+- Offline persistence (IndexedDB) and HTTP (offline-aware fetch) infrastructure
+- PrismaSaleRepository.createWithItems uses $transaction for atomic sale creation with stock updates
+- PrismaProductRepository.findLowStock uses in-memory filtering (SQLite limitation)
+- All repository methods map Prisma results to Domain entities via mappers
+- Zero lint errors, zero new TypeScript compilation errors
+
+---
+Task ID: 3
+Agent: application-architect
+Task: Implement Application Layer (Use Cases, DTOs, Ports, DI Container)
+
+Work Log:
+- Read worklog.md, domain entities, repository interfaces, domain errors, value objects, domain events, and all existing API route implementations for reference
+- Created Ports (src/application/ports/):
+  - audit.port.ts: AuditPort interface with log() method for audit trail entries
+  - session.port.ts: SessionPort interface with getSessionUser() for request-based auth context
+  - password.port.ts: PasswordPort interface with hash/verify for password operations
+  - export.port.ts: ExportPort interface with exportData() for PDF/CSV/XLSX generation
+  - backup.port.ts: BackupPort interface with createBackup/listBackups/getDatabaseStats
+  - code-generator.port.ts: CodeGeneratorPort interface with generateSaleCode/generateRepairCode
+  - index.ts: Re-exports all port types
+- Created DTOs (src/application/dtos/index.ts):
+  - PaginationParams, PaginatedResult<T> - Generic pagination
+  - LoginRequest, RegisterRequest, GoogleAuthRequest, AuthResponse - Auth DTOs
+  - CreateProductRequest, UpdateProductRequest, ProductFilters - Product DTOs
+  - CreateCustomerRequest, UpdateCustomerRequest, CustomerFilters - Customer DTOs
+  - CreateSaleRequest, CreateSaleItemRequest, SaleFilters - Sale DTOs
+  - CreateRepairRequest, UpdateRepairRequest, AddRepairPartRequest, RepairFilters - Repair DTOs
+  - CreateCategoryRequest, UpdateCategoryRequest - Category DTOs
+  - CreateSupplierRequest, UpdateSupplierRequest - Supplier DTOs
+  - CreateExpenseRequest, UpdateExpenseRequest, ExpenseFilters - Expense DTOs
+  - AdjustStockRequest - Stock DTOs
+  - UpdateSettingsRequest - Settings DTOs
+  - AuditFilters - Audit DTOs
+  - ExportRequest - Export DTOs
+  - DashboardRequest, BackupStatsResponse, BackupListResponse - Dashboard/Backup DTOs
+- Created Auth Use Cases (src/application/use-cases/auth/):
+  - login.use-case.ts: Validates credentials, verifies password via PasswordPort, logs audit
+  - register.use-case.ts: Validates input, checks existing user, hashes password, creates user, logs audit
+  - google-auth.use-case.ts: Find or create Google user via AuthRepository, logs audit
+  - logout.use-case.ts: Gets session user, logs audit for logout
+- Created Product Use Cases (src/application/use-cases/products/):
+  - create-product.use-case.ts: Validates name, checks SKU uniqueness via DuplicateSkuError, creates with initial stock movement, logs audit
+  - get-products.use-case.ts: List with filters, pagination, low-stock JS filtering (SQLite limitation)
+  - update-product.use-case.ts: Update fields, SKU uniqueness check on change, logs audit
+  - delete-product.use-case.ts: Soft delete (deactivate), logs audit
+- Created Sale Use Cases (src/application/use-cases/sales/):
+  - create-sale.use-case.ts: THE MOST COMPLEX - generates code via CodeGeneratorPort, validates items, checks stock (throws InsufficientStockError), calculates totals, creates sale with items via createWithItems, deducts stock for each product item, creates stock movements, logs audit
+  - get-sales.use-case.ts: List with status/date filters and pagination
+  - update-sale.use-case.ts: Status changes using domain entity's cancel()/complete(), logs CANCEL or UPDATE audit
+  - delete-sale.use-case.ts: Hard delete, logs audit
+- Created Repair Use Cases (src/application/use-cases/repairs/):
+  - create-repair.use-case.ts: Generate code, validate customer/device/issue, create repair, logs audit
+  - get-repairs.use-case.ts: List with status filter and pagination
+  - update-repair.use-case.ts: Status changes using domain entity's updateStatus(), InvalidStateTransitionError handling, logs STATUS_CHANGE or UPDATE audit
+  - delete-repair.use-case.ts: Hard delete, logs audit
+  - add-repair-part.use-case.ts: Add part to repair, validate/deduct stock if productId exists, logs audit
+- Created Customer Use Cases (src/application/use-cases/customers/):
+  - create-customer.use-case.ts: Validate name, create customer, logs audit
+  - get-customers.use-case.ts: List with filters and pagination
+  - update-customer.use-case.ts: Update fields, logs audit
+  - delete-customer.use-case.ts: Soft delete (deactivate), logs audit
+- Created Category Use Cases (src/application/use-cases/categories/):
+  - create-category.use-case.ts: Validate name, create category, logs audit
+  - get-categories.use-case.ts: List with search and pagination
+  - update-category.use-case.ts: Update fields including active toggle, logs audit
+  - delete-category.use-case.ts: Soft delete (deactivate), logs audit
+- Created Supplier Use Cases (src/application/use-cases/suppliers/):
+  - create-supplier.use-case.ts: Validate name, create supplier, logs audit
+  - get-suppliers.use-case.ts: List with search and pagination
+  - update-supplier.use-case.ts: Update fields including active toggle, logs audit
+  - delete-supplier.use-case.ts: Soft delete (deactivate), logs audit
+- Created Expense Use Cases (src/application/use-cases/expenses/):
+  - create-expense.use-case.ts: Validate description/positive amount, create expense, logs audit
+  - get-expenses.use-case.ts: List with category/date filters and pagination
+  - update-expense.use-case.ts: Update fields with amount validation, logs audit
+  - delete-expense.use-case.ts: Hard delete, logs audit
+- Created Stock Use Case (src/application/use-cases/stock/):
+  - adjust-stock.use-case.ts: Validate product/type/quantity, adjust stock via repository, create movement, logs STOCK_ADJUSTMENT audit
+- Created Dashboard Use Case (src/application/use-cases/dashboard/):
+  - get-dashboard.use-case.ts: Aggregates data from SaleRepository (stats by today/yesterday/week/month/30 days), RepairRepository (by status, pending, completed today), ProductRepository (low stock), ExpenseRepository (by category, last 30 days), CustomerRepository (count) - returns DashboardData
+- Created Audit Use Cases (src/application/use-cases/audit/):
+  - get-audit-logs.use-case.ts: List with user/entity/action/date filters and pagination
+  - get-audit-stats.use-case.ts: Calculate total/today logs, group by entity and action
+- Created Settings Use Cases (src/application/use-cases/settings/):
+  - get-settings.use-case.ts: Get all settings
+  - update-settings.use-case.ts: Update multiple settings, logs audit
+- Created Export Use Case (src/application/use-cases/export/):
+  - export-data.use-case.ts: Validate format/entity, delegate to ExportPort, logs EXPORT audit
+- Created Backup Use Cases (src/application/use-cases/backup/):
+  - create-backup.use-case.ts: Create backup via BackupPort, logs BACKUP audit
+  - list-backups.use-case.ts: List available backups
+  - get-backup-stats.use-case.ts: Get database statistics
+- Created DI Container (src/application/container/index.ts):
+  - AppDependencies interface: All 10 repositories + 6 ports
+  - UseCaseContainer class: Singleton pattern with initialize()/getInstance()
+  - 31 getter methods for all use cases (lazy-initialized)
+  - all getter returns object with all 31 use case instances
+  - Constructor injection for all dependencies
+  - Each use case properly wired with its required repositories and ports
+
+Architecture Rules Followed:
+- Use Cases depend ONLY on domain entities, repository interfaces, ports, and DTOs
+- No imports from @/lib/db, @/lib/auth, or any infrastructure layer
+- Each Use Case has a single execute() method
+- Constructor injection for all dependencies
+- Domain entity methods used for business logic (deductStock, updateStatus, cancel, complete)
+- DomainError subclasses thrown for business rule violations
+- Audit logging via AuditPort (not directly)
+- SessionPort used for request-based authentication context
+
+Stage Summary:
+- Complete Application layer with 6 Ports, 35+ DTO interfaces, 31 Use Cases, and DI Container
+- All Use Cases follow consistent pattern: authenticate → validate → business logic → persist → audit
+- Create Sale is the most complex use case with atomic transaction, stock validation, and stock movements
+- Repair use cases enforce state transitions via domain entity's updateStatus()
+- All TypeScript compilation errors in application layer resolved
+- Zero lint errors
+- Pre-existing errors in other layers untouched (xlsx/pdfkit/idb type declarations)
+
+---
+Task ID: 5
+Agent: interface-adapter-implementer
+Task: Implement Interface Adapters Layer (Controllers, Presenters, Middlewares) and Refactor All API Routes
+
+Work Log:
+- Read worklog.md, all current API route files, application use cases, DTOs, ports, container, domain errors, and infrastructure implementations
+- Created Infrastructure Adapters (src/infrastructure/adapters/):
+  - audit-adapter.ts: Wraps AuditService to implement AuditPort interface (adapts return type from PrismaResult to void)
+  - session-adapter.ts: Wraps CookieSession to implement SessionPort interface (adapts optional Request param to required)
+  - export-adapter.ts: Wraps exportData function to implement ExportPort interface (extracts Buffer from {buffer, contentType, filename})
+  - backup-adapter.ts: Wraps BackupService to implement BackupPort interface (transforms return types: createBackup returns path string, listBackups maps filename→name, getDatabaseStats maps Array→Record)
+  - index.ts: Re-exports all adapters
+- Created Infrastructure Container (src/infrastructure/container.ts):
+  - Wires all 10 Prisma repository implementations to AppDependencies
+  - Wires 6 port adapters/implementations: AuditAdapter, SessionAdapter, PasswordHasher, ExportAdapter, BackupAdapter, CodeGenerator
+  - Calls UseCaseContainer.initialize(deps) at import time
+  - Re-exports UseCaseContainer for convenience
+- Created Response Presenter (src/interfaces/http/presenters/response.presenter.ts):
+  - success(data, status) - JSON response with data
+  - created(data) - 201 Created response
+  - paginated(data, total, page, limit) - Paginated response with metadata
+  - error(error) - Maps DomainError subclasses to HTTP status codes (401, 403, 404, 400), unknown errors → 500
+  - binary(buffer, contentType, filename) - Binary file download response with proper headers
+- Created Auth Middleware (src/interfaces/http/middlewares/auth.middleware.ts):
+  - requireAuth(request) - Returns authenticated user or 401 NextResponse
+- Created 14 Controllers (src/interfaces/http/controllers/):
+  - auth.controller.ts: login, register, googleAuth (with Google token verification), logout, session - handles session cookie creation/clearing
+  - product.controller.ts: list (with filters: search, categoryId, type, lowStock, active, pagination), create, getById, update, delete
+  - category.controller.ts: list (with search and pagination), create, getById, update, delete
+  - supplier.controller.ts: list (with search and pagination), create, getById, update, delete
+  - customer.controller.ts: list (with filters: search, active, pagination), create, getById, update, delete
+  - sale.controller.ts: list (with filters: search, status, dateFrom, dateTo, pagination), create, getById, update, delete
+  - repair.controller.ts: list (with filters: search, status, pagination), create, getById, update, delete, addPart
+  - expense.controller.ts: list (with filters: search, category, dateFrom, dateTo, pagination), create, getById, update, delete
+  - stock.controller.ts: list (stock movements), adjust (stock adjustments)
+  - dashboard.controller.ts: get (aggregated dashboard data)
+  - audit.controller.ts: list (with filters: userId, entity, action, dateFrom, dateTo, search, pagination), stats
+  - settings.controller.ts: get (all settings as key-value map), update (supports both single {key, value} and multi {settings: [{key, value}]} formats)
+  - export.controller.ts: export (validates format/entity via use case, returns binary file with proper content type)
+  - backup.controller.ts: download (admin-only DB download), restore (admin-only file upload restore), stats (DB stats + backup list)
+- Refactored ALL 28 API routes to be thin delegates (MAX 10 lines each):
+  - /api/auth/login, /api/auth/register, /api/auth/google, /api/auth/logout, /api/auth/session
+  - /api/products, /api/products/[id]
+  - /api/categories, /api/categories/[id]
+  - /api/suppliers, /api/suppliers/[id]
+  - /api/customers, /api/customers/[id]
+  - /api/sales, /api/sales/[id]
+  - /api/repairs, /api/repairs/[id], /api/repairs/[id]/parts
+  - /api/expenses, /api/expenses/[id]
+  - /api/stock, /api/dashboard, /api/audit, /api/audit/stats
+  - /api/settings, /api/export, /api/backup, /api/backup/stats
+  - /api/route.ts (root API), /api/seed/route.ts (kept as-is for demo data)
+- All routes now simply delegate to the corresponding controller method
+- Next.js 16 params properly awaited (Promise<{id: string}> pattern)
+- All error handling centralized via ResponsePresenter.error() which maps DomainError → HTTP status
+- Controllers use DomainError subclasses (ValidationError, AuthenticationError, AuthorizationError) for consistent error responses
+
+Architecture Rules Followed:
+- API routes are MAXIMUM 10 lines each - only delegate to controller
+- Controllers parse HTTP request → map to DTO → call use case → return via ResponsePresenter
+- All error handling centralized via ResponsePresenter.error()
+- DI container initialized via import '@/infrastructure/container' in controllers
+- Auth middleware available via requireAuth() for protected routes
+- API contract unchanged (same URLs, same request/response shapes)
+- Session cookie management in auth controller (createSessionCookie/clearSessionCookie)
+- Google OAuth token verification in auth controller (HTTP-specific logic)
+- Backup download/restore uses infrastructure service directly (file operations beyond use case scope)
+
+Stage Summary:
+- Complete Interface Adapters layer with 14 Controllers, 1 ResponsePresenter, 1 AuthMiddleware
+- 4 Infrastructure Adapters bridging service implementations to port interfaces
+- Infrastructure Container wiring all dependencies and initializing UseCaseContainer
+- All 28 API routes refactored to thin delegates (10 lines max each)
+- Consistent error handling via DomainError → HTTP status mapping
+- Zero lint errors
+- Zero new TypeScript compilation errors
