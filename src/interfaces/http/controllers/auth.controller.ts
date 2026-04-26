@@ -9,9 +9,19 @@ import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
 import { CookieSession } from '@/infrastructure/auth/cookie-session'
 import { ValidationError, AuthenticationError } from '@/domain/errors'
+import { OAuth2Client } from 'google-auth-library'
 
 const cookieSession = new CookieSession()
 const useCases = UseCaseContainer.getInstance()
+
+// Google OAuth2 client for token verification
+// Falls back to tokeninfo endpoint if GOOGLE_CLIENT_ID is not set
+const googleClientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
+let googleClient: OAuth2Client | null = null
+
+if (googleClientId) {
+  googleClient = new OAuth2Client(googleClientId)
+}
 
 export class AuthController {
   static async login(request: NextRequest) {
@@ -98,6 +108,10 @@ export class AuthController {
     }
   }
 
+  /**
+   * Verify Google ID token using google-auth-library (recommended approach).
+   * Falls back to the tokeninfo endpoint if the client is not configured.
+   */
   private static async verifyGoogleToken(token: string): Promise<{
     sub: string
     email: string
@@ -106,12 +120,39 @@ export class AuthController {
     email_verified: boolean
   } | null> {
     try {
+      // Method 1: Use google-auth-library for proper verification
+      if (googleClient) {
+        const ticket = await googleClient.verifyIdToken({
+          idToken: token,
+          audience: googleClientId,
+        })
+        const payload = ticket.getPayload()
+        if (!payload || !payload.email || !payload.email_verified) {
+          return null
+        }
+        return {
+          sub: payload.sub,
+          email: payload.email,
+          name: payload.name || payload.email.split('@')[0],
+          picture: payload.picture || undefined,
+          email_verified: payload.email_verified,
+        }
+      }
+
+      // Method 2: Fallback to tokeninfo endpoint (for development without client ID)
       const response = await fetch(
         `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`,
       )
       if (!response.ok) return null
       const data = await response.json()
       if (!data.email || !data.email_verified) return null
+
+      // Verify audience matches our client ID
+      if (googleClientId && data.aud !== googleClientId) {
+        console.warn('Google token audience mismatch:', data.aud, 'vs', googleClientId)
+        return null
+      }
+
       return {
         sub: data.sub,
         email: data.email,
@@ -119,7 +160,8 @@ export class AuthController {
         picture: data.picture || undefined,
         email_verified: data.email_verified,
       }
-    } catch {
+    } catch (error) {
+      console.error('Google token verification failed:', error)
       return null
     }
   }

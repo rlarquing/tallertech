@@ -1,41 +1,39 @@
 // ============================================================
-// Prisma Client Singleton - Turso/libSQL Driver Adapter
+// Prisma Client Singleton with Turso/libSQL Support
 // Clean Architecture: Infrastructure Layer - Persistence
-// Supports both local SQLite (dev) and Turso cloud (production)
-// In Prisma 7, a driver adapter is required for all connections
+//
+// Supports two modes:
+// 1. Local SQLite: DATABASE_URL=file:./path/to/db (no Turso vars)
+// 2. Turso (libSQL): TURSO_DATABASE_URL + TURSO_AUTH_TOKEN set
 // ============================================================
 
-import { PrismaClient } from '@/generated/prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { PrismaLibSql } from '@prisma/adapter-libsql'
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
+import { createClient } from '@libsql/client'
 
 function createPrismaClient(): PrismaClient {
-  const databaseUrl = process.env.DATABASE_URL || 'file:./db/custom.db'
+  const tursoUrl = process.env.TURSO_DATABASE_URL
+  const tursoAuthToken = process.env.TURSO_AUTH_TOKEN
 
-  // Turso cloud database (libsql:// protocol)
-  if (databaseUrl.startsWith('libsql://')) {
-    const adapter = new PrismaLibSql({
-      url: databaseUrl,
-      authToken: process.env.DATABASE_AUTH_TOKEN,
-      intMode: 'bigint',
+  // If Turso credentials are provided, use the libSQL adapter
+  if (tursoUrl) {
+    const libsql = createClient({
+      url: tursoUrl,
+      authToken: tursoAuthToken || undefined,
     })
+
+    const adapter = new PrismaLibSql(libsql)
     return new PrismaClient({ adapter })
   }
 
-  // Local SQLite file (file: protocol)
-  // Prisma 7 requires a driver adapter - use libsql for local files too
-  const filePath = databaseUrl.startsWith('file:')
-    ? databaseUrl.slice(5) // Remove 'file:' prefix
-    : databaseUrl
-
-  const adapter = new PrismaLibSql({
-    url: `file:${filePath}`,
-    intMode: 'bigint',
+  // Fallback: local SQLite (for development)
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query'] : ['error'],
   })
-  return new PrismaClient({ adapter })
+}
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient()

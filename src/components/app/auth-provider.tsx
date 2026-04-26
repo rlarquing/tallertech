@@ -160,11 +160,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleGoogleLogin = async () => {
     setError(null)
+
+    // Check if Google Client ID is configured
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId) {
+      setError('Google Sign-In no está configurado. Use credenciales.')
+      return
+    }
+
     setSubmitting(true)
 
     try {
       // Load Google Identity Services
-      if (typeof window === 'undefined' || !window.google) {
+      if (typeof window === 'undefined' || !window.google?.accounts?.id) {
         setError('Google Sign-In no está disponible. Use credenciales.')
         setSubmitting(false)
         return
@@ -172,7 +180,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       window.google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          setError('No se pudo mostrar Google Sign-In. Use credenciales.')
+          // Try to use the popup flow as fallback
+          try {
+            window.google.accounts.id.prompt()
+          } catch {
+            setError('No se pudo mostrar Google Sign-In. Use credenciales.')
+          }
           setSubmitting(false)
         }
       })
@@ -224,13 +237,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    if (!clientId) return // Skip initialization if no client ID
+
     const initGoogle = () => {
       if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
-          callback: handleGoogleCredential,
-          auto_select: false,
-        })
+        try {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleGoogleCredential,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          })
+        } catch (err) {
+          console.error('Failed to initialize Google Sign-In:', err)
+        }
       }
     }
 
@@ -241,6 +262,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       script.async = true
       script.defer = true
       script.onload = initGoogle
+      script.onerror = () => console.error('Failed to load Google Identity Services script')
       document.head.appendChild(script)
     } else {
       initGoogle()

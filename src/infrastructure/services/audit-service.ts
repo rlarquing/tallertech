@@ -27,6 +27,7 @@ export interface AuditEntry {
   entityId?: string | null
   details?: string | null
   ip?: string | null
+  workshopId?: string | null
 }
 
 export class AuditService {
@@ -35,8 +36,27 @@ export class AuditService {
    */
   async log(entry: AuditEntry) {
     try {
+      // If no workshopId provided, try to find the user's first workshop
+      let workshopId = entry.workshopId
+      if (!workshopId) {
+        const membership = await prisma.workshopUser.findFirst({
+          where: { userId: entry.userId },
+          select: { workshopId: true },
+        })
+        workshopId = membership?.workshopId
+      }
+
+      // If still no workshopId, try to find any workshop (system-level audit)
+      if (!workshopId) {
+        const firstWorkshop = await prisma.workshop.findFirst({
+          select: { id: true },
+        })
+        workshopId = firstWorkshop?.id || 'system'
+      }
+
       return await prisma.auditLog.create({
         data: {
+          workshopId,
           userId: entry.userId,
           userName: entry.userName,
           action: entry.action,
@@ -58,16 +78,38 @@ export class AuditService {
    */
   async logBatch(entries: AuditEntry[]) {
     try {
+      // Resolve workshop IDs for entries that don't have one
+      const resolvedEntries = await Promise.all(
+        entries.map(async (entry) => {
+          let workshopId = entry.workshopId
+          if (!workshopId) {
+            const membership = await prisma.workshopUser.findFirst({
+              where: { userId: entry.userId },
+              select: { workshopId: true },
+            })
+            workshopId = membership?.workshopId
+          }
+          if (!workshopId) {
+            const firstWorkshop = await prisma.workshop.findFirst({
+              select: { id: true },
+            })
+            workshopId = firstWorkshop?.id || 'system'
+          }
+          return {
+            workshopId,
+            userId: entry.userId,
+            userName: entry.userName,
+            action: entry.action,
+            entity: entry.entity,
+            entityId: entry.entityId,
+            details: entry.details,
+            ip: entry.ip,
+          }
+        })
+      )
+
       return await prisma.auditLog.createMany({
-        data: entries.map((entry) => ({
-          userId: entry.userId,
-          userName: entry.userName,
-          action: entry.action,
-          entity: entry.entity,
-          entityId: entry.entityId,
-          details: entry.details,
-          ip: entry.ip,
-        })),
+        data: resolvedEntries,
       })
     } catch (error) {
       console.error('[AuditService] Failed to log batch:', error)
@@ -85,11 +127,13 @@ export class AuditService {
     dateFrom?: string
     dateTo?: string
     search?: string
+    workshopId?: string
     skip?: number
     take?: number
   }) {
     const where: Record<string, unknown> = {}
 
+    if (params.workshopId) where.workshopId = params.workshopId
     if (params.userId) where.userId = params.userId
     if (params.entity) where.entity = params.entity
     if (params.action) where.action = params.action
@@ -146,11 +190,13 @@ export class AuditService {
   /**
    * Get audit statistics
    */
-  async getStats() {
+  async getStats(workshopId?: string) {
+    const baseWhere = workshopId ? { workshopId } : {}
     const [totalLogs, todayLogs, byEntity, byAction] = await Promise.all([
-      prisma.auditLog.count(),
+      prisma.auditLog.count({ where: baseWhere }),
       prisma.auditLog.count({
         where: {
+          ...baseWhere,
           createdAt: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)),
           },
@@ -159,12 +205,14 @@ export class AuditService {
       prisma.auditLog.groupBy({
         by: ['entity'],
         _count: { entity: true },
+        where: baseWhere,
         orderBy: { _count: { entity: 'desc' } },
         take: 10,
       }),
       prisma.auditLog.groupBy({
         by: ['action'],
         _count: { action: true },
+        where: baseWhere,
         orderBy: { _count: { action: 'desc' } },
         take: 10,
       }),
