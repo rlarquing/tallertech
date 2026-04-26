@@ -19,7 +19,8 @@ const BACKUP_DIR = path.join(process.cwd(), 'db', 'backups')
  * Check if we're running with Turso (remote database)
  */
 function isTursoMode(): boolean {
-  return !!process.env.TURSO_DATABASE_URL
+  const url = process.env.DATABASE_URL || ''
+  return url.startsWith('libsql://') || url.startsWith('https://')
 }
 
 export class BackupService {

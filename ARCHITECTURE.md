@@ -61,7 +61,6 @@ src/
 │   │   ├── auth/
 │   │   │   ├── login.use-case.ts
 │   │   │   ├── register.use-case.ts
-│   │   │   ├── google-auth.use-case.ts
 │   │   │   └── logout.use-case.ts
 │   │   ├── products/
 │   │   │   ├── create-product.use-case.ts

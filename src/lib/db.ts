@@ -1,6 +1,10 @@
 // ============================================================
 // Database Client Singleton with Turso/libSQL Support
 // Used by seed route and legacy code paths
+//
+// Supports two modes:
+// 1. Local SQLite: DATABASE_URL=file:./path/to/db (no auth token)
+// 2. Turso (libSQL): DATABASE_URL=libsql://... + DATABASE_AUTH_TOKEN
 // ============================================================
 
 import { PrismaClient } from '@prisma/client'
@@ -8,21 +12,21 @@ import { PrismaLibSql } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 
 function createPrismaClient(): PrismaClient {
-  const tursoUrl = process.env.TURSO_DATABASE_URL
-  const tursoAuthToken = process.env.TURSO_AUTH_TOKEN
+  const databaseUrl = process.env.DATABASE_URL || 'file:./db/custom.db'
+  const authToken = process.env.DATABASE_AUTH_TOKEN
 
-  // If Turso credentials are provided, use the libSQL adapter
-  if (tursoUrl) {
+  // If DATABASE_URL points to a libsql/turso remote database, use the adapter
+  if (databaseUrl.startsWith('libsql://') || databaseUrl.startsWith('https://')) {
     const libsql = createClient({
-      url: tursoUrl,
-      authToken: tursoAuthToken || undefined,
+      url: databaseUrl,
+      authToken: authToken || undefined,
     })
 
     const adapter = new PrismaLibSql(libsql)
     return new PrismaClient({ adapter })
   }
 
-  // Fallback: local SQLite (for development)
+  // Fallback: local SQLite file (for development)
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query'] : ['error'],
   })

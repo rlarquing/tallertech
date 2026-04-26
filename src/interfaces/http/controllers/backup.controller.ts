@@ -18,7 +18,8 @@ const auditAdapter = new AuditAdapter()
 const cookieSession = new CookieSession()
 
 function isTursoMode(): boolean {
-  return !!process.env.TURSO_DATABASE_URL
+  const url = process.env.DATABASE_URL || ''
+  return url.startsWith('libsql://') || url.startsWith('https://')
 }
 
 export class BackupController {
