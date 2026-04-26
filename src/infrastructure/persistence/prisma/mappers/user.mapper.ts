@@ -17,7 +17,6 @@ export class UserMapper {
     role: string
     active: boolean
     image: string | null
-    provider: string
     createdAt: Date
     updatedAt: Date
   }): User {
@@ -28,7 +27,6 @@ export class UserMapper {
       password: prismaUser.password,
       role: prismaUser.role as 'admin' | 'employee',
       image: prismaUser.image,
-      provider: prismaUser.provider as 'credentials' | 'google',
       createdAt: prismaUser.createdAt,
       updatedAt: prismaUser.updatedAt,
     })
@@ -45,7 +43,6 @@ export class UserMapper {
     role: string
     active: boolean
     image: string | null
-    provider: string
     createdAt: Date
     updatedAt: Date
   } {
@@ -58,7 +55,6 @@ export class UserMapper {
       role: plain.role,
       active: plain.active,
       image: plain.image ?? null,
-      provider: plain.provider,
       createdAt: plain.createdAt,
       updatedAt: plain.updatedAt,
     }

@@ -30,9 +30,8 @@ export interface BaseRepository<T> {
 export interface AuthRepository {
   findByEmail(email: string): Promise<User | null>
   findById(id: string): Promise<User | null>
-  create(data: { email: string; name: string; password: string; role?: string; provider?: string; image?: string }): Promise<User>
+  create(data: { email: string; name: string; password: string; role?: string; image?: string }): Promise<User>
   updatePassword(id: string, password: string): Promise<void>
-  findOrCreateGoogleUser(data: { email: string; name: string; image?: string }): Promise<User>
 }
 
 // ─── Product Repository ──────────────────────────────────────────

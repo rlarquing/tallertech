@@ -32,12 +32,6 @@ export interface RegisterRequest {
   password: string
 }
 
-export interface GoogleAuthRequest {
-  email: string
-  name: string
-  image?: string
-}
-
 export interface AuthResponse {
   user: {
     id: string
@@ -45,7 +39,6 @@ export interface AuthResponse {
     name: string
     role: string
     image?: string | null
-    provider?: string
   }
   message: string
 }

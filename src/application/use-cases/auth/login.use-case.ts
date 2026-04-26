@@ -32,11 +32,7 @@ export class LoginUseCase {
       throw new AuthenticationError('Usuario desactivado')
     }
 
-    // 4. Verify password (skip for Google users)
-    if (user.provider === 'google') {
-      throw new AuthenticationError('Este usuario se autentica con Google')
-    }
-
+    // 4. Verify password
     if (!this.passwordPort.verify(request.password, user.password)) {
       throw new AuthenticationError('Credenciales inválidas')
     }

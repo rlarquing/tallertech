@@ -10,6 +10,5 @@ export interface SessionPort {
     name: string
     role: string
     image?: string | null
-    provider?: string
   } | null>
 }

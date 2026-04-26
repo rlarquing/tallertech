@@ -29,7 +29,6 @@ import type {
 // Import all use cases
 import { LoginUseCase } from '@/application/use-cases/auth/login.use-case'
 import { RegisterUseCase } from '@/application/use-cases/auth/register.use-case'
-import { GoogleAuthUseCase } from '@/application/use-cases/auth/google-auth.use-case'
 import { LogoutUseCase } from '@/application/use-cases/auth/logout.use-case'
 
 import { CreateProductUseCase } from '@/application/use-cases/products/create-product.use-case'
@@ -161,13 +160,6 @@ export class UseCaseContainer {
       this.deps.authRepository,
       this.deps.auditPort,
       this.deps.passwordPort,
-    )
-  }
-
-  get googleAuth() {
-    return new GoogleAuthUseCase(
-      this.deps.authRepository,
-      this.deps.auditPort,
     )
   }
 
@@ -632,7 +624,6 @@ export class UseCaseContainer {
       // Auth
       login: this.login,
       register: this.register,
-      googleAuth: this.googleAuth,
       logout: this.logout,
       // Products
       createProduct: this.createProduct,

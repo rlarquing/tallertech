@@ -19,7 +19,6 @@ export class SessionAdapter implements SessionPort {
     name: string
     role: string
     image?: string | null
-    provider?: string
   } | null> {
     return this.cookieSession.getSessionUser(request)
   }

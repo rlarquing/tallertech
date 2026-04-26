@@ -36,7 +36,6 @@ export interface UserInfo {
   name: string
   role: string
   image?: string | null
-  provider?: string
 }
 
 /**

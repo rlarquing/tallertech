@@ -39,7 +39,6 @@ export class RegisterUseCase {
       email: request.email,
       name: request.name,
       password: hashedPassword,
-      provider: 'credentials',
     })
 
     // 5. Log audit trail

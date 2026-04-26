@@ -13,7 +13,6 @@ export class User {
     public role: 'admin' | 'employee',
     public active: boolean,
     public readonly image: string | null,
-    public readonly provider: 'credentials' | 'google',
     public readonly password: string,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
@@ -25,7 +24,6 @@ export class User {
     name: string
     password: string
     role?: 'admin' | 'employee'
-    provider?: 'credentials' | 'google'
     image?: string | null
     createdAt?: Date
     updatedAt?: Date
@@ -37,7 +35,6 @@ export class User {
       params.role || 'admin',
       true,
       params.image ?? null,
-      params.provider || 'credentials',
       params.password,
       params.createdAt || new Date(),
       params.updatedAt || new Date(),
@@ -47,11 +44,6 @@ export class User {
   /** Check if this user is an admin */
   isAdmin(): boolean {
     return this.role === 'admin'
-  }
-
-  /** Check if this user authenticated via Google (no password) */
-  isGoogleUser(): boolean {
-    return this.provider === 'google' && !this.password
   }
 
   /** Check if this user can be activated */
@@ -96,7 +88,6 @@ export class User {
       role: this.role,
       active: this.active,
       image: this.image,
-      provider: this.provider,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }
@@ -110,7 +101,6 @@ export class User {
       name: this.name,
       role: this.role,
       image: this.image,
-      provider: this.provider,
     }
   }
 }

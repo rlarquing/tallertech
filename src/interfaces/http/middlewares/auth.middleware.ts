@@ -11,7 +11,7 @@ const sessionService = new CookieSession()
 export async function requireAuth(
   request: NextRequest,
 ): Promise<
-  | { id: string; email: string; name: string; role: string; image?: string | null; provider?: string }
+  { id: string; email: string; name: string; role: string; image?: string | null }
   | NextResponse
 > {
   const user = await sessionService.getSessionUser(request)

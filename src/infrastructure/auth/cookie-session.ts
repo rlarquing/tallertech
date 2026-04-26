@@ -13,7 +13,6 @@ export interface SessionUser {
   name: string
   role: string
   image?: string | null
-  provider?: string
 }
 
 export class CookieSession {
