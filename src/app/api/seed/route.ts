@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
+import { ensureSchemaExists } from '@/lib/db-setup';
 
 export async function POST(request: NextRequest) {
   try {
+    // Ensure database schema exists (creates tables if needed)
+    await ensureSchemaExists();
+
     const { searchParams } = new URL(request.url);
     const force = searchParams.get('force') === 'true';
 
