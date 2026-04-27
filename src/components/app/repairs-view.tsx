@@ -69,6 +69,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { repairSchema, repairUpdateSchema, repairPartSchema } from '@/lib/validations'
 
 // ============================================================
 // Types
@@ -213,6 +214,11 @@ export function RepairsView() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [customersLoading, setCustomersLoading] = useState(false)
 
+  // Validation errors
+  const [newRepairErrors, setNewRepairErrors] = useState<Record<string, string>>({})
+  const [editRepairErrors, setEditRepairErrors] = useState<Record<string, string>>({})
+  const [addPartErrors, setAddPartErrors] = useState<Record<string, string>>({})
+
   // New repair form
   const [formCustomerId, setFormCustomerId] = useState('')
   const [formCustomerName, setFormCustomerName] = useState('')
@@ -230,6 +236,9 @@ export function RepairsView() {
   const [editLaborCost, setEditLaborCost] = useState('')
   const [editPaymentMethod, setEditPaymentMethod] = useState('efectivo')
   const [editPriority, setEditPriority] = useState('normal')
+
+  // Add part form
+  const [partQuantity, setPartQuantity] = useState('1')
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>()
   const customerSearchTimeout = useRef<ReturnType<typeof setTimeout>>()
@@ -377,10 +386,27 @@ export function RepairsView() {
   // ============================================================
 
   const createRepair = async () => {
-    if (!formCustomerId || !formDevice || !formIssue) {
-      toast.error('Cliente, dispositivo y problema son requeridos')
+    const formData = {
+      customerId: formCustomerId,
+      device: formDevice,
+      brand: formBrand || undefined,
+      imei: formImei || undefined,
+      issue: formIssue,
+      priority: formPriority,
+      costEstimate: parseFloat(formCostEstimate) || 0,
+      paymentMethod: 'efectivo' as const,
+    }
+    const result = repairSchema.safeParse(formData)
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path.join('.')
+        if (!errors[key]) errors[key] = issue.message
+      }
+      setNewRepairErrors(errors)
       return
     }
+    setNewRepairErrors({})
     setCreating(true)
     try {
       const res = await offlineFetch('/api/repairs', {
@@ -423,6 +449,7 @@ export function RepairsView() {
     setFormCostEstimate('')
     setCustomerSearch('')
     setCustomers([])
+    setNewRepairErrors({})
   }
 
   // ============================================================
@@ -432,6 +459,7 @@ export function RepairsView() {
   const openEditRepair = async (repairId: string) => {
     setDetailLoading(true)
     setEditRepairOpen(true)
+    setEditRepairErrors({})
     try {
       const res = await offlineFetch(`/api/repairs/${repairId}`)
       if (res.ok) {
@@ -453,6 +481,25 @@ export function RepairsView() {
 
   const saveRepair = async () => {
     if (!editingRepair) return
+    const formData = {
+      diagnosis: editDiagnosis || undefined,
+      solution: editSolution || undefined,
+      status: editStatus,
+      priority: editPriority,
+      laborCost: parseFloat(editLaborCost) || 0,
+      paymentMethod: editPaymentMethod,
+    }
+    const result = repairUpdateSchema.safeParse(formData)
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path.join('.')
+        if (!errors[key]) errors[key] = issue.message
+      }
+      setEditRepairErrors(errors)
+      return
+    }
+    setEditRepairErrors({})
     setSaving(true)
     try {
       const res = await offlineFetch(`/api/repairs/${editingRepair.id}`, {
@@ -531,6 +578,23 @@ export function RepairsView() {
 
   const addPart = async (product: Product, quantity: number) => {
     if (!addPartsRepairId) return
+    const partData = {
+      productId: product.id,
+      name: product.name,
+      quantity,
+      unitPrice: product.salePrice,
+    }
+    const result = repairPartSchema.safeParse(partData)
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path.join('.')
+        if (!errors[key]) errors[key] = issue.message
+      }
+      setAddPartErrors(errors)
+      return
+    }
+    setAddPartErrors({})
     setAddingPart(true)
     try {
       const res = await offlineFetch(`/api/repairs/${addPartsRepairId}/parts`, {
@@ -738,7 +802,7 @@ export function RepairsView() {
                             <DropdownMenuItem onClick={() => printRepair(repair)}>
                               <Printer className="mr-2 size-4" /> Imprimir
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { setAddPartsRepairId(repair.id); setAddPartsOpen(true) }}>
+                            <DropdownMenuItem onClick={() => { setAddPartsRepairId(repair.id); setAddPartsOpen(true); setPartQuantity('1'); setAddPartErrors({}) }}>
                               <Package className="mr-2 size-4" /> Agregar Pieza
                             </DropdownMenuItem>
                             {repair.status !== 'delivered' && repair.status !== 'cancelled' && (
@@ -840,7 +904,7 @@ export function RepairsView() {
                       <DropdownMenuItem onClick={() => printRepair(repair)}>
                         <Printer className="mr-2 size-4" /> Imprimir
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setAddPartsRepairId(repair.id); setAddPartsOpen(true) }}>
+                      <DropdownMenuItem onClick={() => { setAddPartsRepairId(repair.id); setAddPartsOpen(true); setPartQuantity('1'); setAddPartErrors({}) }}>
                         <Package className="mr-2 size-4" /> Agregar Pieza
                       </DropdownMenuItem>
                       {repair.status !== 'delivered' && repair.status !== 'cancelled' && (
@@ -901,7 +965,7 @@ export function RepairsView() {
                 <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
                   <User className="size-4 text-muted-foreground" />
                   <span className="text-sm font-medium flex-1">{formCustomerName}</span>
-                  <Button variant="ghost" size="icon" className="size-6" onClick={() => { setFormCustomerId(''); setFormCustomerName('') }}>
+                  <Button variant="ghost" size="icon" className="size-6" onClick={() => { setFormCustomerId(''); setFormCustomerName(''); setNewRepairErrors((prev) => { const next = {...prev}; delete next.customerId; return next }) }}>
                     <X className="size-3" />
                   </Button>
                 </div>
@@ -924,7 +988,7 @@ export function RepairsView() {
                           <button
                             key={c.id}
                             className="w-full flex items-center gap-2 rounded-md p-2 text-left hover:bg-muted transition-colors text-sm"
-                            onClick={() => { setFormCustomerId(c.id); setFormCustomerName(c.name); setCustomerSearch(''); setCustomers([]) }}
+                            onClick={() => { setFormCustomerId(c.id); setFormCustomerName(c.name); setCustomerSearch(''); setCustomers([]); setNewRepairErrors((prev) => { const next = {...prev}; delete next.customerId; return next }) }}
                           >
                             <User className="size-4 text-muted-foreground" />
                             <span>{c.name}</span>
@@ -936,13 +1000,15 @@ export function RepairsView() {
                   )}
                 </>
               )}
+              {newRepairErrors.customerId && <p className="text-sm text-destructive">{newRepairErrors.customerId}</p>}
             </div>
 
             {/* Device */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Dispositivo *</Label>
-                <Input placeholder="Ej: iPhone 13" value={formDevice} onChange={(e) => setFormDevice(e.target.value)} />
+                <Input placeholder="Ej: iPhone 13" value={formDevice} onChange={(e) => { setFormDevice(e.target.value); setNewRepairErrors((prev) => { const next = {...prev}; delete next.device; return next }) }} />
+                {newRepairErrors.device && <p className="text-sm text-destructive">{newRepairErrors.device}</p>}
               </div>
               <div className="space-y-2">
                 <Label>Marca</Label>
@@ -953,20 +1019,22 @@ export function RepairsView() {
             {/* IMEI */}
             <div className="space-y-2">
               <Label>IMEI</Label>
-              <Input placeholder="Número de IMEI (opcional)" value={formImei} onChange={(e) => setFormImei(e.target.value)} />
+              <Input placeholder="Número de IMEI (opcional)" value={formImei} onChange={(e) => { setFormImei(e.target.value); setNewRepairErrors((prev) => { const next = {...prev}; delete next.imei; return next }) }} />
+              {newRepairErrors.imei && <p className="text-sm text-destructive">{newRepairErrors.imei}</p>}
             </div>
 
             {/* Issue */}
             <div className="space-y-2">
               <Label>Problema reportado *</Label>
-              <Textarea placeholder="Describa el problema del dispositivo..." value={formIssue} onChange={(e) => setFormIssue(e.target.value)} rows={3} />
+              <Textarea placeholder="Describa el problema del dispositivo..." value={formIssue} onChange={(e) => { setFormIssue(e.target.value); setNewRepairErrors((prev) => { const next = {...prev}; delete next.issue; return next }) }} rows={3} />
+              {newRepairErrors.issue && <p className="text-sm text-destructive">{newRepairErrors.issue}</p>}
             </div>
 
             {/* Priority & Cost */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Prioridad</Label>
-                <Select value={formPriority} onValueChange={setFormPriority}>
+                <Select value={formPriority} onValueChange={(v) => { setFormPriority(v); setNewRepairErrors((prev) => { const next = {...prev}; delete next.priority; return next }) }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Baja</SelectItem>
@@ -975,10 +1043,12 @@ export function RepairsView() {
                     <SelectItem value="urgent">Urgente</SelectItem>
                   </SelectContent>
                 </Select>
+                {newRepairErrors.priority && <p className="text-sm text-destructive">{newRepairErrors.priority}</p>}
               </div>
               <div className="space-y-2">
                 <Label>Costo estimado</Label>
-                <Input type="number" min={0} placeholder="0.00" value={formCostEstimate} onChange={(e) => setFormCostEstimate(e.target.value)} />
+                <Input type="number" min={0} placeholder="0.00" value={formCostEstimate} onChange={(e) => { setFormCostEstimate(e.target.value); setNewRepairErrors((prev) => { const next = {...prev}; delete next.costEstimate; return next }) }} />
+                {newRepairErrors.costEstimate && <p className="text-sm text-destructive">{newRepairErrors.costEstimate}</p>}
               </div>
             </div>
           </div>
@@ -1019,7 +1089,7 @@ export function RepairsView() {
               {/* Status */}
               <div className="space-y-2">
                 <Label>Estado</Label>
-                <Select value={editStatus} onValueChange={setEditStatus}>
+                <Select value={editStatus} onValueChange={(v) => { setEditStatus(v); setEditRepairErrors((prev) => { const next = {...prev}; delete next.status; return next }) }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="received">Recibida</SelectItem>
@@ -1031,12 +1101,13 @@ export function RepairsView() {
                     <SelectItem value="cancelled">Cancelada</SelectItem>
                   </SelectContent>
                 </Select>
+                {editRepairErrors.status && <p className="text-sm text-destructive">{editRepairErrors.status}</p>}
               </div>
 
               {/* Priority */}
               <div className="space-y-2">
                 <Label>Prioridad</Label>
-                <Select value={editPriority} onValueChange={setEditPriority}>
+                <Select value={editPriority} onValueChange={(v) => { setEditPriority(v); setEditRepairErrors((prev) => { const next = {...prev}; delete next.priority; return next }) }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Baja</SelectItem>
@@ -1045,6 +1116,7 @@ export function RepairsView() {
                     <SelectItem value="urgent">Urgente</SelectItem>
                   </SelectContent>
                 </Select>
+                {editRepairErrors.priority && <p className="text-sm text-destructive">{editRepairErrors.priority}</p>}
               </div>
 
               {/* Diagnosis */}
@@ -1063,11 +1135,12 @@ export function RepairsView() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Costo mano de obra</Label>
-                  <Input type="number" min={0} value={editLaborCost} onChange={(e) => setEditLaborCost(e.target.value)} />
+                  <Input type="number" min={0} value={editLaborCost} onChange={(e) => { setEditLaborCost(e.target.value); setEditRepairErrors((prev) => { const next = {...prev}; delete next.laborCost; return next }) }} />
+                  {editRepairErrors.laborCost && <p className="text-sm text-destructive">{editRepairErrors.laborCost}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>Método de pago</Label>
-                  <Select value={editPaymentMethod} onValueChange={setEditPaymentMethod}>
+                  <Select value={editPaymentMethod} onValueChange={(v) => { setEditPaymentMethod(v); setEditRepairErrors((prev) => { const next = {...prev}; delete next.paymentMethod; return next }) }}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="efectivo">Efectivo</SelectItem>
@@ -1075,6 +1148,7 @@ export function RepairsView() {
                       <SelectItem value="mixto">Mixto</SelectItem>
                     </SelectContent>
                   </Select>
+                  {editRepairErrors.paymentMethod && <p className="text-sm text-destructive">{editRepairErrors.paymentMethod}</p>}
                 </div>
               </div>
 
@@ -1249,15 +1323,29 @@ export function RepairsView() {
             <DialogDescription>Busque y agregue piezas a la reparación</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar producto..."
-                value={partSearch}
-                onChange={(e) => setPartSearch(e.target.value)}
-                className="pl-9"
-              />
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2 relative">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar producto..."
+                  value={partSearch}
+                  onChange={(e) => setPartSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <div className="space-y-1">
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="Cant."
+                  value={partQuantity}
+                  onChange={(e) => { setPartQuantity(e.target.value); setAddPartErrors((prev) => { const next = {...prev}; delete next.quantity; return next }) }}
+                />
+                {addPartErrors.quantity && <p className="text-xs text-destructive">{addPartErrors.quantity}</p>}
+              </div>
             </div>
+
+            {addPartErrors.unitPrice && <p className="text-sm text-destructive">{addPartErrors.unitPrice}</p>}
 
             {partProductsLoading && <Skeleton className="h-20 w-full" />}
 
@@ -1276,7 +1364,7 @@ export function RepairsView() {
                         size="sm"
                         className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 ml-2"
                         disabled={product.quantity <= 0 || addingPart}
-                        onClick={() => addPart(product, 1)}
+                        onClick={() => addPart(product, parseInt(partQuantity) || 1)}
                       >
                         <Plus className="size-4" />
                       </Button>

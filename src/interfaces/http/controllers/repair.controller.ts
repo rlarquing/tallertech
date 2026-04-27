@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server'
 import '@/infrastructure/container'
 import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
+import { validateWithSchema, repairSchema, repairUpdateSchema, repairPartSchema } from '@/lib/validations'
 
 const useCases = UseCaseContainer.getInstance()
 
@@ -36,7 +37,8 @@ export class RepairController {
 
   static async create(request: NextRequest) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(repairSchema, rawBody)
       const result = await useCases.createRepair.execute(body, request)
       return ResponsePresenter.created(result)
     } catch (error) {
@@ -58,7 +60,8 @@ export class RepairController {
 
   static async update(request: NextRequest, id: string) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(repairUpdateSchema, rawBody)
       const result = await useCases.updateRepair.execute(
         { ...body, id },
         request,
@@ -80,7 +83,8 @@ export class RepairController {
 
   static async addPart(request: NextRequest, id: string) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(repairPartSchema, rawBody)
       const result = await useCases.addRepairPart.execute(id, body, request)
       return ResponsePresenter.created(result)
     } catch (error) {

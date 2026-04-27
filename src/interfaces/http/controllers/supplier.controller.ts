@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server'
 import '@/infrastructure/container'
 import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
+import { validateWithSchema, supplierSchema } from '@/lib/validations'
 
 const useCases = UseCaseContainer.getInstance()
 
@@ -35,7 +36,8 @@ export class SupplierController {
 
   static async create(request: NextRequest) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(supplierSchema, rawBody)
       const result = await useCases.createSupplier.execute(body, request)
       return ResponsePresenter.created(result)
     } catch (error) {
@@ -57,7 +59,8 @@ export class SupplierController {
 
   static async update(request: NextRequest, id: string) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(supplierSchema, rawBody)
       const result = await useCases.updateSupplier.execute(
         { ...body, id },
         request,

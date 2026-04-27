@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server'
 import '@/infrastructure/container'
 import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
+import { validateWithSchema, expenseSchema } from '@/lib/validations'
 
 const useCases = UseCaseContainer.getInstance()
 
@@ -38,7 +39,8 @@ export class ExpenseController {
 
   static async create(request: NextRequest) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(expenseSchema, rawBody)
       const result = await useCases.createExpense.execute(body, request)
       return ResponsePresenter.created(result)
     } catch (error) {
@@ -60,7 +62,8 @@ export class ExpenseController {
 
   static async update(request: NextRequest, id: string) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(expenseSchema, rawBody)
       const result = await useCases.updateExpense.execute(
         { ...body, id },
         request,

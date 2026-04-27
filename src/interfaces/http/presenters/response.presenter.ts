@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import { DomainError } from '@/domain/errors'
+import { parseValidationError } from '@/lib/validations'
 
 export class ResponsePresenter {
   static success(data: unknown, status = 200): NextResponse {
@@ -25,6 +26,15 @@ export class ResponsePresenter {
   }
 
   static error(error: unknown): NextResponse {
+    // Check for Zod validation errors from validateWithSchema
+    const validationError = parseValidationError(error)
+    if (validationError) {
+      return NextResponse.json(
+        { error: validationError.message, errors: validationError.errors },
+        { status: 400 },
+      )
+    }
+
     if (error instanceof DomainError) {
       const statusMap: Record<string, number> = {
         AUTHENTICATION_ERROR: 401,

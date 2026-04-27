@@ -24,6 +24,7 @@ import {
   FolderOpen,
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { categorySchema } from '@/lib/validations'
 
 // Types
 interface Category {
@@ -83,6 +84,7 @@ export function CategoriesView() {
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(null)
   const [formData, setFormData] = useState<CategoryFormData>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Fetch categories
   const fetchCategories = useCallback(async () => {
@@ -108,6 +110,7 @@ export function CategoriesView() {
   const handleAdd = () => {
     setEditingCategory(null)
     setFormData(emptyForm)
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -119,6 +122,7 @@ export function CategoriesView() {
       description: category.description || '',
       type: category.type,
     })
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -131,6 +135,23 @@ export function CategoriesView() {
   // Submit form (create/update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate with Zod
+    const result = categorySchema.safeParse({
+      name: formData.name,
+      description: formData.description || undefined,
+      type: formData.type,
+    })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path.join('.')
+        if (!errors[field]) errors[field] = issue.message
+      }
+      setValidationErrors(errors)
+      return
+    }
+    setValidationErrors({})
     setSubmitting(true)
 
     try {
@@ -365,16 +386,19 @@ export function CategoriesView() {
               <Input
                 id="catName"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setValidationErrors((prev) => { const { name, ...rest } = prev; return rest }) }}
                 placeholder="Nombre de la categoría"
                 required
                 autoFocus
               />
+              {validationErrors.name && (
+                <p className="text-xs text-destructive">{validationErrors.name}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label>Tipo</Label>
-              <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
+              <Select value={formData.type} onValueChange={(v) => { setFormData({ ...formData, type: v }); setValidationErrors((prev) => { const { type, ...rest } = prev; return rest }) }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -384,6 +408,9 @@ export function CategoriesView() {
                   <SelectItem value="part">Repuesto</SelectItem>
                 </SelectContent>
               </Select>
+              {validationErrors.type && (
+                <p className="text-xs text-destructive">{validationErrors.type}</p>
+              )}
             </div>
 
             <div className="space-y-2">

@@ -39,6 +39,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { saleSchema, saleItemSchema, customerSchema } from '@/lib/validations'
 
 // ============================================================
 // Types
@@ -122,6 +123,10 @@ export function PosView() {
   const [showCustomerSelect, setShowCustomerSelect] = useState(false)
   const [newCustomerName, setNewCustomerName] = useState('')
   const [newCustomerPhone, setNewCustomerPhone] = useState('')
+
+  // Validation errors
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [customerValidationErrors, setCustomerValidationErrors] = useState<Record<string, string>>({})
 
   // Sale completion
   const [submitting, setSubmitting] = useState(false)
@@ -267,6 +272,7 @@ export function PosView() {
     setCustomerName('')
     setDiscount(0)
     setNotes('')
+    setValidationErrors({})
   }, [])
 
   // ============================================================
@@ -284,8 +290,18 @@ export function PosView() {
   // ============================================================
 
   const quickAddCustomer = async () => {
-    if (!newCustomerName.trim()) {
-      toast.error('El nombre del cliente es requerido')
+    setCustomerValidationErrors({})
+    const result = customerSchema.safeParse({
+      name: newCustomerName,
+      phone: newCustomerPhone || '',
+    })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path.join('.')
+        if (!errors[key]) errors[key] = issue.message
+      }
+      setCustomerValidationErrors(errors)
       return
     }
     try {
@@ -316,6 +332,70 @@ export function PosView() {
   // ============================================================
 
   const completeSale = async () => {
+    setValidationErrors({})
+
+    // Validate sale-level fields
+    const discountValue = discountType === 'percentage' ? discount : discountAmount
+    const saleData = {
+      customerId: customerId || undefined,
+      paymentMethod,
+      discount: discountValue,
+      notes: notes || undefined,
+      items: cart.map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        type: item.type as 'product' | 'service' | 'part',
+      })),
+    }
+
+    const saleResult = saleSchema.safeParse(saleData)
+    const errors: Record<string, string> = {}
+
+    if (!saleResult.success) {
+      for (const issue of saleResult.error.issues) {
+        const key = issue.path.join('.')
+        if (!errors[key]) errors[key] = issue.message
+      }
+    }
+
+    // Validate each cart item individually for more specific errors
+    cart.forEach((item, idx) => {
+      const itemResult = saleItemSchema.safeParse({
+        productId: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        type: item.type as 'product' | 'service' | 'part',
+      })
+      if (!itemResult.success) {
+        for (const issue of itemResult.error.issues) {
+          const key = `items.${idx}.${issue.path.join('.')}`
+          if (!errors[key]) errors[key] = issue.message
+        }
+      }
+    })
+
+    // Validate total > 0
+    if (total <= 0 && cart.length > 0) {
+      errors['total'] = 'El total de la venta debe ser mayor a 0'
+    }
+
+    // Validate discount percentage range
+    if (discountType === 'percentage' && (discount < 0 || discount > 100)) {
+      errors['discount'] = 'El descuento debe estar entre 0 y 100%'
+    }
+    if (discountType === 'fixed' && discount < 0) {
+      errors['discount'] = 'El descuento no puede ser negativo'
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors)
+      toast.error('Corrija los errores de validación')
+      return
+    }
+
     if (cart.length === 0) {
       toast.error('El carrito está vacío')
       return
@@ -466,7 +546,7 @@ export function PosView() {
   // ============================================================
 
   const CustomerDialog = () => (
-    <Dialog open={showCustomerSelect} onOpenChange={setShowCustomerSelect}>
+    <Dialog open={showCustomerSelect} onOpenChange={(open) => { setShowCustomerSelect(open); if (!open) setCustomerValidationErrors({}) }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Seleccionar Cliente</DialogTitle>
@@ -528,16 +608,38 @@ export function PosView() {
           {/* Quick add */}
           <div className="space-y-3">
             <p className="text-sm font-medium">Crear nuevo cliente</p>
-            <Input
-              placeholder="Nombre del cliente"
-              value={newCustomerName}
-              onChange={(e) => setNewCustomerName(e.target.value)}
-            />
-            <Input
-              placeholder="Teléfono (opcional)"
-              value={newCustomerPhone}
-              onChange={(e) => setNewCustomerPhone(e.target.value)}
-            />
+            <div>
+              <Input
+                placeholder="Nombre del cliente"
+                value={newCustomerName}
+                onChange={(e) => {
+                  setNewCustomerName(e.target.value)
+                  if (customerValidationErrors['name']) {
+                    setCustomerValidationErrors((prev) => { const next = { ...prev }; delete next['name']; return next })
+                  }
+                }}
+                className={customerValidationErrors['name'] ? 'border-destructive' : ''}
+              />
+              {customerValidationErrors['name'] && (
+                <p className="text-xs text-destructive mt-1">{customerValidationErrors['name']}</p>
+              )}
+            </div>
+            <div>
+              <Input
+                placeholder="Teléfono (opcional)"
+                value={newCustomerPhone}
+                onChange={(e) => {
+                  setNewCustomerPhone(e.target.value)
+                  if (customerValidationErrors['phone']) {
+                    setCustomerValidationErrors((prev) => { const next = { ...prev }; delete next['phone']; return next })
+                  }
+                }}
+                className={customerValidationErrors['phone'] ? 'border-destructive' : ''}
+              />
+              {customerValidationErrors['phone'] && (
+                <p className="text-xs text-destructive mt-1">{customerValidationErrors['phone']}</p>
+              )}
+            </div>
             <Button onClick={quickAddCustomer} className="w-full" size="sm">
               <Plus className="mr-2 size-4" />
               Crear Cliente
@@ -780,27 +882,37 @@ export function PosView() {
         <Card>
           <CardContent className="p-4 space-y-3">
             {/* Discount */}
-            <div className="flex items-center gap-2">
-              <Label className="text-xs whitespace-nowrap">Descuento:</Label>
-              <div className="flex items-center gap-1 flex-1">
-                <Input
-                  type="number"
-                  min={0}
-                  value={discount || ''}
-                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  className="h-8 text-sm"
-                  placeholder="0"
-                />
-                <Select value={discountType} onValueChange={(v) => setDiscountType(v as 'percentage' | 'fixed')}>
-                  <SelectTrigger className="w-20 h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">%</SelectItem>
-                    <SelectItem value="fixed">$</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div>
+              <div className="flex items-center gap-2">
+                <Label className="text-xs whitespace-nowrap">Descuento:</Label>
+                <div className="flex items-center gap-1 flex-1">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={discount || ''}
+                    onChange={(e) => {
+                      setDiscount(parseFloat(e.target.value) || 0)
+                      if (validationErrors['discount']) {
+                        setValidationErrors((prev) => { const next = { ...prev }; delete next['discount']; return next })
+                      }
+                    }}
+                    className={`h-8 text-sm ${validationErrors['discount'] ? 'border-destructive' : ''}`}
+                    placeholder="0"
+                  />
+                  <Select value={discountType} onValueChange={(v) => setDiscountType(v as 'percentage' | 'fixed')}>
+                    <SelectTrigger className="w-20 h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">%</SelectItem>
+                      <SelectItem value="fixed">$</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+              {validationErrors['discount'] && (
+                <p className="text-xs text-destructive mt-1 ml-[72px]">{validationErrors['discount']}</p>
+              )}
             </div>
 
             {/* Payment method */}
@@ -822,9 +934,17 @@ export function PosView() {
             <Input
               placeholder="Notas (opcional)"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="h-8 text-sm"
+              onChange={(e) => {
+                setNotes(e.target.value)
+                if (validationErrors['notes']) {
+                  setValidationErrors((prev) => { const next = { ...prev }; delete next['notes']; return next })
+                }
+              }}
+              className={`h-8 text-sm ${validationErrors['notes'] ? 'border-destructive' : ''}`}
             />
+            {validationErrors['notes'] && (
+              <p className="text-xs text-destructive">{validationErrors['notes']}</p>
+            )}
           </CardContent>
         </Card>
 
@@ -852,10 +972,16 @@ export function PosView() {
               <span>Total:</span>
               <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(total)}</span>
             </div>
+            {validationErrors['total'] && (
+              <p className="text-xs text-destructive">{validationErrors['total']}</p>
+            )}
+            {validationErrors['items'] && (
+              <p className="text-xs text-destructive">{validationErrors['items']}</p>
+            )}
             <Button
               className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white"
               size="lg"
-              disabled={cart.length === 0 || submitting}
+              disabled={cart.length === 0 || submitting || Object.keys(validationErrors).some(k => k === 'total' || k === 'discount')}
               onClick={completeSale}
             >
               {submitting ? (

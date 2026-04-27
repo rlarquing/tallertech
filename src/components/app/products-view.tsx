@@ -31,6 +31,7 @@ import {
   PackageOpen,
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { productSchema, stockAdjustmentSchema } from '@/lib/validations'
 
 // Types
 interface Category {
@@ -157,6 +158,10 @@ export function ProductsView() {
   const [stockQty, setStockQty] = useState('')
   const [stockReason, setStockReason] = useState('')
 
+  // Validation errors
+  const [formValidationErrors, setFormValidationErrors] = useState<Record<string, string>>({})
+  const [stockValidationErrors, setStockValidationErrors] = useState<Record<string, string>>({})
+
   // Fetch products
   const fetchProducts = useCallback(async () => {
     setLoading(true)
@@ -220,6 +225,7 @@ export function ProductsView() {
   const handleAdd = () => {
     setEditingProduct(null)
     setFormData(emptyForm)
+    setFormValidationErrors({})
     setFormOpen(true)
   }
 
@@ -242,6 +248,7 @@ export function ProductsView() {
       model: product.model || '',
       location: product.location || '',
     })
+    setFormValidationErrors({})
     setFormOpen(true)
   }
 
@@ -257,12 +264,44 @@ export function ProductsView() {
     setStockType('in')
     setStockQty('')
     setStockReason('')
+    setStockValidationErrors({})
     setStockOpen(true)
   }
 
   // Submit product form (create/update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormValidationErrors({})
+
+    // Build data for validation
+    const validationData = {
+      name: formData.name,
+      sku: formData.sku || undefined,
+      description: formData.description || undefined,
+      categoryId: formData.categoryId || undefined,
+      supplierId: formData.supplierId || undefined,
+      costPrice: parseFloat(formData.costPrice) || 0,
+      salePrice: parseFloat(formData.salePrice) || 0,
+      quantity: parseInt(formData.quantity) || 0,
+      minStock: parseInt(formData.minStock) || 0,
+      unit: formData.unit || 'unidad',
+      type: formData.type,
+      brand: formData.brand || undefined,
+      model: formData.model || undefined,
+      location: formData.location || undefined,
+    }
+
+    const result = productSchema.safeParse(validationData)
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path.join('.')
+        if (!errors[key]) errors[key] = issue.message
+      }
+      setFormValidationErrors(errors)
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -341,6 +380,35 @@ export function ProductsView() {
   const handleStockSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!stockProduct) return
+    setStockValidationErrors({})
+
+    const stockQtyNum = parseInt(stockQty) || 0
+    const validationData = {
+      type: stockType,
+      quantity: stockQtyNum,
+      reason: stockReason || undefined,
+    }
+
+    const result = stockAdjustmentSchema.safeParse(validationData)
+    const errors: Record<string, string> = {}
+
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const key = issue.path.join('.')
+        if (!errors[key]) errors[key] = issue.message
+      }
+    }
+
+    // Extra validation: stock-out quantity must not exceed current stock
+    if (stockType === 'out' && stockQtyNum > stockProduct.quantity) {
+      errors['quantity'] = `La cantidad de salida (${stockQtyNum}) excede el stock actual (${stockProduct.quantity})`
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setStockValidationErrors(errors)
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -644,10 +712,17 @@ export function ProductsView() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value })
+                    if (formValidationErrors['name']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['name']; return n })
+                  }}
                   placeholder="Nombre del producto"
+                  className={formValidationErrors['name'] ? 'border-destructive' : ''}
                   required
                 />
+                {formValidationErrors['name'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['name']}</p>
+                )}
               </div>
 
               {/* SKU */}
@@ -656,9 +731,16 @@ export function ProductsView() {
                 <Input
                   id="sku"
                   value={formData.sku}
-                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, sku: e.target.value })
+                    if (formValidationErrors['sku']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['sku']; return n })
+                  }}
                   placeholder="Código SKU"
+                  className={formValidationErrors['sku'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['sku'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['sku']}</p>
+                )}
               </div>
 
               {/* Type */}
@@ -715,8 +797,15 @@ export function ProductsView() {
                   step="0.01"
                   min="0"
                   value={formData.costPrice}
-                  onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, costPrice: e.target.value })
+                    if (formValidationErrors['costPrice']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['costPrice']; return n })
+                  }}
+                  className={formValidationErrors['costPrice'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['costPrice'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['costPrice']}</p>
+                )}
               </div>
 
               {/* Sale Price */}
@@ -728,8 +817,18 @@ export function ProductsView() {
                   step="0.01"
                   min="0"
                   value={formData.salePrice}
-                  onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, salePrice: e.target.value })
+                    if (formValidationErrors['salePrice']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['salePrice']; return n })
+                  }}
+                  className={formValidationErrors['salePrice'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['salePrice'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['salePrice']}</p>
+                )}
+                {!formValidationErrors['salePrice'] && formData.salePrice && formData.costPrice && parseFloat(formData.salePrice) < parseFloat(formData.costPrice) && (
+                  <p className="text-xs text-amber-600">⚠ El precio de venta es menor al precio de costo</p>
+                )}
               </div>
 
               {/* Quantity */}
@@ -740,8 +839,15 @@ export function ProductsView() {
                   type="number"
                   min="0"
                   value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, quantity: e.target.value })
+                    if (formValidationErrors['quantity']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['quantity']; return n })
+                  }}
+                  className={formValidationErrors['quantity'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['quantity'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['quantity']}</p>
+                )}
               </div>
 
               {/* Min Stock */}
@@ -752,8 +858,15 @@ export function ProductsView() {
                   type="number"
                   min="0"
                   value={formData.minStock}
-                  onChange={(e) => setFormData({ ...formData, minStock: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, minStock: e.target.value })
+                    if (formValidationErrors['minStock']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['minStock']; return n })
+                  }}
+                  className={formValidationErrors['minStock'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['minStock'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['minStock']}</p>
+                )}
               </div>
 
               {/* Unit */}
@@ -777,9 +890,16 @@ export function ProductsView() {
                 <Input
                   id="brand"
                   value={formData.brand}
-                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, brand: e.target.value })
+                    if (formValidationErrors['brand']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['brand']; return n })
+                  }}
                   placeholder="Ej: Samsung, Apple"
+                  className={formValidationErrors['brand'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['brand'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['brand']}</p>
+                )}
               </div>
 
               {/* Model */}
@@ -788,9 +908,16 @@ export function ProductsView() {
                 <Input
                   id="model"
                   value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, model: e.target.value })
+                    if (formValidationErrors['model']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['model']; return n })
+                  }}
                   placeholder="Modelo de celular compatible"
+                  className={formValidationErrors['model'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['model'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['model']}</p>
+                )}
               </div>
 
               {/* Location */}
@@ -799,9 +926,16 @@ export function ProductsView() {
                 <Input
                   id="location"
                   value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, location: e.target.value })
+                    if (formValidationErrors['location']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['location']; return n })
+                  }}
                   placeholder="Ej: Estante A, Caja 3"
+                  className={formValidationErrors['location'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['location'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['location']}</p>
+                )}
               </div>
 
               {/* Description */}
@@ -810,10 +944,17 @@ export function ProductsView() {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, description: e.target.value })
+                    if (formValidationErrors['description']) setFormValidationErrors((prev) => { const n = { ...prev }; delete n['description']; return n })
+                  }}
                   placeholder="Descripción del producto"
                   rows={3}
+                  className={formValidationErrors['description'] ? 'border-destructive' : ''}
                 />
+                {formValidationErrors['description'] && (
+                  <p className="text-xs text-destructive">{formValidationErrors['description']}</p>
+                )}
               </div>
             </div>
 
@@ -821,7 +962,7 @@ export function ProductsView() {
               <Button type="button" variant="outline" onClick={() => setFormOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="submit" disabled={submitting || Object.keys(formValidationErrors).length > 0} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                 {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
               </Button>
@@ -907,11 +1048,18 @@ export function ProductsView() {
                 type="number"
                 min="0"
                 value={stockQty}
-                onChange={(e) => setStockQty(e.target.value)}
+                onChange={(e) => {
+                  setStockQty(e.target.value)
+                  if (stockValidationErrors['quantity']) setStockValidationErrors((prev) => { const n = { ...prev }; delete n['quantity']; return n })
+                }}
                 placeholder={stockType === 'adjustment' ? 'Valor exacto del stock' : 'Cantidad a mover'}
+                className={stockValidationErrors['quantity'] ? 'border-destructive' : ''}
                 required
                 autoFocus
               />
+              {stockValidationErrors['quantity'] && (
+                <p className="text-xs text-destructive">{stockValidationErrors['quantity']}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -919,7 +1067,10 @@ export function ProductsView() {
               <Input
                 id="stockReason"
                 value={stockReason}
-                onChange={(e) => setStockReason(e.target.value)}
+                onChange={(e) => {
+                  setStockReason(e.target.value)
+                  if (stockValidationErrors['reason']) setStockValidationErrors((prev) => { const n = { ...prev }; delete n['reason']; return n })
+                }}
                 placeholder="Ej: Compra a proveedor, Merma, Inventario físico"
               />
             </div>
@@ -928,7 +1079,7 @@ export function ProductsView() {
               <Button type="button" variant="outline" onClick={() => setStockOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={submitting || !stockQty} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="submit" disabled={submitting || !stockQty || Object.keys(stockValidationErrors).length > 0} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                 {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Aplicar Ajuste
               </Button>

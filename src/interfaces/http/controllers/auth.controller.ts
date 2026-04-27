@@ -8,6 +8,7 @@ import '@/infrastructure/container'
 import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
 import { CookieSession } from '@/infrastructure/auth/cookie-session'
+import { validateWithSchema, loginSchema, registerSchema } from '@/lib/validations'
 
 const cookieSession = new CookieSession()
 const useCases = UseCaseContainer.getInstance()
@@ -15,7 +16,8 @@ const useCases = UseCaseContainer.getInstance()
 export class AuthController {
   static async login(request: NextRequest) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(loginSchema, rawBody)
       const ip = request.headers.get('x-forwarded-for') || undefined
       const result = await useCases.login.execute(body, ip)
       const response = ResponsePresenter.success(result)
@@ -29,7 +31,8 @@ export class AuthController {
 
   static async register(request: NextRequest) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(registerSchema, rawBody)
       const ip = request.headers.get('x-forwarded-for') || undefined
       const result = await useCases.register.execute(body, ip)
       const response = ResponsePresenter.created(result)

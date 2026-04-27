@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { loginSchema, registerSchema } from '@/lib/validations'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, setUser, isAuthenticated, setWorkshops, setCurrentWorkshopId, currentWorkshopId } = useAppStore()
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [registerName, setRegisterName] = useState('')
   const [registerEmail, setRegisterEmail] = useState('')
   const [registerPassword, setRegisterPassword] = useState('')
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Check session on mount
   const checkSession = useCallback(async () => {
@@ -72,9 +74,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, user, fetchWorkshops])
 
+  const clearFieldError = (field: string) => {
+    setValidationErrors((prev) => {
+      const { [field]: _, ...rest } = prev
+      return rest
+    })
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    // Validate with Zod
+    const result = loginSchema.safeParse({ email: loginEmail, password: loginPassword })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path.join('.')
+        if (!errors[field]) errors[field] = issue.message
+      }
+      setValidationErrors(errors)
+      return
+    }
+    setValidationErrors({})
     setSubmitting(true)
 
     try {
@@ -116,6 +138,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    // Validate with Zod
+    const result = registerSchema.safeParse({ name: registerName, email: registerEmail, password: registerPassword })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path.join('.')
+        if (!errors[field]) errors[field] = issue.message
+      }
+      setValidationErrors(errors)
+      return
+    }
+    setValidationErrors({})
     setSubmitting(true)
 
     try {
@@ -218,6 +253,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             onValueChange={(v) => {
               setAuthMode(v as 'login' | 'register')
               setError(null)
+              setValidationErrors({})
             }}
           >
             <TabsList className="grid w-full grid-cols-2">
@@ -250,12 +286,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         type="email"
                         placeholder="correo@ejemplo.com"
                         value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
+                        onChange={(e) => { setLoginEmail(e.target.value); clearFieldError('email') }}
                         className="pl-9"
                         required
                         disabled={submitting}
                       />
                     </div>
+                    {validationErrors.email && (
+                      <p className="text-xs text-destructive">{validationErrors.email}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Contraseña</Label>
@@ -266,12 +305,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         type="password"
                         placeholder="••••••••"
                         value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
+                        onChange={(e) => { setLoginPassword(e.target.value); clearFieldError('password') }}
                         className="pl-9"
                         required
                         disabled={submitting}
                       />
                     </div>
+                    {validationErrors.password && (
+                      <p className="text-xs text-destructive">{validationErrors.password}</p>
+                    )}
                   </div>
                   <Button
                     type="submit"
@@ -320,12 +362,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         type="text"
                         placeholder="Su nombre completo"
                         value={registerName}
-                        onChange={(e) => setRegisterName(e.target.value)}
+                        onChange={(e) => { setRegisterName(e.target.value); clearFieldError('name') }}
                         className="pl-9"
                         required
                         disabled={submitting}
                       />
                     </div>
+                    {validationErrors.name && (
+                      <p className="text-xs text-destructive">{validationErrors.name}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-email">Email</Label>
@@ -336,12 +381,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         type="email"
                         placeholder="correo@ejemplo.com"
                         value={registerEmail}
-                        onChange={(e) => setRegisterEmail(e.target.value)}
+                        onChange={(e) => { setRegisterEmail(e.target.value); clearFieldError('email') }}
                         className="pl-9"
                         required
                         disabled={submitting}
                       />
                     </div>
+                    {validationErrors.email && (
+                      <p className="text-xs text-destructive">{validationErrors.email}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-password">Contraseña</Label>
@@ -352,13 +400,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         type="password"
                         placeholder="Mínimo 6 caracteres"
                         value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        onChange={(e) => { setRegisterPassword(e.target.value); clearFieldError('password') }}
                         className="pl-9"
                         required
                         minLength={6}
                         disabled={submitting}
                       />
                     </div>
+                    {validationErrors.password && (
+                      <p className="text-xs text-destructive">{validationErrors.password}</p>
+                    )}
                   </div>
                   <Button
                     type="submit"

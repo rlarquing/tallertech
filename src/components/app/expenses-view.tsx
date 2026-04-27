@@ -65,6 +65,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { expenseSchema } from '@/lib/validations'
 
 interface Expense {
   id: string
@@ -137,6 +138,7 @@ export function ExpensesView() {
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null)
   const [form, setForm] = useState<ExpenseForm>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   const limit = 20
 
@@ -210,6 +212,7 @@ export function ExpensesView() {
   const openAddDialog = () => {
     setEditingExpense(null)
     setForm(emptyForm)
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -222,15 +225,31 @@ export function ExpensesView() {
       date: new Date(expense.date).toISOString().split('T')[0],
       notes: expense.notes || '',
     })
+    setValidationErrors({})
     setFormOpen(true)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.description.trim() || !form.amount) {
-      toast({ title: 'Error', description: 'Descripción y monto son requeridos', variant: 'destructive' })
+
+    // Validate with Zod
+    const result = expenseSchema.safeParse({
+      category: form.category,
+      description: form.description,
+      amount: parseFloat(form.amount),
+      date: form.date || new Date().toISOString().split('T')[0],
+      notes: form.notes || undefined,
+    })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path.join('.')
+        if (!errors[field]) errors[field] = issue.message
+      }
+      setValidationErrors(errors)
       return
     }
+    setValidationErrors({})
     setSubmitting(true)
     try {
       const url = editingExpense ? `/api/expenses/${editingExpense.id}` : '/api/expenses'
@@ -520,7 +539,7 @@ export function ExpensesView() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="category">Categoría *</Label>
-                  <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                  <Select value={form.category} onValueChange={(v) => { setForm({ ...form, category: v }); setValidationErrors((prev) => { const { category, ...rest } = prev; return rest }) }}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -532,6 +551,9 @@ export function ExpensesView() {
                       <SelectItem value="other">Otro</SelectItem>
                     </SelectContent>
                   </Select>
+                  {validationErrors.category && (
+                    <p className="text-xs text-destructive">{validationErrors.category}</p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="amount">Monto *</Label>
@@ -541,10 +563,13 @@ export function ExpensesView() {
                     min="0"
                     step="0.01"
                     value={form.amount}
-                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                    onChange={(e) => { setForm({ ...form, amount: e.target.value }); setValidationErrors((prev) => { const { amount, ...rest } = prev; return rest }) }}
                     placeholder="0.00"
                     required
                   />
+                  {validationErrors.amount && (
+                    <p className="text-xs text-destructive">{validationErrors.amount}</p>
+                  )}
                 </div>
               </div>
               <div className="grid gap-2">
@@ -552,10 +577,13 @@ export function ExpensesView() {
                 <Input
                   id="description"
                   value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  onChange={(e) => { setForm({ ...form, description: e.target.value }); setValidationErrors((prev) => { const { description, ...rest } = prev; return rest }) }}
                   placeholder="Descripción del gasto"
                   required
                 />
+                {validationErrors.description && (
+                  <p className="text-xs text-destructive">{validationErrors.description}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="date">Fecha</Label>
@@ -563,8 +591,11 @@ export function ExpensesView() {
                   id="date"
                   type="date"
                   value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  onChange={(e) => { setForm({ ...form, date: e.target.value }); setValidationErrors((prev) => { const { date, ...rest } = prev; return rest }) }}
                 />
+                {validationErrors.date && (
+                  <p className="text-xs text-destructive">{validationErrors.date}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="notes">Notas</Label>

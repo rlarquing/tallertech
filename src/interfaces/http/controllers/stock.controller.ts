@@ -7,8 +7,25 @@ import { NextRequest } from 'next/server'
 import '@/infrastructure/container'
 import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
+import { validateWithSchema, stockAdjustmentSchema } from '@/lib/validations'
+import { z } from 'zod'
 
 const useCases = UseCaseContainer.getInstance()
+
+// Schema for stock adjustment API request (includes productId)
+const adjustStockRequestSchema = z.object({
+  productId: z.string({ message: 'El ID del producto es requerido' })
+    .min(1, { message: 'El ID del producto es requerido' }),
+  type: z.enum(['in', 'out', 'adjustment', 'return'], {
+    message: 'Tipo de movimiento inválido',
+  }),
+  quantity: z.number({ message: 'La cantidad debe ser un número' })
+    .int({ message: 'La cantidad debe ser un número entero' })
+    .gt(0, { message: 'La cantidad debe ser mayor a 0' })
+    .max(999999, { message: 'La cantidad no puede exceder 999,999' }),
+  reason: z.string().max(200, { message: 'La razón no puede exceder 200 caracteres' }).optional(),
+  reference: z.string().max(100, { message: 'La referencia no puede exceder 100 caracteres' }).optional(),
+})
 
 export class StockController {
   static async list(request: NextRequest) {
@@ -38,7 +55,8 @@ export class StockController {
 
   static async adjust(request: NextRequest) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(adjustStockRequestSchema, rawBody)
       const result = await useCases.adjustStock.execute(body, request)
       return ResponsePresenter.created(result)
     } catch (error) {

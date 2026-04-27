@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server'
 import '@/infrastructure/container'
 import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
+import { validateWithSchema, productSchema } from '@/lib/validations'
 
 const useCases = UseCaseContainer.getInstance()
 
@@ -39,7 +40,8 @@ export class ProductController {
 
   static async create(request: NextRequest) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(productSchema, rawBody)
       const result = await useCases.createProduct.execute(body, request)
       return ResponsePresenter.created(result)
     } catch (error) {
@@ -58,7 +60,8 @@ export class ProductController {
 
   static async update(request: NextRequest, id: string) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(productSchema, rawBody)
       const result = await useCases.updateProduct.execute(
         { ...body, id },
         request,

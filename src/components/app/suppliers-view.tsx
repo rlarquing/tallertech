@@ -28,6 +28,7 @@ import {
   StickyNote,
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { supplierSchema } from '@/lib/validations'
 
 // Types
 interface Supplier {
@@ -76,6 +77,7 @@ export function SuppliersView() {
   const [deletingSupplier, setDeletingSupplier] = useState<Supplier | null>(null)
   const [formData, setFormData] = useState<SupplierFormData>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Fetch suppliers
   const fetchSuppliers = useCallback(async () => {
@@ -113,6 +115,7 @@ export function SuppliersView() {
   const handleAdd = () => {
     setEditingSupplier(null)
     setFormData(emptyForm)
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -126,6 +129,7 @@ export function SuppliersView() {
       address: supplier.address || '',
       notes: supplier.notes || '',
     })
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -138,6 +142,25 @@ export function SuppliersView() {
   // Submit form (create/update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate with Zod
+    const result = supplierSchema.safeParse({
+      name: formData.name,
+      phone: formData.phone || undefined,
+      email: formData.email || undefined,
+      address: formData.address || undefined,
+      notes: formData.notes || undefined,
+    })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path.join('.')
+        if (!errors[field]) errors[field] = issue.message
+      }
+      setValidationErrors(errors)
+      return
+    }
+    setValidationErrors({})
     setSubmitting(true)
 
     try {
@@ -456,11 +479,14 @@ export function SuppliersView() {
               <Input
                 id="supName"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setValidationErrors((prev) => { const { name, ...rest } = prev; return rest }) }}
                 placeholder="Nombre del proveedor"
                 required
                 autoFocus
               />
+              {validationErrors.name && (
+                <p className="text-xs text-destructive">{validationErrors.name}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -471,11 +497,14 @@ export function SuppliersView() {
                   <Input
                     id="supPhone"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) => { setFormData({ ...formData, phone: e.target.value }); setValidationErrors((prev) => { const { phone, ...rest } = prev; return rest }) }}
                     placeholder="+53 5 1234567"
                     className="pl-9"
                   />
                 </div>
+                {validationErrors.phone && (
+                  <p className="text-xs text-destructive">{validationErrors.phone}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -486,11 +515,14 @@ export function SuppliersView() {
                     id="supEmail"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setValidationErrors((prev) => { const { email, ...rest } = prev; return rest }) }}
                     placeholder="correo@ejemplo.com"
                     className="pl-9"
                   />
                 </div>
+                {validationErrors.email && (
+                  <p className="text-xs text-destructive">{validationErrors.email}</p>
+                )}
               </div>
             </div>
 

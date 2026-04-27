@@ -53,6 +53,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { settingsSchema, passwordChangeSchema } from '@/lib/validations'
 
 interface SettingsMap {
   shop_name?: string
@@ -97,6 +98,7 @@ export function SettingsView() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [profileSaving, setProfileSaving] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Backup & Restore
   const [backingUp, setBackingUp] = useState(false)
@@ -172,6 +174,27 @@ export function SettingsView() {
 
   const handleSaveBusiness = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate with Zod
+    const result = settingsSchema.safeParse({
+      shop_name: shopName,
+      shop_phone: shopPhone || undefined,
+      shop_address: shopAddress || undefined,
+      shop_email: shopEmail || undefined,
+      currency: currency,
+      tax_rate: parseFloat(taxRate) || 0,
+      receipt_footer: receiptFooter || undefined,
+    })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path.join('.')
+        if (!errors[field]) errors[field] = issue.message
+      }
+      setValidationErrors(errors)
+      return
+    }
+    setValidationErrors({})
     setSaving(true)
     try {
       await Promise.all([
@@ -195,6 +218,27 @@ export function SettingsView() {
 
   const handleSaveFinance = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate with Zod
+    const result = settingsSchema.safeParse({
+      shop_name: shopName,
+      shop_phone: shopPhone || undefined,
+      shop_address: shopAddress || undefined,
+      shop_email: shopEmail || undefined,
+      currency: currency,
+      tax_rate: parseFloat(taxRate) || 0,
+      receipt_footer: receiptFooter || undefined,
+    })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path.join('.')
+        if (!errors[field]) errors[field] = issue.message
+      }
+      setValidationErrors(errors)
+      return
+    }
+    setValidationErrors({})
     setSaving(true)
     try {
       await Promise.all([
@@ -217,14 +261,25 @@ export function SettingsView() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (newPassword && newPassword !== confirmPassword) {
-      toast({ title: 'Error', description: 'Las contraseñas no coinciden', variant: 'destructive' })
-      return
+
+    // Validate password change if attempted
+    if (newPassword || confirmPassword || currentPassword) {
+      const result = passwordChangeSchema.safeParse({
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      })
+      if (!result.success) {
+        const errors: Record<string, string> = {}
+        for (const issue of result.error.issues) {
+          const field = issue.path.join('.')
+          if (!errors[field]) errors[field] = issue.message
+        }
+        setValidationErrors(errors)
+        return
+      }
     }
-    if (newPassword && newPassword.length < 6) {
-      toast({ title: 'Error', description: 'La contraseña debe tener al menos 6 caracteres', variant: 'destructive' })
-      return
-    }
+    setValidationErrors({})
     setProfileSaving(true)
     try {
       if (userName.trim() !== user?.name) {
@@ -432,7 +487,10 @@ export function SettingsView() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="shopEmail">Email</Label>
-                    <Input id="shopEmail" type="email" value={shopEmail} onChange={(e) => setShopEmail(e.target.value)} placeholder="info@tallertech.com" />
+                    <Input id="shopEmail" type="email" value={shopEmail} onChange={(e) => { setShopEmail(e.target.value); setValidationErrors((prev) => { const { shop_email, ...rest } = prev; return rest }) }} placeholder="info@tallertech.com" />
+                    {validationErrors.shop_email && (
+                      <p className="text-xs text-destructive">{validationErrors.shop_email}</p>
+                    )}
                   </div>
                 </div>
                 <div className="grid gap-2">
@@ -475,7 +533,10 @@ export function SettingsView() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="taxRate">Tasa de Impuesto (%)</Label>
-                    <Input id="taxRate" type="number" min="0" max="100" step="0.5" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} />
+                    <Input id="taxRate" type="number" min="0" max="100" step="0.5" value={taxRate} onChange={(e) => { setTaxRate(e.target.value); setValidationErrors((prev) => { const { tax_rate, ...rest } = prev; return rest }) }} />
+                    {validationErrors.tax_rate && (
+                      <p className="text-xs text-destructive">{validationErrors.tax_rate}</p>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -549,16 +610,25 @@ export function SettingsView() {
                 <p className="text-sm font-medium">Cambiar Contraseña</p>
                 <div className="grid gap-2">
                   <Label htmlFor="currentPassword">Contraseña Actual</Label>
-                  <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="••••••••" />
+                  <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => { setCurrentPassword(e.target.value); setValidationErrors((prev) => { const { currentPassword, ...rest } = prev; return rest }) }} placeholder="••••••••" />
+                  {validationErrors.currentPassword && (
+                    <p className="text-xs text-destructive">{validationErrors.currentPassword}</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="newPassword">Nueva Contraseña</Label>
-                    <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
+                    <Input id="newPassword" type="password" value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setValidationErrors((prev) => { const { newPassword, ...rest } = prev; return rest }) }} placeholder="Mínimo 6 caracteres" />
+                    {validationErrors.newPassword && (
+                      <p className="text-xs text-destructive">{validationErrors.newPassword}</p>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-                    <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repita la contraseña" />
+                    <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setValidationErrors((prev) => { const { confirmPassword, ...rest } = prev; return rest }) }} placeholder="Repita la contraseña" />
+                    {validationErrors.confirmPassword && (
+                      <p className="text-xs text-destructive">{validationErrors.confirmPassword}</p>
+                    )}
                   </div>
                 </div>
                 <Button type="submit" disabled={profileSaving}>

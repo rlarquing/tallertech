@@ -37,6 +37,8 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { workshopSchema } from '@/lib/validations'
+import { z } from 'zod'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -178,6 +180,7 @@ export function WorkshopsView() {
   const [deactivatingWorkshop, setDeactivatingWorkshop] = useState<Workshop | null>(null)
   const [formData, setFormData] = useState<WorkshopFormData>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Members state
   const [members, setMembers] = useState<WorkshopMember[]>([])
@@ -186,6 +189,7 @@ export function WorkshopsView() {
   const [newMemberRole, setNewMemberRole] = useState('employee')
   const [addingMember, setAddingMember] = useState(false)
   const [changingRole, setChangingRole] = useState<string | null>(null)
+  const [memberEmailError, setMemberEmailError] = useState('')
 
   // Fetch workshops
   const fetchWorkshops = useCallback(async () => {
@@ -226,6 +230,7 @@ export function WorkshopsView() {
   const handleAdd = () => {
     setEditingWorkshop(null)
     setFormData(emptyForm)
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -241,6 +246,7 @@ export function WorkshopsView() {
       currency: workshop.currency || 'CUP',
       timezone: workshop.timezone || 'America/Havana',
     })
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -277,6 +283,27 @@ export function WorkshopsView() {
   // Submit workshop form (create/update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate with Zod
+    const result = workshopSchema.safeParse({
+      name: formData.name,
+      description: formData.description || undefined,
+      address: formData.address || undefined,
+      phone: formData.phone || undefined,
+      email: formData.email || undefined,
+      currency: formData.currency,
+      timezone: formData.timezone,
+    })
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path.join('.')
+        if (!errors[field]) errors[field] = issue.message
+      }
+      setValidationErrors(errors)
+      return
+    }
+    setValidationErrors({})
     setSubmitting(true)
 
     try {
@@ -361,6 +388,14 @@ export function WorkshopsView() {
   // Add member
   const handleAddMember = async () => {
     if (!selectedWorkshop || !newMemberEmail.trim()) return
+
+    // Validate email
+    const emailResult = z.string().min(1, { message: 'El email es requerido' }).email({ message: 'Formato de email inválido' }).safeParse(newMemberEmail.trim())
+    if (!emailResult.success) {
+      setMemberEmailError(emailResult.error.issues[0]?.message || 'Email inválido')
+      return
+    }
+    setMemberEmailError('')
     setAddingMember(true)
 
     try {
@@ -380,6 +415,7 @@ export function WorkshopsView() {
       toast({ title: 'Miembro agregado', description: 'El miembro se ha agregado exitosamente' })
       setNewMemberEmail('')
       setNewMemberRole('employee')
+      setMemberEmailError('')
       // Refresh members
       const membersRes = await offlineFetch(`/api/workshops/${selectedWorkshop.id}/members`)
       if (membersRes.ok) {
@@ -668,6 +704,9 @@ export function WorkshopsView() {
                   placeholder="Ej: Taller Reparaciones Centro"
                   required
                 />
+                {validationErrors.name && (
+                  <p className="text-xs text-destructive">{validationErrors.name}</p>
+                )}
                 {formData.name && (
                   <p className="text-xs text-muted-foreground">
                     Slug: <span className="font-mono">{generateSlug(formData.name)}</span>
@@ -704,9 +743,12 @@ export function WorkshopsView() {
                 <Input
                   id="ws-phone"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, phone: e.target.value }); setValidationErrors((prev) => { const { phone, ...rest } = prev; return rest }) }}
                   placeholder="+53 5555-9999"
                 />
+                {validationErrors.phone && (
+                  <p className="text-xs text-destructive">{validationErrors.phone}</p>
+                )}
               </div>
 
               {/* Email */}
@@ -716,9 +758,12 @@ export function WorkshopsView() {
                   id="ws-email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setValidationErrors((prev) => { const { email, ...rest } = prev; return rest }) }}
                   placeholder="info@taller.com"
                 />
+                {validationErrors.email && (
+                  <p className="text-xs text-destructive">{validationErrors.email}</p>
+                )}
               </div>
 
               {/* Currency */}
@@ -726,7 +771,7 @@ export function WorkshopsView() {
                 <Label>Moneda</Label>
                 <Select
                   value={formData.currency}
-                  onValueChange={(v) => setFormData({ ...formData, currency: v })}
+                  onValueChange={(v) => { setFormData({ ...formData, currency: v }); setValidationErrors((prev) => { const { currency, ...rest } = prev; return rest }) }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -742,6 +787,9 @@ export function WorkshopsView() {
                     <SelectItem value="COP">COP - Peso Colombiano</SelectItem>
                   </SelectContent>
                 </Select>
+                {validationErrors.currency && (
+                  <p className="text-xs text-destructive">{validationErrors.currency}</p>
+                )}
               </div>
 
               {/* Timezone */}
@@ -851,9 +899,12 @@ export function WorkshopsView() {
                     placeholder="Email del usuario"
                     type="email"
                     value={newMemberEmail}
-                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    onChange={(e) => { setNewMemberEmail(e.target.value); setMemberEmailError('') }}
                     className="flex-1"
                   />
+                  {memberEmailError && (
+                    <p className="text-xs text-destructive sm:col-span-3">{memberEmailError}</p>
+                  )}
                   <Select value={newMemberRole} onValueChange={setNewMemberRole}>
                     <SelectTrigger className="w-[160px]">
                       <SelectValue />

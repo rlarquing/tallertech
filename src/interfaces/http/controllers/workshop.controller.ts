@@ -7,8 +7,26 @@ import { NextRequest } from 'next/server'
 import '@/infrastructure/container'
 import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
+import { validateWithSchema, workshopSchema } from '@/lib/validations'
+import { z } from 'zod'
 
 const useCases = UseCaseContainer.getInstance()
+
+// Schema for adding a workshop member (by email + role)
+const addMemberSchema = z.object({
+  email: z.string({ message: 'El email es requerido' })
+    .email({ message: 'Formato de email inválido' }),
+  role: z.enum(['owner', 'admin', 'employee'], {
+    message: 'Rol inválido',
+  }),
+})
+
+// Schema for updating a workshop member role
+const updateMemberSchema = z.object({
+  role: z.enum(['owner', 'admin', 'employee'], {
+    message: 'Rol inválido',
+  }),
+})
 
 export class WorkshopController {
   static async list(request: NextRequest) {
@@ -45,7 +63,8 @@ export class WorkshopController {
 
   static async create(request: NextRequest) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(workshopSchema, rawBody)
       const result = await useCases.createWorkshop.execute(body, request)
       return ResponsePresenter.created(result)
     } catch (error) {
@@ -55,7 +74,8 @@ export class WorkshopController {
 
   static async update(request: NextRequest, id: string) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(workshopSchema, rawBody)
       const result = await useCases.updateWorkshop.execute(
         { ...body, id },
         request,
@@ -86,7 +106,8 @@ export class WorkshopController {
 
   static async addMember(request: NextRequest, workshopId: string) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(addMemberSchema, rawBody)
       const result = await useCases.addWorkshopMember.execute(
         { ...body, workshopId },
         request,
@@ -108,7 +129,8 @@ export class WorkshopController {
 
   static async updateMember(request: NextRequest, workshopId: string, userId: string) {
     try {
-      const body = await request.json()
+      const rawBody = await request.json()
+      const body = validateWithSchema(updateMemberSchema, rawBody)
       await useCases.updateWorkshopMember.execute(
         { ...body, workshopId, userId },
         request,

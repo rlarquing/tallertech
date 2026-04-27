@@ -60,6 +60,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { customerSchema } from '@/lib/validations'
 
 interface Customer {
   id: string
@@ -135,6 +136,7 @@ export function CustomersView() {
   const [form, setForm] = useState<CustomerForm>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [detailLoading, setDetailLoading] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   const limit = 20
 
@@ -188,6 +190,7 @@ export function CustomersView() {
   const openAddDialog = () => {
     setEditingCustomer(null)
     setForm(emptyForm)
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -201,6 +204,7 @@ export function CustomersView() {
       dni: customer.dni || '',
       notes: customer.notes || '',
     })
+    setValidationErrors({})
     setFormOpen(true)
   }
 
@@ -223,10 +227,17 @@ export function CustomersView() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name.trim()) {
-      toast({ title: 'Error', description: 'El nombre es requerido', variant: 'destructive' })
+    const result = customerSchema.safeParse(form)
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path.join('.')
+        if (!errors[key]) errors[key] = issue.message
+      }
+      setValidationErrors(errors)
       return
     }
+    setValidationErrors({})
     setSubmitting(true)
     try {
       const url = editingCustomer ? `/api/customers/${editingCustomer.id}` : '/api/customers'
@@ -443,10 +454,11 @@ export function CustomersView() {
                 <Input
                   id="name"
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onChange={(e) => { setForm({ ...form, name: e.target.value }); setValidationErrors((prev) => { const next = {...prev}; delete next.name; return next }) }}
                   placeholder="Nombre completo"
                   required
                 />
+                {validationErrors.name && <p className="text-sm text-destructive">{validationErrors.name}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
@@ -454,18 +466,20 @@ export function CustomersView() {
                   <Input
                     id="phone"
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    onChange={(e) => { setForm({ ...form, phone: e.target.value }); setValidationErrors((prev) => { const next = {...prev}; delete next.phone; return next }) }}
                     placeholder="+54 11 5555-0000"
                   />
+                  {validationErrors.phone && <p className="text-sm text-destructive">{validationErrors.phone}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="dni">DNI</Label>
                   <Input
                     id="dni"
                     value={form.dni}
-                    onChange={(e) => setForm({ ...form, dni: e.target.value })}
+                    onChange={(e) => { setForm({ ...form, dni: e.target.value }); setValidationErrors((prev) => { const next = {...prev}; delete next.dni; return next }) }}
                     placeholder="12345678"
                   />
+                  {validationErrors.dni && <p className="text-sm text-destructive">{validationErrors.dni}</p>}
                 </div>
               </div>
               <div className="grid gap-2">
@@ -474,28 +488,31 @@ export function CustomersView() {
                   id="email"
                   type="email"
                   value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={(e) => { setForm({ ...form, email: e.target.value }); setValidationErrors((prev) => { const next = {...prev}; delete next.email; return next }) }}
                   placeholder="correo@ejemplo.com"
                 />
+                {validationErrors.email && <p className="text-sm text-destructive">{validationErrors.email}</p>}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="address">Dirección</Label>
                 <Input
                   id="address"
                   value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  onChange={(e) => { setForm({ ...form, address: e.target.value }); setValidationErrors((prev) => { const next = {...prev}; delete next.address; return next }) }}
                   placeholder="Calle y número"
                 />
+                {validationErrors.address && <p className="text-sm text-destructive">{validationErrors.address}</p>}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="notes">Notas</Label>
                 <Textarea
                   id="notes"
                   value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  onChange={(e) => { setForm({ ...form, notes: e.target.value }); setValidationErrors((prev) => { const next = {...prev}; delete next.notes; return next }) }}
                   placeholder="Notas adicionales..."
                   rows={3}
                 />
+                {validationErrors.notes && <p className="text-sm text-destructive">{validationErrors.notes}</p>}
               </div>
             </div>
             <DialogFooter>
