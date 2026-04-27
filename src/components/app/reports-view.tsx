@@ -532,14 +532,14 @@ export function ReportsView() {
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <DollarSign className="mx-auto h-6 w-6 text-amber-500 mb-2" />
+                <DollarSign className="mx-auto h-6 w-6 text-warning mb-2" />
                 <p className="text-sm text-muted-foreground">Mano de Obra</p>
                 <p className="text-xl font-bold">{formatCurrency(repairsLaborTotal)}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <Package className="mx-auto h-6 w-6 text-blue-500 mb-2" />
+                <Package className="mx-auto h-6 w-6 text-info mb-2" />
                 <p className="text-sm text-muted-foreground">Repuestos</p>
                 <p className="text-xl font-bold">{formatCurrency(repairsPartsTotal)}</p>
               </CardContent>
@@ -615,7 +615,7 @@ export function ReportsView() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  <AlertTriangle className="h-4 w-4 text-warning" />
                   Productos con Stock Bajo
                 </CardTitle>
               </CardHeader>

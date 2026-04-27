@@ -702,10 +702,10 @@ export function SettingsView() {
           </Card>
 
           {/* Restore */}
-          <Card className="border-amber-500/30">
+          <Card className="border-warning/30">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Upload className="h-5 w-5 text-amber-600" />
+                <Upload className="h-5 w-5 text-warning" />
                 <div>
                   <CardTitle className="text-base">Restaurar Base de Datos</CardTitle>
                   <CardDescription>Restaurar desde un archivo de backup previamente descargado</CardDescription>
@@ -714,7 +714,7 @@ export function SettingsView() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400">
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/5 text-warning">
                   <AlertTriangle className="size-4 mt-0.5 shrink-0" />
                   <p className="text-sm">
                     <strong>Precaución:</strong> Restaurar reemplazará todos los datos actuales.
@@ -730,7 +730,7 @@ export function SettingsView() {
                   />
                   <Button
                     variant="outline"
-                    className="border-amber-500 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/20"
+                    className="border-warning text-warning hover:bg-warning/5"
                     onClick={() => setRestoreOpen(true)}
                   >
                     <Upload className="mr-2 h-4 w-4" />
@@ -849,7 +849,7 @@ export function SettingsView() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               ¿Restaurar base de datos?
             </AlertDialogTitle>
             <AlertDialogDescription>

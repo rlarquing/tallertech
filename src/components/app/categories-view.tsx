@@ -66,8 +66,8 @@ const typeIcons: Record<string, React.ElementType> = {
 
 const typeColors: Record<string, string> = {
   product: 'bg-primary/10 text-primary',
-  service: 'bg-blue-500/10 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-  part: 'bg-chart-4/10 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+  service: 'bg-info/10 text-info',
+  part: 'bg-chart-4/10 text-chart-4',
 }
 
 export function CategoriesView() {
@@ -346,7 +346,7 @@ export function CategoriesView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-info/10 text-info">
                 <Wrench className="size-4" />
               </div>
               <div>
@@ -357,7 +357,7 @@ export function CategoriesView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-chart-4/10 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-chart-4/10 text-chart-4">
                 <Tag className="size-4" />
               </div>
               <div>
@@ -445,7 +445,7 @@ export function CategoriesView() {
             <AlertDialogDescription>
               ¿Estás seguro de que deseas eliminar <strong>{deletingCategory?.name}</strong>?
               {deletingCategory && (deletingCategory._count?.products || 0) > 0 && (
-                <span className="block mt-2 text-amber-600 dark:text-amber-400">
+                <span className="block mt-2 text-warning">
                   Esta categoría tiene {deletingCategory._count?.products} producto(s) asociado(s).
                   Será desactivada en lugar de eliminada.
                 </span>

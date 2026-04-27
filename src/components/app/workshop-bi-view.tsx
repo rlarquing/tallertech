@@ -115,13 +115,13 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusColors: Record<string, string> = {
-  received: '#6b7280',
-  diagnosing: '#3b82f6',
-  waiting_parts: '#f59e0b',
-  repairing: '#8b5cf6',
-  ready: '#10b981',
-  delivered: '#059669',
-  cancelled: '#ef4444',
+  received: 'var(--muted-foreground)',
+  diagnosing: 'var(--info)',
+  waiting_parts: 'var(--warning)',
+  repairing: 'var(--chart-2)',
+  ready: 'var(--success)',
+  delivered: 'var(--success)',
+  cancelled: 'var(--destructive)',
 }
 
 const categoryLabels: Record<string, string> = {
@@ -140,21 +140,21 @@ const paymentMethodLabels: Record<string, string> = {
 }
 
 const paymentMethodColors: Record<string, string> = {
-  cash: '#10b981',
-  card: '#3b82f6',
-  transfer: '#8b5cf6',
-  other: '#f59e0b',
+  cash: 'var(--success)',
+  card: 'var(--info)',
+  transfer: 'var(--chart-2)',
+  other: 'var(--warning)',
 }
 
 // ─── Chart Configs ───────────────────────────────────────────────────────────
 
 const revenueChartConfig: ChartConfig = {
-  revenue: { label: 'Ingresos', color: '#10b981' },
-  expenses: { label: 'Gastos', color: '#f59e0b' },
+  revenue: { label: 'Ingresos', color: 'var(--success)' },
+  expenses: { label: 'Gastos', color: 'var(--warning)' },
 }
 
 const comparisonChartConfig: ChartConfig = {
-  revenue: { label: 'Ingresos', color: '#10b981' },
+  revenue: { label: 'Ingresos', color: 'var(--success)' },
 }
 
 const repairsChartConfig: ChartConfig = Object.fromEntries(
@@ -174,7 +174,7 @@ const paymentChartConfig: ChartConfig = Object.fromEntries(
 const expenseCategoryConfig: ChartConfig = Object.fromEntries(
   Object.entries(categoryLabels).map(([key, label]) => [
     key,
-    { label, color: '#f59e0b' },
+    { label, color: 'var(--warning)' },
   ])
 )
 
@@ -221,9 +221,9 @@ function KPICard({
             {trend >= 0 ? (
               <ArrowUpRight className="size-3 text-primary" />
             ) : (
-              <ArrowDownRight className="size-3 text-red-500" />
+              <ArrowDownRight className="size-3 text-destructive" />
             )}
-            <span className={trend >= 0 ? 'text-primary' : 'text-red-500'}>
+            <span className={trend >= 0 ? 'text-primary' : 'text-destructive'}>
               {trend >= 0 ? '+' : ''}
               {trend.toFixed(1)}%
             </span>
@@ -332,7 +332,7 @@ export function WorkshopBIView() {
           status,
           label: statusLabels[status] || status,
           count,
-          fill: statusColors[status] || '#6b7280',
+          fill: statusColors[status] || 'var(--muted-foreground)',
         }))
     : []
 
@@ -343,7 +343,7 @@ export function WorkshopBIView() {
         label: paymentMethodLabels[item.method] || item.method,
         count: item.count,
         total: item.total,
-        fill: paymentMethodColors[item.method] || '#6b7280',
+        fill: paymentMethodColors[item.method] || 'var(--muted-foreground)',
       }))
     : []
 
@@ -352,7 +352,7 @@ export function WorkshopBIView() {
     ? data.expensesByCategory.map((item) => ({
         category: categoryLabels[item.category] || item.category,
         total: item.total,
-        fill: '#f59e0b',
+        fill: 'var(--warning)',
       }))
     : []
 
@@ -371,7 +371,7 @@ export function WorkshopBIView() {
           <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             {isAllView ? (
               <>
-                <Crown className="size-6 text-amber-600" />
+                <Crown className="size-6 text-warning" />
                 Panel de Dueño
               </>
             ) : (
@@ -452,7 +452,7 @@ export function WorkshopBIView() {
           icon={TrendingDown}
           trend={data.expensesTrend}
           trendLabel="vs período anterior"
-          iconColor="bg-red-500/10 text-red-600"
+          iconColor="bg-destructive/10 text-destructive"
           currency={currency}
         />
         <KPICard
@@ -462,9 +462,9 @@ export function WorkshopBIView() {
           iconColor={
             data.netProfit >= 0
               ? 'bg-primary/10 text-primary'
-              : 'bg-red-500/10 text-red-600'
+              : 'bg-destructive/10 text-destructive'
           }
-          valueColor={data.netProfit >= 0 ? '#059669' : '#dc2626'}
+          valueColor={data.netProfit >= 0 ? 'var(--success)' : 'var(--destructive)'}
           currency={currency}
         />
         {isAllView && data.activeWorkshops !== undefined && (
@@ -472,7 +472,7 @@ export function WorkshopBIView() {
             title="Talleres Activos"
             value={data.activeWorkshops}
             icon={Building2}
-            iconColor="bg-chart-4/10 text-amber-600"
+            iconColor="bg-chart-4/10 text-warning"
             valueIsCurrency={false}
           />
         )}
@@ -511,12 +511,12 @@ export function WorkshopBIView() {
                 >
                   <defs>
                     <linearGradient id="fillBIRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--success)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--success)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="fillBIExpenses" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--warning)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--warning)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -550,14 +550,14 @@ export function WorkshopBIView() {
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#10b981"
+                    stroke="var(--success)"
                     strokeWidth={2}
                     fill="url(#fillBIRevenue)"
                   />
                   <Area
                     type="monotone"
                     dataKey="expenses"
-                    stroke="#f59e0b"
+                    stroke="var(--warning)"
                     strokeWidth={2}
                     fill="url(#fillBIExpenses)"
                   />
@@ -649,8 +649,8 @@ export function WorkshopBIView() {
                     name: w.name.length > 15 ? w.name.slice(0, 15) + '…' : w.name,
                     Ingresos: w.revenue,
                     Gastos: w.expenses,
-                    fill: '#10b981',
-                    fillExp: '#f59e0b',
+                    fill: 'var(--success)',
+                    fillExp: 'var(--warning)',
                   }))}
                   layout="vertical"
                   margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
@@ -683,8 +683,8 @@ export function WorkshopBIView() {
                     }
                   />
                   <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="Ingresos" radius={[0, 4, 4, 0]} fill="#10b981" opacity={0.85} />
-                  <Bar dataKey="Gastos" radius={[0, 4, 4, 0]} fill="#f59e0b" opacity={0.85} />
+                  <Bar dataKey="Ingresos" radius={[0, 4, 4, 0]} fill="var(--success)" opacity={0.85} />
+                  <Bar dataKey="Gastos" radius={[0, 4, 4, 0]} fill="var(--warning)" opacity={0.85} />
                 </BarChart>
               </ChartContainer>
             </CardContent>
@@ -719,12 +719,12 @@ export function WorkshopBIView() {
                       <TableCell className="text-right text-primary">
                         {formatCurrency(ws.revenue, currency)}
                       </TableCell>
-                      <TableCell className="text-right text-amber-600">
+                      <TableCell className="text-right text-warning">
                         {formatCurrency(ws.expenses, currency)}
                       </TableCell>
                       <TableCell
                         className={`text-right font-semibold ${
-                          ws.netProfit >= 0 ? 'text-primary' : 'text-red-600'
+                          ws.netProfit >= 0 ? 'text-primary' : 'text-destructive'
                         }`}
                       >
                         {formatCurrency(ws.netProfit, currency)}
@@ -852,7 +852,7 @@ export function WorkshopBIView() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <ShoppingCart className="size-4 text-amber-600" />
+                <ShoppingCart className="size-4 text-warning" />
                 Gastos por Categoría
               </CardTitle>
               <CardDescription>Distribución de gastos</CardDescription>
@@ -895,7 +895,7 @@ export function WorkshopBIView() {
                         />
                       }
                     />
-                    <Bar dataKey="total" radius={[0, 4, 4, 0]} fill="#f59e0b" opacity={0.85} />
+                    <Bar dataKey="total" radius={[0, 4, 4, 0]} fill="var(--warning)" opacity={0.85} />
                   </BarChart>
                 </ChartContainer>
               ) : (
@@ -910,7 +910,7 @@ export function WorkshopBIView() {
           <div className="space-y-4">
             {/* Pending Repairs Alert */}
             {data.pendingRepairs !== undefined && data.pendingRepairs > 0 && (
-              <Card className="border-violet-200 dark:border-violet-800">
+              <Card className="border-chart-2/30">
                 <CardContent className="flex items-center gap-4 pt-6">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-2/10">
                     <Wrench className="size-5 text-chart-2" />
@@ -928,14 +928,14 @@ export function WorkshopBIView() {
 
             {/* Low Stock Alert */}
             {data.lowStockCount !== undefined && data.lowStockCount > 0 && (
-              <Card className="border-amber-200 dark:border-amber-800">
+              <Card className="border-warning/30">
                 <CardContent className="flex items-center gap-4 pt-6">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-4/10">
-                    <AlertTriangle className="size-5 text-amber-600" />
+                    <AlertTriangle className="size-5 text-warning" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">Stock Bajo</p>
-                    <p className="text-lg font-bold text-amber-600">
+                    <p className="text-lg font-bold text-warning">
                       {data.lowStockCount} producto{data.lowStockCount !== 1 ? 's' : ''} con stock bajo
                     </p>
                   </div>
@@ -970,20 +970,20 @@ export function WorkshopBIView() {
             <CardContent className="flex items-center gap-4 pt-6">
               <div
                 className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
-                  data.revenueTrend >= 0 ? 'bg-primary/10' : 'bg-red-500/10'
+                  data.revenueTrend >= 0 ? 'bg-primary/10' : 'bg-destructive/10'
                 }`}
               >
                 {data.revenueTrend >= 0 ? (
                   <TrendingUp className="size-5 text-primary" />
                 ) : (
-                  <TrendingDown className="size-5 text-red-600" />
+                  <TrendingDown className="size-5 text-destructive" />
                 )}
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Tendencia de Ingresos</p>
                 <p
                   className={`text-lg font-bold ${
-                    data.revenueTrend >= 0 ? 'text-primary' : 'text-red-600'
+                    data.revenueTrend >= 0 ? 'text-primary' : 'text-destructive'
                   }`}
                 >
                   {data.revenueTrend >= 0 ? '+' : ''}
@@ -1001,7 +1001,7 @@ export function WorkshopBIView() {
           <Card>
             <CardContent className="flex items-center gap-4 pt-6">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-4/10">
-                <Crown className="size-5 text-amber-600" />
+                <Crown className="size-5 text-warning" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Taller Más Rentable</p>

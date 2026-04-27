@@ -39,6 +39,18 @@ export interface ThemeVariables {
   'sidebar-accent-foreground': string
   'sidebar-border': string
   'sidebar-ring': string
+  /** Semantic: success / positive states (green family) */
+  success: string
+  /** Semantic: success text on success background */
+  'success-foreground': string
+  /** Semantic: warning / caution states (amber/yellow family) */
+  warning: string
+  /** Semantic: warning text on warning background */
+  'warning-foreground': string
+  /** Semantic: informational states (blue family) */
+  info: string
+  /** Semantic: info text on info background */
+  'info-foreground': string
 }
 
 export interface ThemeDefinition {
@@ -89,6 +101,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.205 0.04 55)',
       'sidebar-border': 'oklch(0.90 0.025 55)',
       'sidebar-ring': 'oklch(0.705 0.162 60)',
+      success: 'oklch(0.577 0.145 150)',
+      'success-foreground': 'oklch(0.985 0.003 60)',
+      warning: 'oklch(0.705 0.162 80)',
+      'warning-foreground': 'oklch(0.985 0.003 60)',
+      info: 'oklch(0.577 0.145 240)',
+      'info-foreground': 'oklch(0.985 0.003 60)',
     },
     dark: {
       background: 'oklch(0.13 0.018 55)',
@@ -123,6 +141,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.96 0.012 55)',
       'sidebar-border': 'oklch(1 0 0 / 10%)',
       'sidebar-ring': 'oklch(0.735 0.162 60)',
+      success: 'oklch(0.627 0.145 150)',
+      'success-foreground': 'oklch(0.13 0.018 55)',
+      warning: 'oklch(0.735 0.162 80)',
+      'warning-foreground': 'oklch(0.13 0.018 55)',
+      info: 'oklch(0.627 0.145 240)',
+      'info-foreground': 'oklch(0.13 0.018 55)',
     },
   },
 
@@ -164,6 +188,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.205 0.04 174)',
       'sidebar-border': 'oklch(0.90 0.015 174)',
       'sidebar-ring': 'oklch(0.577 0.118 174)',
+      success: 'oklch(0.577 0.145 150)',
+      'success-foreground': 'oklch(0.985 0.002 174)',
+      warning: 'oklch(0.705 0.162 80)',
+      'warning-foreground': 'oklch(0.985 0.002 174)',
+      info: 'oklch(0.577 0.145 240)',
+      'info-foreground': 'oklch(0.985 0.002 174)',
     },
     dark: {
       background: 'oklch(0.13 0.018 174)',
@@ -198,6 +228,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.96 0.01 174)',
       'sidebar-border': 'oklch(1 0 0 / 10%)',
       'sidebar-ring': 'oklch(0.627 0.118 174)',
+      success: 'oklch(0.627 0.145 150)',
+      'success-foreground': 'oklch(0.13 0.018 174)',
+      warning: 'oklch(0.735 0.162 80)',
+      'warning-foreground': 'oklch(0.13 0.018 174)',
+      info: 'oklch(0.627 0.145 240)',
+      'info-foreground': 'oklch(0.13 0.018 174)',
     },
   },
 
@@ -239,6 +275,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.205 0.05 12)',
       'sidebar-border': 'oklch(0.90 0.025 12)',
       'sidebar-ring': 'oklch(0.442 0.150 12)',
+      success: 'oklch(0.577 0.145 150)',
+      'success-foreground': 'oklch(0.985 0.004 12)',
+      warning: 'oklch(0.705 0.162 80)',
+      'warning-foreground': 'oklch(0.985 0.004 12)',
+      info: 'oklch(0.577 0.145 240)',
+      'info-foreground': 'oklch(0.985 0.004 12)',
     },
     dark: {
       background: 'oklch(0.13 0.02 12)',
@@ -273,6 +315,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.96 0.015 12)',
       'sidebar-border': 'oklch(1 0 0 / 10%)',
       'sidebar-ring': 'oklch(0.522 0.150 12)',
+      success: 'oklch(0.627 0.145 150)',
+      'success-foreground': 'oklch(0.13 0.02 12)',
+      warning: 'oklch(0.735 0.162 80)',
+      'warning-foreground': 'oklch(0.13 0.02 12)',
+      info: 'oklch(0.627 0.145 240)',
+      'info-foreground': 'oklch(0.13 0.02 12)',
     },
   },
 
@@ -314,6 +362,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.205 0.04 130)',
       'sidebar-border': 'oklch(0.90 0.022 130)',
       'sidebar-ring': 'oklch(0.577 0.118 130)',
+      success: 'oklch(0.577 0.145 150)',
+      'success-foreground': 'oklch(0.985 0.003 130)',
+      warning: 'oklch(0.705 0.162 80)',
+      'warning-foreground': 'oklch(0.985 0.003 130)',
+      info: 'oklch(0.577 0.145 240)',
+      'info-foreground': 'oklch(0.985 0.003 130)',
     },
     dark: {
       background: 'oklch(0.13 0.018 130)',
@@ -348,6 +402,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.96 0.012 130)',
       'sidebar-border': 'oklch(1 0 0 / 10%)',
       'sidebar-ring': 'oklch(0.627 0.118 130)',
+      success: 'oklch(0.627 0.145 150)',
+      'success-foreground': 'oklch(0.13 0.018 130)',
+      warning: 'oklch(0.735 0.162 80)',
+      'warning-foreground': 'oklch(0.13 0.018 130)',
+      info: 'oklch(0.627 0.145 240)',
+      'info-foreground': 'oklch(0.13 0.018 130)',
     },
   },
 
@@ -389,6 +449,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.205 0.04 50)',
       'sidebar-border': 'oklch(0.90 0.025 50)',
       'sidebar-ring': 'oklch(0.637 0.180 50)',
+      success: 'oklch(0.577 0.145 150)',
+      'success-foreground': 'oklch(0.985 0.003 50)',
+      warning: 'oklch(0.705 0.162 80)',
+      'warning-foreground': 'oklch(0.985 0.003 50)',
+      info: 'oklch(0.577 0.145 240)',
+      'info-foreground': 'oklch(0.985 0.003 50)',
     },
     dark: {
       background: 'oklch(0.10 0.015 50)',
@@ -423,6 +489,12 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       'sidebar-accent-foreground': 'oklch(0.96 0.012 50)',
       'sidebar-border': 'oklch(1 0 0 / 12%)',
       'sidebar-ring': 'oklch(0.687 0.180 50)',
+      success: 'oklch(0.627 0.145 150)',
+      'success-foreground': 'oklch(0.10 0.015 50)',
+      warning: 'oklch(0.735 0.162 80)',
+      'warning-foreground': 'oklch(0.10 0.015 50)',
+      info: 'oklch(0.627 0.145 240)',
+      'info-foreground': 'oklch(0.10 0.015 50)',
     },
   },
 }

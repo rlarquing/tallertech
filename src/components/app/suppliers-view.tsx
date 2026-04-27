@@ -293,7 +293,7 @@ export function SuppliersView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-info/10 text-info">
                 <Phone className="size-4" />
               </div>
               <div>
@@ -304,7 +304,7 @@ export function SuppliersView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
                 <Mail className="size-4" />
               </div>
               <div>
@@ -315,7 +315,7 @@ export function SuppliersView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-chart-4/10 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-chart-4/10 text-warning">
                 <Package className="size-4" />
               </div>
               <div>
@@ -572,7 +572,7 @@ export function SuppliersView() {
             <AlertDialogDescription>
               ¿Estás seguro de que deseas eliminar <strong>{deletingSupplier?.name}</strong>?
               {deletingSupplier && (deletingSupplier._count?.products || 0) > 0 && (
-                <span className="block mt-2 text-amber-600 dark:text-amber-400">
+                <span className="block mt-2 text-warning">
                   Este proveedor tiene {deletingSupplier._count?.products} producto(s) asociado(s).
                   Será desactivado en lugar de eliminado.
                 </span>

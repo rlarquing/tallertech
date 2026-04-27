@@ -223,7 +223,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Not authenticated - show login/register
   return (
-    <div className="flex min-h-svh items-center justify-center bg-gradient-to-br from-emerald-50 via-background to-emerald-50 dark:from-emerald-950/20 dark:via-background dark:to-emerald-950/20 p-4">
+    <div className="flex min-h-svh items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/5 p-4">
       <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="mb-8 flex flex-col items-center gap-3">

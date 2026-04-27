@@ -51,7 +51,7 @@ export function OfflineBanner() {
               showSynced
                 ? 'bg-primary text-primary-foreground'
                 : !isOnline
-                  ? 'bg-amber-500 text-white'
+                  ? 'bg-warning text-warning-foreground'
                   : 'bg-primary text-primary-foreground'
             }`}
           >

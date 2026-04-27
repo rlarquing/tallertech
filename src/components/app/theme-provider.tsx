@@ -91,6 +91,12 @@ function ColorThemeProvider({ children }: { children: React.ReactNode }) {
     const variables = isDark ? themeDef.dark : themeDef.light
 
     applyThemeVariables(variables)
+
+    // Update meta theme-color to match the current primary
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', themeDef.primaryColor)
+    }
   }, [theme, resolvedTheme, mounted])
 
   const setTheme = React.useCallback((newTheme: ThemeName) => {

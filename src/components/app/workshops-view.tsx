@@ -105,9 +105,9 @@ const roleIcons: Record<string, React.ElementType> = {
 }
 
 const roleBadgeClasses: Record<string, string> = {
-  owner: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  admin: 'bg-violet-100 text-chart-2 dark:bg-violet-900/40 dark:text-violet-300',
-  employee: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
+  owner: 'bg-warning/10 text-warning',
+  admin: 'bg-chart-2/10 text-chart-2',
+  employee: 'bg-info/10 text-info',
 }
 
 const currencyLabels: Record<string, string> = {
@@ -548,7 +548,7 @@ export function WorkshopsView() {
                 {/* Active status indicator */}
                 <div
                   className={`absolute top-0 left-0 right-0 h-1 ${
-                    workshop.active ? 'bg-primary' : 'bg-gray-400'
+                    workshop.active ? 'bg-primary' : 'bg-muted-foreground'
                   }`}
                 />
 
@@ -611,7 +611,7 @@ export function WorkshopsView() {
                       className={`text-xs ${
                         workshop.active
                           ? 'border-primary text-primary'
-                          : 'border-gray-400 text-gray-500'
+                          : 'border-muted-foreground text-muted-foreground'
                       }`}
                     >
                       {workshop.active ? 'Activo' : 'Inactivo'}
@@ -655,7 +655,7 @@ export function WorkshopsView() {
                       onClick={() => handleToggleActive(workshop)}
                       className={`text-xs h-8 ${
                         workshop.active
-                          ? 'text-red-600 hover:text-red-700 hover:bg-red-50'
+                          ? 'text-destructive hover:text-destructive hover:bg-destructive/5'
                           : 'text-primary hover:text-primary/80 hover:bg-primary/5'
                       }`}
                     >
@@ -838,7 +838,7 @@ export function WorkshopsView() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               {deactivatingWorkshop?.active ? '¿Desactivar taller?' : '¿Activar taller?'}
             </AlertDialogTitle>
             <AlertDialogDescription>

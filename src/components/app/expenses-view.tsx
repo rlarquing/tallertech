@@ -105,11 +105,11 @@ const categoryLabels: Record<string, string> = {
 }
 
 const categoryColors: Record<string, string> = {
-  supplies: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
-  rent: 'bg-chart-4/10 text-amber-700 dark:text-amber-400',
-  salary: 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
-  utilities: 'bg-chart-2/10 text-cyan-700 dark:text-cyan-400',
-  other: 'bg-gray-500/10 text-gray-700 dark:text-gray-400',
+  supplies: 'bg-info/10 text-info',
+  rent: 'bg-chart-4/10 text-warning',
+  salary: 'bg-chart-2/10 text-chart-2',
+  utilities: 'bg-chart-2/10 text-info',
+  other: 'bg-muted text-muted-foreground',
 }
 
 type DateFilter = 'today' | 'week' | 'month' | 'custom'

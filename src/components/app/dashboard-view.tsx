@@ -108,11 +108,11 @@ function formatDateTime(dateStr: string): string {
 const revenueChartConfig: ChartConfig = {
   revenue: {
     label: 'Ingresos',
-    color: '#10b981',
+    color: 'var(--chart-1)',
   },
   expenses: {
     label: 'Gastos',
-    color: '#f59e0b',
+    color: 'var(--warning)',
   },
 }
 
@@ -127,13 +127,13 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusColors: Record<string, string> = {
-  received: '#6b7280',
-  diagnosing: '#3b82f6',
-  waiting_parts: '#f59e0b',
-  repairing: '#8b5cf6',
-  ready: '#10b981',
-  delivered: '#059669',
-  cancelled: '#ef4444',
+  received: 'var(--muted-foreground)',
+  diagnosing: 'var(--info)',
+  waiting_parts: 'var(--warning)',
+  repairing: 'var(--chart-2)',
+  ready: 'var(--success)',
+  delivered: 'var(--success)',
+  cancelled: 'var(--destructive)',
 }
 
 const repairsChartConfig: ChartConfig = Object.fromEntries(
@@ -187,9 +187,9 @@ function StatCard({
             {trend >= 0 ? (
               <ArrowUpRight className="size-3 text-primary" />
             ) : (
-              <ArrowDownRight className="size-3 text-red-500" />
+              <ArrowDownRight className="size-3 text-destructive" />
             )}
-            <span className={trend >= 0 ? 'text-primary' : 'text-red-500'}>
+            <span className={trend >= 0 ? 'text-primary' : 'text-destructive'}>
               {trend >= 0 ? '+' : ''}
               {trend.toFixed(1)}%
             </span>
@@ -295,7 +295,7 @@ export function DashboardView() {
       status,
       label: statusLabels[status] || status,
       count,
-      fill: statusColors[status] || '#6b7280',
+      fill: statusColors[status] || 'var(--muted-foreground)',
     }))
 
   // Build revenue chart data with formatted dates
@@ -335,15 +335,15 @@ export function DashboardView() {
   // Repair status badge color
   function getStatusBadge(status: string) {
     const colors: Record<string, string> = {
-      received: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-      diagnosing: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-      waiting_parts: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-      repairing: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-      ready: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      delivered: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      cancelled: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      received: 'bg-muted text-muted-foreground',
+      diagnosing: 'bg-info/10 text-info',
+      waiting_parts: 'bg-warning/10 text-warning',
+      repairing: 'bg-chart-2/10 text-chart-2',
+      ready: 'bg-success/10 text-success',
+      delivered: 'bg-success/10 text-success',
+      cancelled: 'bg-destructive/10 text-destructive',
     }
-    return colors[status] || 'bg-gray-100 text-gray-700'
+    return colors[status] || 'bg-muted text-muted-foreground'
   }
 
   return (
@@ -398,12 +398,12 @@ export function DashboardView() {
               <AreaChart data={revenueChartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="fillExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--warning)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--warning)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -437,14 +437,14 @@ export function DashboardView() {
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#10b981"
+                  stroke="var(--chart-1)"
                   strokeWidth={2}
                   fill="url(#fillRevenue)"
                 />
                 <Area
                   type="monotone"
                   dataKey="expenses"
-                  stroke="#f59e0b"
+                  stroke="var(--warning)"
                   strokeWidth={2}
                   fill="url(#fillExpenses)"
                 />
@@ -669,7 +669,7 @@ export function DashboardView() {
               config={Object.fromEntries(
                 data.expensesByCategory.map((item) => [
                   item.category,
-                  { label: categoryLabels[item.category] || item.category, color: '#f59e0b' },
+                  { label: categoryLabels[item.category] || item.category, color: 'var(--warning)' },
                 ])
               )}
               className="h-48 w-full"
@@ -678,7 +678,7 @@ export function DashboardView() {
                 data={data.expensesByCategory.map((item) => ({
                   category: categoryLabels[item.category] || item.category,
                   total: item.total,
-                  fill: '#f59e0b',
+                  fill: 'var(--warning)',
                 }))}
                 layout="vertical"
                 margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
@@ -695,7 +695,7 @@ export function DashboardView() {
                     />
                   }
                 />
-                <Bar dataKey="total" radius={[0, 4, 4, 0]} fill="#f59e0b" opacity={0.85} />
+                <Bar dataKey="total" radius={[0, 4, 4, 0]} fill="var(--warning)" opacity={0.85} />
               </BarChart>
             </ChartContainer>
           </CardContent>

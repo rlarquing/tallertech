@@ -449,7 +449,7 @@ export function ProductsView() {
       return <Badge variant="destructive" className="text-xs">Sin stock</Badge>
     }
     if (product.quantity <= product.minStock) {
-      return <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs">Stock bajo</Badge>
+      return <Badge className="bg-warning hover:bg-warning/90 text-warning-foreground text-xs">Stock bajo</Badge>
     }
     return <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs">En stock</Badge>
   }
@@ -588,7 +588,7 @@ export function ProductsView() {
                   </TableHeader>
                   <TableBody>
                     {products.map((product) => (
-                      <TableRow key={product.id} className={product.quantity <= product.minStock && product.quantity > 0 ? 'bg-amber-50/50 dark:bg-amber-950/20' : product.quantity <= 0 ? 'bg-red-50/50 dark:bg-red-950/20' : ''}>
+                      <TableRow key={product.id} className={product.quantity <= product.minStock && product.quantity > 0 ? 'bg-warning/5' : product.quantity <= 0 ? 'bg-destructive/5' : ''}>
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="font-medium text-sm">{product.name}</span>
@@ -827,7 +827,7 @@ export function ProductsView() {
                   <p className="text-xs text-destructive">{formValidationErrors['salePrice']}</p>
                 )}
                 {!formValidationErrors['salePrice'] && formData.salePrice && formData.costPrice && parseFloat(formData.salePrice) < parseFloat(formData.costPrice) && (
-                  <p className="text-xs text-amber-600">⚠ El precio de venta es menor al precio de costo</p>
+                  <p className="text-xs text-warning">⚠ El precio de venta es menor al precio de costo</p>
                 )}
               </div>
 
@@ -1025,13 +1025,13 @@ export function ProductsView() {
                   </SelectItem>
                   <SelectItem value="out">
                     <div className="flex items-center gap-2">
-                      <ArrowDown className="size-3 text-red-600" />
+                      <ArrowDown className="size-3 text-destructive" />
                       Salida
                     </div>
                   </SelectItem>
                   <SelectItem value="adjustment">
                     <div className="flex items-center gap-2">
-                      <ArrowUpDown className="size-3 text-blue-600" />
+                      <ArrowUpDown className="size-3 text-info" />
                       Ajuste (valor exacto)
                     </div>
                   </SelectItem>

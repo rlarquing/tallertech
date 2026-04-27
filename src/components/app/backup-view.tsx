@@ -401,7 +401,7 @@ export function BackupView() {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <HardDrive className="h-5 w-5 text-emerald-600" />
+              <HardDrive className="h-5 w-5 text-success" />
               <div>
                 <CardTitle className="text-base">Estado de la Base de Datos</CardTitle>
                 <CardDescription>Información actual del almacenamiento</CardDescription>
@@ -410,8 +410,8 @@ export function BackupView() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 mb-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-                <Database className="size-6 text-emerald-600" />
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-success/10">
+                <Database className="size-6 text-success" />
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Tamaño del archivo</p>
@@ -476,28 +476,28 @@ export function BackupView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className={`p-3 rounded-lg border-2 transition-colors ${backupFormat === 'json' ? 'border-primary bg-primary/5' : 'border-border'}`}>
                 <div className="flex items-center gap-2 mb-2">
-                  <FileJson className="size-5 text-emerald-600" />
+                  <FileJson className="size-5 text-success" />
                   <span className="font-medium">JSON</span>
                   <Badge variant="secondary" className="text-xs">Recomendado</Badge>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-emerald-500 shrink-0" /> Validable antes de restaurar</li>
-                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-emerald-500 shrink-0" /> Legible y verificable</li>
-                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-emerald-500 shrink-0" /> Protegido con checksum SHA-256</li>
-                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-emerald-500 shrink-0" /> Compatible entre versiones</li>
+                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-success shrink-0" /> Validable antes de restaurar</li>
+                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-success shrink-0" /> Legible y verificable</li>
+                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-success shrink-0" /> Protegido con checksum SHA-256</li>
+                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-success shrink-0" /> Compatible entre versiones</li>
                 </ul>
               </div>
               <div className={`p-3 rounded-lg border-2 transition-colors ${backupFormat === 'sqlite' ? 'border-primary bg-primary/5' : 'border-border'}`}>
                 <div className="flex items-center gap-2 mb-2">
-                  <FileArchive className="size-5 text-amber-600" />
+                  <FileArchive className="size-5 text-warning" />
                   <span className="font-medium">SQLite</span>
                   <Badge variant="outline" className="text-xs">Legacy</Badge>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-amber-500 shrink-0" /> Copia exacta de la base de datos</li>
-                  <li className="flex items-center gap-1"><Info className="size-3 text-amber-500 shrink-0" /> No se puede validar antes de restaurar</li>
-                  <li className="flex items-center gap-1"><Info className="size-3 text-amber-500 shrink-0" /> Dependiente de la versión de esquema</li>
-                  <li className="flex items-center gap-1"><Info className="size-3 text-amber-500 shrink-0" /> Restauro más rápido</li>
+                  <li className="flex items-center gap-1"><CheckCircle2 className="size-3 text-warning shrink-0" /> Copia exacta de la base de datos</li>
+                  <li className="flex items-center gap-1"><Info className="size-3 text-warning shrink-0" /> No se puede validar antes de restaurar</li>
+                  <li className="flex items-center gap-1"><Info className="size-3 text-warning shrink-0" /> Dependiente de la versión de esquema</li>
+                  <li className="flex items-center gap-1"><Info className="size-3 text-warning shrink-0" /> Restauro más rápido</li>
                 </ul>
               </div>
             </div>
@@ -518,10 +518,10 @@ export function BackupView() {
       </Card>
 
       {/* Restore */}
-      <Card className="border-amber-500/30">
+      <Card className="border-warning/30">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Upload className="h-5 w-5 text-amber-600" />
+            <Upload className="h-5 w-5 text-warning" />
             <div>
               <CardTitle className="text-base">Restaurar Base de Datos</CardTitle>
               <CardDescription>Restaurar desde un archivo de backup previamente creado</CardDescription>
@@ -530,7 +530,7 @@ export function BackupView() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400">
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/5 text-warning">
               <AlertTriangle className="size-4 mt-0.5 shrink-0" />
               <div className="text-sm">
                 <p className="font-medium">Precaución:</p>
@@ -563,19 +563,19 @@ export function BackupView() {
             )}
 
             {restoreValidation && !validating && (
-              <div className={`p-3 rounded-lg ${restoreValidation.valid ? 'bg-emerald-50 dark:bg-emerald-950/20' : 'bg-red-50 dark:bg-red-950/20'}`}>
+              <div className={`p-3 rounded-lg ${restoreValidation.valid ? 'bg-success/5' : 'bg-destructive/5'}`}>
                 <div className="flex items-center gap-2 mb-1">
                   {restoreValidation.valid ? (
-                    <CheckCircle2 className="size-4 text-emerald-600" />
+                    <CheckCircle2 className="size-4 text-success" />
                   ) : (
-                    <XCircle className="size-4 text-red-600" />
+                    <XCircle className="size-4 text-destructive" />
                   )}
-                  <span className={`font-medium text-sm ${restoreValidation.valid ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                  <span className={`font-medium text-sm ${restoreValidation.valid ? 'text-success' : 'text-destructive'}`}>
                     {restoreValidation.valid ? 'Archivo válido' : 'Archivo inválido'}
                   </span>
                 </div>
                 {restoreValidation.errors.length > 0 && (
-                  <ul className="text-xs text-red-600 dark:text-red-400 ml-6 space-y-1">
+                  <ul className="text-xs text-destructive ml-6 space-y-1">
                     {restoreValidation.errors.map((err, i) => (
                       <li key={i}>• {err}</li>
                     ))}
@@ -624,12 +624,12 @@ export function BackupView() {
                   {/* Icon + Info */}
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
-                      backup.format === 'json' ? 'bg-emerald-500/10' : 'bg-amber-500/10'
+                      backup.format === 'json' ? 'bg-success/10' : 'bg-warning/10'
                     }`}>
                       {backup.format === 'json' ? (
-                        <FileJson className="size-5 text-emerald-600" />
+                        <FileJson className="size-5 text-success" />
                       ) : (
-                        <FileArchive className="size-5 text-amber-600" />
+                        <FileArchive className="size-5 text-warning" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -708,12 +708,12 @@ export function BackupView() {
       </Card>
 
       {/* Info Card */}
-      <Card className="border-sky-500/20 bg-sky-50/50 dark:bg-sky-950/10">
+      <Card className="border-info/30 bg-info/5">
         <CardContent className="pt-4">
           <div className="flex items-start gap-3">
-            <Shield className="size-5 text-sky-600 shrink-0 mt-0.5" />
+            <Shield className="size-5 text-info shrink-0 mt-0.5" />
             <div className="text-sm space-y-2">
-              <p className="font-medium text-sky-700 dark:text-sky-400">Recomendaciones de Seguridad</p>
+              <p className="font-medium text-info">Recomendaciones de Seguridad</p>
               <ul className="text-muted-foreground space-y-1 text-xs">
                 <li>• Realice un backup <strong>diario</strong> antes del cuadre del taller</li>
                 <li>• Descargue el backup a su teléfono o almacenamiento externo</li>
@@ -738,7 +738,7 @@ export function BackupView() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               ¿Restaurar base de datos?
             </AlertDialogTitle>
             <AlertDialogDescription asChild>

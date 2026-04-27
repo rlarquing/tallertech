@@ -134,13 +134,13 @@ interface Product {
 // ============================================================
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; borderColor: string }> = {
-  received: { label: 'Recibida', color: 'text-gray-700 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-800', borderColor: 'border-gray-300 dark:border-gray-600' },
-  diagnosing: { label: 'Diagnosticando', color: 'text-yellow-700 dark:text-yellow-300', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30', borderColor: 'border-yellow-300 dark:border-yellow-700' },
-  waiting_parts: { label: 'Esperando Piezas', color: 'text-orange-700 dark:text-orange-300', bgColor: 'bg-orange-100 dark:bg-orange-900/30', borderColor: 'border-orange-300 dark:border-orange-700' },
-  repairing: { label: 'Reparando', color: 'text-blue-700 dark:text-blue-300', bgColor: 'bg-blue-100 dark:bg-blue-900/30', borderColor: 'border-blue-300 dark:border-blue-700' },
-  ready: { label: 'Lista', color: 'text-green-700 dark:text-green-300', bgColor: 'bg-green-100 dark:bg-green-900/30', borderColor: 'border-green-300 dark:border-green-700' },
-  delivered: { label: 'Entregada', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30', borderColor: 'border-green-300 dark:border-green-700' },
-  cancelled: { label: 'Cancelada', color: 'text-red-700 dark:text-red-300', bgColor: 'bg-red-100 dark:bg-red-900/30', borderColor: 'border-red-300 dark:border-red-700' },
+  received: { label: 'Recibida', color: 'text-muted-foreground', bgColor: 'bg-muted', borderColor: 'border-border' },
+  diagnosing: { label: 'Diagnosticando', color: 'text-warning', bgColor: 'bg-warning/10', borderColor: 'border-warning/30' },
+  waiting_parts: { label: 'Esperando Piezas', color: 'text-warning', bgColor: 'bg-warning/10', borderColor: 'border-warning/30' },
+  repairing: { label: 'Reparando', color: 'text-info', bgColor: 'bg-info/10', borderColor: 'border-info/30' },
+  ready: { label: 'Lista', color: 'text-success', bgColor: 'bg-success/10', borderColor: 'border-success/30' },
+  delivered: { label: 'Entregada', color: 'text-success', bgColor: 'bg-success/10', borderColor: 'border-success/30' },
+  cancelled: { label: 'Cancelada', color: 'text-destructive', bgColor: 'bg-destructive/10', borderColor: 'border-destructive/30' },
 }
 
 const statusWorkflow = ['received', 'diagnosing', 'waiting_parts', 'repairing', 'ready', 'delivered']

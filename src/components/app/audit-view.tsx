@@ -78,17 +78,17 @@ const actionLabels: Record<string, string> = {
 
 const actionColors: Record<string, string> = {
   CREATE: 'bg-primary/10 text-primary',
-  UPDATE: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  DELETE: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-  LOGIN: 'bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300',
-  LOGOUT: 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300',
+  UPDATE: 'bg-info/10 text-info',
+  DELETE: 'bg-destructive/10 text-destructive',
+  LOGIN: 'bg-info/10 text-info',
+  LOGOUT: 'bg-muted text-muted-foreground',
   REGISTER: 'bg-chart-2/10 text-chart-2',
-  STATUS_CHANGE: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
+  STATUS_CHANGE: 'bg-warning/10 text-warning',
   STOCK_ADJUSTMENT: 'bg-chart-3/10 text-chart-3',
-  BACKUP: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300',
-  RESTORE: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300',
-  EXPORT: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300',
-  CANCEL: 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300',
+  BACKUP: 'bg-success/10 text-success',
+  RESTORE: 'bg-chart-4/10 text-chart-4',
+  EXPORT: 'bg-info/10 text-info',
+  CANCEL: 'bg-destructive/10 text-destructive',
 }
 
 const entityLabels: Record<string, string> = {
@@ -326,7 +326,7 @@ export function AuditView() {
                         <TableCell>
                           <Badge
                             variant="secondary"
-                            className={`text-[10px] px-1.5 py-0 ${actionColors[log.action] || 'bg-gray-100 text-gray-700'}`}
+                            className={`text-[10px] px-1.5 py-0 ${actionColors[log.action] || 'bg-muted text-muted-foreground'}`}
                           >
                             {actionLabels[log.action] || log.action}
                           </Badge>

@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LogOut, User, Settings, Moon, Sun, Menu, Building2 } from 'lucide-react'
+import { ThemeSwitcher } from '@/components/app/theme-switcher'
 import { useTheme } from 'next-themes'
 import { ProductsView } from '@/components/app/products-view'
 import { CategoriesView } from '@/components/app/categories-view'
@@ -250,7 +251,10 @@ export function AppShell() {
               </DropdownMenu>
             )}
 
-            {/* Theme Toggle */}
+            {/* Color Theme Switcher */}
+            <ThemeSwitcher />
+
+            {/* Dark/Light Toggle */}
             <Button
               variant="ghost"
               size="icon"
@@ -259,7 +263,7 @@ export function AppShell() {
             >
               <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Cambiar tema</span>
+              <span className="sr-only">Cambiar modo claro/oscuro</span>
             </Button>
 
             {/* User Menu */}
