@@ -139,7 +139,7 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
   waiting_parts: { label: 'Esperando Piezas', color: 'text-orange-700 dark:text-orange-300', bgColor: 'bg-orange-100 dark:bg-orange-900/30', borderColor: 'border-orange-300 dark:border-orange-700' },
   repairing: { label: 'Reparando', color: 'text-blue-700 dark:text-blue-300', bgColor: 'bg-blue-100 dark:bg-blue-900/30', borderColor: 'border-blue-300 dark:border-blue-700' },
   ready: { label: 'Lista', color: 'text-green-700 dark:text-green-300', bgColor: 'bg-green-100 dark:bg-green-900/30', borderColor: 'border-green-300 dark:border-green-700' },
-  delivered: { label: 'Entregada', color: 'text-emerald-700 dark:text-emerald-300', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', borderColor: 'border-emerald-300 dark:border-emerald-700' },
+  delivered: { label: 'Entregada', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30', borderColor: 'border-green-300 dark:border-green-700' },
   cancelled: { label: 'Cancelada', color: 'text-red-700 dark:text-red-300', bgColor: 'bg-red-100 dark:bg-red-900/30', borderColor: 'border-red-300 dark:border-red-700' },
 }
 
@@ -698,7 +698,7 @@ export function RepairsView() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* New Repair Button */}
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
               onClick={() => setNewRepairOpen(true)}
             >
               <Plus className="mr-2 size-4" />
@@ -769,7 +769,7 @@ export function RepairsView() {
                 <TableBody>
                   {repairs.map((repair) => (
                     <TableRow key={repair.id}>
-                      <TableCell className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      <TableCell className="font-mono text-xs font-semibold text-primary">
                         {repair.code}
                       </TableCell>
                       <TableCell className="max-w-[120px] truncate">{repair.customer.name}</TableCell>
@@ -808,7 +808,7 @@ export function RepairsView() {
                             {repair.status !== 'delivered' && repair.status !== 'cancelled' && (
                               <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-emerald-600" onClick={() => {
+                                <DropdownMenuItem className="text-primary" onClick={() => {
                                   const currentIdx = statusWorkflow.indexOf(repair.status)
                                   if (currentIdx < statusWorkflow.length - 1) {
                                     changeStatus(repair.id, statusWorkflow[currentIdx + 1])
@@ -859,7 +859,7 @@ export function RepairsView() {
             <Card key={repair.id}>
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">{repair.code}</span>
+                  <span className="font-mono text-xs font-semibold text-primary">{repair.code}</span>
                   <div className="flex items-center gap-2">
                     <Badge variant={priorityConfig[repair.priority]?.variant || 'outline'} className="text-xs">
                       {priorityConfig[repair.priority]?.label || repair.priority}
@@ -881,7 +881,7 @@ export function RepairsView() {
                   </div>
                   <div className="flex justify-between font-semibold">
                     <span>Costo:</span>
-                    <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(repair.totalCost)}</span>
+                    <span className="text-primary">{formatCurrency(repair.totalCost)}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {new Date(repair.receivedAt).toLocaleString('es-CU')}
@@ -908,7 +908,7 @@ export function RepairsView() {
                         <Package className="mr-2 size-4" /> Agregar Pieza
                       </DropdownMenuItem>
                       {repair.status !== 'delivered' && repair.status !== 'cancelled' && (
-                        <DropdownMenuItem className="text-emerald-600" onClick={() => {
+                        <DropdownMenuItem className="text-primary" onClick={() => {
                           const currentIdx = statusWorkflow.indexOf(repair.status)
                           if (currentIdx < statusWorkflow.length - 1) {
                             changeStatus(repair.id, statusWorkflow[currentIdx + 1])
@@ -1054,7 +1054,7 @@ export function RepairsView() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setNewRepairOpen(false); resetNewForm() }}>Cancelar</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={createRepair} disabled={creating}>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={createRepair} disabled={creating}>
               {creating ? <><Loader2 className="mr-2 size-4 animate-spin" /> Guardando...</> : 'Crear Orden'}
             </Button>
           </DialogFooter>
@@ -1174,7 +1174,7 @@ export function RepairsView() {
           ) : null}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditRepairOpen(false)}>Cancelar</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={saveRepair} disabled={saving}>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={saveRepair} disabled={saving}>
               {saving ? <><Loader2 className="mr-2 size-4 animate-spin" /> Guardando...</> : 'Guardar Cambios'}
             </Button>
           </DialogFooter>
@@ -1289,7 +1289,7 @@ export function RepairsView() {
                 </div>
                 <div className="flex justify-between font-bold text-base">
                   <span>Total:</span>
-                  <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(detailRepair.totalCost)}</span>
+                  <span className="text-primary">{formatCurrency(detailRepair.totalCost)}</span>
                 </div>
               </div>
 
@@ -1298,7 +1298,7 @@ export function RepairsView() {
                   <Printer className="mr-2 size-4" /> Imprimir
                 </Button>
                 <Button
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={() => { setDetailOpen(false); openEditRepair(detailRepair.id) }}
                 >
                   <Wrench className="mr-2 size-4" /> Editar
@@ -1362,7 +1362,7 @@ export function RepairsView() {
                       </div>
                       <Button
                         size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 ml-2"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 ml-2"
                         disabled={product.quantity <= 0 || addingPart}
                         onClick={() => addPart(product, parseInt(partQuantity) || 1)}
                       >

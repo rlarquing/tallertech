@@ -461,7 +461,7 @@ export function PosView() {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CheckCircle2 className="size-5 text-emerald-500" />
+            <CheckCircle2 className="size-5 text-primary" />
             Venta Completada
           </DialogTitle>
           <DialogDescription>La venta se ha registrado exitosamente</DialogDescription>
@@ -584,7 +584,7 @@ export function PosView() {
                       setCustomerSearch('')
                     }}
                   >
-                    <div className="flex size-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                    <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                       <User className="size-4" />
                     </div>
                     <div>
@@ -710,13 +710,13 @@ export function PosView() {
                       return (
                         <button
                           key={product.id}
-                          className={`relative flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-all hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 ${
-                            inCart ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-700' : 'bg-card'
+                          className={`relative flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-all hover:shadow-md hover:border-primary/30 dark:hover:border-primary/70 ${
+                            inCart ? 'border-primary/40 bg-primary/5 dark:border-primary/70' : 'bg-card'
                           }`}
                           onClick={() => addToCart(product)}
                         >
                           {inCart && (
-                            <Badge className="absolute -top-2 -right-2 size-5 flex items-center justify-center p-0 text-[10px] bg-emerald-500">
+                            <Badge className="absolute -top-2 -right-2 size-5 flex items-center justify-center p-0 text-[10px] bg-primary">
                               {inCart.quantity}
                             </Badge>
                           )}
@@ -725,7 +725,7 @@ export function PosView() {
                             {product.sku && <span className="font-mono">{product.sku} · </span>}
                             Stock: {product.quantity}
                           </p>
-                          <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                          <p className="text-sm font-semibold text-primary">
                             {formatCurrency(product.salePrice)}
                           </p>
                         </button>
@@ -949,7 +949,7 @@ export function PosView() {
         </Card>
 
         {/* Totals */}
-        <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20">
+        <Card className="border-primary/20 dark:border-primary/80 bg-primary/5 dark:bg-primary/20">
           <CardContent className="p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal:</span>
@@ -970,7 +970,7 @@ export function PosView() {
             <Separator />
             <div className="flex justify-between text-lg font-bold">
               <span>Total:</span>
-              <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(total)}</span>
+              <span className="text-primary">{formatCurrency(total)}</span>
             </div>
             {validationErrors['total'] && (
               <p className="text-xs text-destructive">{validationErrors['total']}</p>
@@ -979,7 +979,7 @@ export function PosView() {
               <p className="text-xs text-destructive">{validationErrors['items']}</p>
             )}
             <Button
-              className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="w-full mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
               size="lg"
               disabled={cart.length === 0 || submitting || Object.keys(validationErrors).some(k => k === 'total' || k === 'discount')}
               onClick={completeSale}

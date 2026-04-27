@@ -64,7 +64,7 @@ export function MobileNav() {
                     className="flex items-center justify-center"
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   >
-                    <Icon className="size-5 text-emerald-600 dark:text-emerald-400" strokeWidth={2.5} />
+                    <Icon className="size-5 text-primary dark:text-primary" strokeWidth={2.5} />
                   </motion.div>
                 ) : (
                   <Icon className="size-5 text-muted-foreground" strokeWidth={1.5} />
@@ -75,7 +75,7 @@ export function MobileNav() {
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1.5 -right-2.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-emerald-500 text-[10px] font-bold text-white leading-none"
+                    className="absolute -top-1.5 -right-2.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-primary text-[10px] font-bold text-white leading-none"
                   >
                     {item.badge > 99 ? '99+' : item.badge}
                   </motion.span>
@@ -85,7 +85,7 @@ export function MobileNav() {
               <span
                 className={`text-[10px] font-medium leading-tight transition-colors duration-200 ${
                   active
-                    ? 'text-emerald-600 dark:text-emerald-400'
+                    ? 'text-primary dark:text-primary'
                     : 'text-muted-foreground'
                 }`}
               >
@@ -96,7 +96,7 @@ export function MobileNav() {
               {active && (
                 <motion.div
                   layoutId="mobileNavDot"
-                  className="absolute -bottom-0 w-1 h-1 rounded-full bg-emerald-600 dark:bg-emerald-400"
+                  className="absolute -bottom-0 w-1 h-1 rounded-full bg-primary dark:bg-primary"
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 />
               )}

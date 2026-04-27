@@ -49,10 +49,10 @@ export function OfflineBanner() {
           <div
             className={`w-full px-3 py-2 text-sm font-medium flex items-center justify-center gap-2 shadow-md ${
               showSynced
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-primary text-primary-foreground'
                 : !isOnline
                   ? 'bg-amber-500 text-white'
-                  : 'bg-emerald-600 text-white'
+                  : 'bg-primary text-primary-foreground'
             }`}
           >
             {!isOnline ? (

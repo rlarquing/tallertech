@@ -219,7 +219,7 @@ export function AppShell() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="hidden sm:flex gap-2 max-w-[180px] h-8 text-xs">
-                    <Building2 className="size-3.5 shrink-0 text-emerald-600" />
+                    <Building2 className="size-3.5 shrink-0 text-primary" />
                     <span className="truncate">
                       {currentWorkshopId
                         ? workshops.find((w) => w.id === currentWorkshopId)?.name || 'Taller'
@@ -242,7 +242,7 @@ export function AppShell() {
                       onClick={() => setCurrentWorkshopId(w.id)}
                       className={currentWorkshopId === w.id ? 'bg-accent' : ''}
                     >
-                      <Building2 className="mr-2 size-4 text-emerald-600" />
+                      <Building2 className="mr-2 size-4 text-primary" />
                       {w.name}
                     </DropdownMenuItem>
                   ))}

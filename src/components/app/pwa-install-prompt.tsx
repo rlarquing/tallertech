@@ -89,7 +89,7 @@ export function PwaInstallPrompt() {
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           className="fixed bottom-20 left-4 right-4 z-[90] mx-auto max-w-sm md:bottom-4 sm:left-auto sm:right-4 sm:mx-0"
         >
-          <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white shadow-xl dark:from-emerald-950/40 dark:to-background dark:border-emerald-800">
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-xl dark:from-primary/10 dark:to-background dark:border-primary/30">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">

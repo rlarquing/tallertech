@@ -656,8 +656,8 @@ export function SettingsView() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-                    <HardDrive className="size-5 text-emerald-600" />
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <HardDrive className="size-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Tamaño del archivo</p>
@@ -788,21 +788,21 @@ export function SettingsView() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className={`p-3 rounded-lg border ${exportFormat === 'xlsx' ? 'border-primary bg-primary/5' : 'border-border'}`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <FileSpreadsheet className="size-4 text-emerald-600" />
+                      <FileSpreadsheet className="size-4 text-primary" />
                       <span className="text-sm font-medium">Excel</span>
                     </div>
                     <p className="text-xs text-muted-foreground">Formato nativo de Excel con columnas ajustadas. Ideal para análisis.</p>
                   </div>
                   <div className={`p-3 rounded-lg border ${exportFormat === 'csv' ? 'border-primary bg-primary/5' : 'border-border'}`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <FileText className="size-4 text-sky-600" />
+                      <FileText className="size-4 text-chart-5" />
                       <span className="text-sm font-medium">CSV</span>
                     </div>
                     <p className="text-xs text-muted-foreground">Formato de texto separado por comas. Compatible con todo.</p>
                   </div>
                   <div className={`p-3 rounded-lg border ${exportFormat === 'pdf' ? 'border-primary bg-primary/5' : 'border-border'}`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <FileDown className="size-4 text-rose-600" />
+                      <FileDown className="size-4 text-chart-3" />
                       <span className="text-sm font-medium">PDF</span>
                     </div>
                     <p className="text-xs text-muted-foreground">Documento con formato profesional para impresión o archivo.</p>

@@ -65,9 +65,9 @@ const typeIcons: Record<string, React.ElementType> = {
 }
 
 const typeColors: Record<string, string> = {
-  product: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
-  service: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-  part: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+  product: 'bg-primary/10 text-primary',
+  service: 'bg-blue-500/10 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+  part: 'bg-chart-4/10 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
 }
 
 export function CategoriesView() {
@@ -230,7 +230,7 @@ export function CategoriesView() {
             Organiza tus productos, servicios y repuestos
           </p>
         </div>
-        <Button onClick={handleAdd} className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
+        <Button onClick={handleAdd} className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0">
           <Plus className="mr-2 size-4" />
           Agregar Categoría
         </Button>
@@ -259,7 +259,7 @@ export function CategoriesView() {
             <p className="text-xs text-muted-foreground mt-1">
               Crea tu primera categoría para organizar tus productos
             </p>
-            <Button onClick={handleAdd} variant="outline" className="mt-4 border-emerald-600 text-emerald-600 hover:bg-emerald-50">
+            <Button onClick={handleAdd} variant="outline" className="mt-4 border-primary text-primary hover:bg-primary/5">
               <Plus className="mr-2 size-4" />
               Agregar Categoría
             </Button>
@@ -335,7 +335,7 @@ export function CategoriesView() {
         <div className="grid grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Package className="size-4" />
               </div>
               <div>
@@ -346,7 +346,7 @@ export function CategoriesView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                 <Wrench className="size-4" />
               </div>
               <div>
@@ -357,7 +357,7 @@ export function CategoriesView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-chart-4/10 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                 <Tag className="size-4" />
               </div>
               <div>
@@ -428,7 +428,7 @@ export function CategoriesView() {
               <Button type="button" variant="outline" onClick={() => setFormOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="submit" disabled={submitting} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {editingCategory ? 'Guardar Cambios' : 'Crear Categoría'}
               </Button>

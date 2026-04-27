@@ -141,3 +141,48 @@ Stage Summary:
 - Key files modified: `src/components/app/repairs-view.tsx`, `src/components/app/customers-view.tsx`
 - All error messages in Spanish, inline red text below each invalid field
 - Zero lint errors
+
+---
+Task ID: 1
+Agent: theme-system-developer
+Task: Create the theme system core files (themes.ts, theme-provider.tsx, theme-switcher.tsx)
+
+Work Log:
+- Read worklog.md and existing files (theme-provider.tsx, globals.css, layout.tsx, app-sidebar.tsx, settings controller) for context
+- Created src/lib/themes.ts:
+  - ThemeName type: 'taller-clasico' | 'tech-moderno' | 'vino-taller' | 'taller-salvia' | 'forja-oscura'
+  - ThemeVariables interface with all 28 CSS variable keys
+  - ThemeDefinition interface with name, label, description, primaryColor, light, dark
+  - 5 complete theme definitions, each with 28 CSS variables in oklch format for both light and dark modes:
+    1. taller-clasico: Amber/Copper (hue 60), primary oklch(0.705 0.162 60), preview #D97706
+    2. tech-moderno: Teal (hue 174), primary oklch(0.577 0.118 174), preview #0D9488
+    3. vino-taller: Burgundy (hue 12), primary oklch(0.442 0.150 12), preview #9F1239
+    4. taller-salvia: Sage/Olive (hue 130), primary oklch(0.577 0.118 130), preview #65A30D
+    5. forja-oscura: Forge Orange (hue 50), primary oklch(0.637 0.180 50), preview #EA580C, darker backgrounds
+  - defaultTheme constant set to 'taller-clasico'
+  - COLOR_THEME_STORAGE_KEY ('tallertech-color-theme') and COLOR_THEME_SETTINGS_KEY ('color_theme') constants
+- Updated src/components/app/theme-provider.tsx:
+  - Extended NextThemesProvider with ColorThemeProvider inner component
+  - ColorThemeContext via React.createContext providing { theme, setTheme, themes }
+  - On mount: reads localStorage for 'tallertech-color-theme', falls back to settings API
+  - Applies CSS variables to document.documentElement via style.setProperty()
+  - Reacts to resolvedTheme changes (light/dark) to switch variable sets
+  - setTheme: updates state, saves to localStorage, persists to settings API (fire-and-forget)
+  - Exports useColorTheme() hook for consuming components
+- Created src/components/app/theme-switcher.tsx:
+  - Compact DropdownMenu with Palette icon trigger (size-8 ghost button)
+  - Lists all 5 themes with colored dot preview (backgroundColor from primaryColor)
+  - Shows theme label and description for each option
+  - Check icon next to currently active theme
+  - Calls setTheme from useColorTheme on selection
+  - Compact enough for sidebar footer placement
+- All lint checks pass (zero errors)
+- No new TypeScript compilation errors introduced
+- Dev server runs correctly
+
+Stage Summary:
+- Complete theme system core with 5 distinct color themes in oklch format
+- Advanced ThemeProvider combining next-themes (dark/light) with color theme switching
+- ThemeSwitcher component ready for integration into sidebar/header
+- Theme persistence via localStorage (instant) and settings API (server-side)
+- All CSS variables defined: background, foreground, card, popover, primary, secondary, muted, accent, destructive, border, input, ring, chart-1-5, sidebar-* (28 variables per mode per theme = 280 total variable definitions)

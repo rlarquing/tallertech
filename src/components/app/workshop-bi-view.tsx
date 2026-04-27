@@ -186,7 +186,7 @@ function KPICard({
   icon: Icon,
   trend,
   trendLabel,
-  iconColor = 'bg-emerald-500/10 text-emerald-600',
+  iconColor = 'bg-primary/10 text-primary',
   valueIsCurrency = true,
   currency = 'CUP',
   valueColor,
@@ -219,11 +219,11 @@ function KPICard({
         {trend !== undefined && trendLabel && (
           <div className="mt-1 flex items-center gap-1 text-xs">
             {trend >= 0 ? (
-              <ArrowUpRight className="size-3 text-emerald-600" />
+              <ArrowUpRight className="size-3 text-primary" />
             ) : (
               <ArrowDownRight className="size-3 text-red-500" />
             )}
-            <span className={trend >= 0 ? 'text-emerald-600' : 'text-red-500'}>
+            <span className={trend >= 0 ? 'text-primary' : 'text-red-500'}>
               {trend >= 0 ? '+' : ''}
               {trend.toFixed(1)}%
             </span>
@@ -376,7 +376,7 @@ export function WorkshopBIView() {
               </>
             ) : (
               <>
-                <BarChart3 className="size-6 text-emerald-600" />
+                <BarChart3 className="size-6 text-primary" />
                 BI - {currentWorkshop?.name || 'Taller'}
               </>
             )}
@@ -443,7 +443,7 @@ export function WorkshopBIView() {
           icon={TrendingUp}
           trend={data.revenueTrend}
           trendLabel="vs período anterior"
-          iconColor="bg-emerald-500/10 text-emerald-600"
+          iconColor="bg-primary/10 text-primary"
           currency={currency}
         />
         <KPICard
@@ -461,7 +461,7 @@ export function WorkshopBIView() {
           icon={DollarSign}
           iconColor={
             data.netProfit >= 0
-              ? 'bg-emerald-500/10 text-emerald-600'
+              ? 'bg-primary/10 text-primary'
               : 'bg-red-500/10 text-red-600'
           }
           valueColor={data.netProfit >= 0 ? '#059669' : '#dc2626'}
@@ -472,7 +472,7 @@ export function WorkshopBIView() {
             title="Talleres Activos"
             value={data.activeWorkshops}
             icon={Building2}
-            iconColor="bg-amber-500/10 text-amber-600"
+            iconColor="bg-chart-4/10 text-amber-600"
             valueIsCurrency={false}
           />
         )}
@@ -481,7 +481,7 @@ export function WorkshopBIView() {
             title="Reparaciones Pendientes"
             value={data.pendingRepairs || 0}
             icon={Wrench}
-            iconColor="bg-violet-500/10 text-violet-600"
+            iconColor="bg-chart-2/10 text-chart-2"
             valueIsCurrency={false}
           />
         )}
@@ -716,7 +716,7 @@ export function WorkshopBIView() {
                   {comparisonData.map((ws) => (
                     <TableRow key={ws.id}>
                       <TableCell className="font-medium">{ws.name}</TableCell>
-                      <TableCell className="text-right text-emerald-600">
+                      <TableCell className="text-right text-primary">
                         {formatCurrency(ws.revenue, currency)}
                       </TableCell>
                       <TableCell className="text-right text-amber-600">
@@ -724,7 +724,7 @@ export function WorkshopBIView() {
                       </TableCell>
                       <TableCell
                         className={`text-right font-semibold ${
-                          ws.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'
+                          ws.netProfit >= 0 ? 'text-primary' : 'text-red-600'
                         }`}
                       >
                         {formatCurrency(ws.netProfit, currency)}
@@ -751,7 +751,7 @@ export function WorkshopBIView() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Package className="size-4 text-emerald-600" />
+                <Package className="size-4 text-primary" />
                 Productos Más Vendidos
               </CardTitle>
               <CardDescription>Por cantidad vendida</CardDescription>
@@ -761,7 +761,7 @@ export function WorkshopBIView() {
                 <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                   {data.topProducts.map((product, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-600">
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                         {i + 1}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -788,7 +788,7 @@ export function WorkshopBIView() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <CreditCard className="size-4 text-sky-600" />
+                <CreditCard className="size-4 text-chart-5" />
                 Ventas por Método de Pago
               </CardTitle>
               <CardDescription>Distribución de cobros</CardDescription>
@@ -912,12 +912,12 @@ export function WorkshopBIView() {
             {data.pendingRepairs !== undefined && data.pendingRepairs > 0 && (
               <Card className="border-violet-200 dark:border-violet-800">
                 <CardContent className="flex items-center gap-4 pt-6">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10">
-                    <Wrench className="size-5 text-violet-600" />
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-2/10">
+                    <Wrench className="size-5 text-chart-2" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">Reparaciones Pendientes</p>
-                    <p className="text-lg font-bold text-violet-600">
+                    <p className="text-lg font-bold text-chart-2">
                       {data.pendingRepairs} reparacion{data.pendingRepairs !== 1 ? 'es' : ''} pendiente
                       {data.pendingRepairs !== 1 ? 's' : ''}
                     </p>
@@ -930,7 +930,7 @@ export function WorkshopBIView() {
             {data.lowStockCount !== undefined && data.lowStockCount > 0 && (
               <Card className="border-amber-200 dark:border-amber-800">
                 <CardContent className="flex items-center gap-4 pt-6">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-4/10">
                     <AlertTriangle className="size-5 text-amber-600" />
                   </div>
                   <div>
@@ -947,8 +947,8 @@ export function WorkshopBIView() {
               (data.lowStockCount === 0 || data.lowStockCount === undefined)) && (
               <Card>
                 <CardContent className="flex items-center gap-4 pt-6">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-                    <TrendingUp className="size-5 text-emerald-600" />
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <TrendingUp className="size-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">Todo en orden</p>
@@ -970,11 +970,11 @@ export function WorkshopBIView() {
             <CardContent className="flex items-center gap-4 pt-6">
               <div
                 className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
-                  data.revenueTrend >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'
+                  data.revenueTrend >= 0 ? 'bg-primary/10' : 'bg-red-500/10'
                 }`}
               >
                 {data.revenueTrend >= 0 ? (
-                  <TrendingUp className="size-5 text-emerald-600" />
+                  <TrendingUp className="size-5 text-primary" />
                 ) : (
                   <TrendingDown className="size-5 text-red-600" />
                 )}
@@ -983,7 +983,7 @@ export function WorkshopBIView() {
                 <p className="text-sm text-muted-foreground">Tendencia de Ingresos</p>
                 <p
                   className={`text-lg font-bold ${
-                    data.revenueTrend >= 0 ? 'text-emerald-600' : 'text-red-600'
+                    data.revenueTrend >= 0 ? 'text-primary' : 'text-red-600'
                   }`}
                 >
                   {data.revenueTrend >= 0 ? '+' : ''}
@@ -1000,7 +1000,7 @@ export function WorkshopBIView() {
         {isAllView && data.mostProfitableWorkshop && (
           <Card>
             <CardContent className="flex items-center gap-4 pt-6">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-4/10">
                 <Crown className="size-5 text-amber-600" />
               </div>
               <div>
@@ -1014,8 +1014,8 @@ export function WorkshopBIView() {
         {data.bestSellingProduct && (
           <Card>
             <CardContent className="flex items-center gap-4 pt-6">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-500/10">
-                <Package className="size-5 text-sky-600" />
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-5/10">
+                <Package className="size-5 text-chart-5" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Producto Más Vendido</p>

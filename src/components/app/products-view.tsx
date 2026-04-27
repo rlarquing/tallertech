@@ -451,7 +451,7 @@ export function ProductsView() {
     if (product.quantity <= product.minStock) {
       return <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs">Stock bajo</Badge>
     }
-    return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs">En stock</Badge>
+    return <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs">En stock</Badge>
   }
 
   // Format currency
@@ -472,7 +472,7 @@ export function ProductsView() {
             Gestiona el inventario de productos y repuestos
           </p>
         </div>
-        <Button onClick={handleAdd} className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
+        <Button onClick={handleAdd} className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0">
           <Plus className="mr-2 size-4" />
           Agregar Producto
         </Button>
@@ -536,7 +536,7 @@ export function ProductsView() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Package className="size-4 text-emerald-600" />
+            <Package className="size-4 text-primary" />
             Lista de Productos
             <Badge variant="secondary" className="ml-auto">{total} total</Badge>
           </CardTitle>
@@ -563,7 +563,7 @@ export function ProductsView() {
                 {hasFilters ? 'Intenta ajustar los filtros de búsqueda' : 'Agrega tu primer producto para comenzar'}
               </p>
               {!hasFilters && (
-                <Button onClick={handleAdd} variant="outline" className="mt-4 border-emerald-600 text-emerald-600 hover:bg-emerald-50">
+                <Button onClick={handleAdd} variant="outline" className="mt-4 border-primary text-primary hover:bg-primary/5">
                   <Plus className="mr-2 size-4" />
                   Agregar Producto
                 </Button>
@@ -962,7 +962,7 @@ export function ProductsView() {
               <Button type="button" variant="outline" onClick={() => setFormOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={submitting || Object.keys(formValidationErrors).length > 0} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="submit" disabled={submitting || Object.keys(formValidationErrors).length > 0} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
               </Button>
@@ -1019,7 +1019,7 @@ export function ProductsView() {
                 <SelectContent>
                   <SelectItem value="in">
                     <div className="flex items-center gap-2">
-                      <ArrowUp className="size-3 text-emerald-600" />
+                      <ArrowUp className="size-3 text-primary" />
                       Entrada
                     </div>
                   </SelectItem>
@@ -1079,7 +1079,7 @@ export function ProductsView() {
               <Button type="button" variant="outline" onClick={() => setStockOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={submitting || !stockQty || Object.keys(stockValidationErrors).length > 0} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="submit" disabled={submitting || !stockQty || Object.keys(stockValidationErrors).length > 0} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Aplicar Ajuste
               </Button>

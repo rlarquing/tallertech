@@ -510,7 +510,7 @@ export function SalesView() {
               <Card key={sale.id}>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">{sale.code}</span>
+                    <span className="font-mono text-xs font-semibold text-primary">{sale.code}</span>
                     <Badge variant={st.variant} className="text-xs">{st.label}</Badge>
                   </div>
                   <div className="space-y-1 text-sm">
@@ -528,7 +528,7 @@ export function SalesView() {
                     </div>
                     <div className="flex justify-between font-semibold text-base">
                       <span>Total:</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(sale.total)}</span>
+                      <span className="text-primary">{formatCurrency(sale.total)}</span>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{new Date(sale.createdAt).toLocaleString('es-CU')}</span>
@@ -682,7 +682,7 @@ export function SalesView() {
                 )}
                 <div className="flex justify-between font-bold text-base">
                   <span>Total:</span>
-                  <span className="text-emerald-600 dark:text-emerald-400">
+                  <span className="text-primary">
                     {formatCurrency(selectedSale.total)}
                   </span>
                 </div>

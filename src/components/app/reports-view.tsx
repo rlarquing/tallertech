@@ -525,7 +525,7 @@ export function ReportsView() {
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <TrendingUp className="mx-auto h-6 w-6 text-emerald-500 mb-2" />
+                <TrendingUp className="mx-auto h-6 w-6 text-primary mb-2" />
                 <p className="text-sm text-muted-foreground">Prom. Días Rep.</p>
                 <p className="text-2xl font-bold">{avgRepairDays.toFixed(1)}</p>
               </CardContent>
@@ -567,8 +567,8 @@ export function ReportsView() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                    <DollarSign className="h-5 w-5 text-emerald-500" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <DollarSign className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Valor de Venta</p>
@@ -684,9 +684,9 @@ export function ReportsView() {
           <div className="grid grid-cols-3 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
-                <TrendingUp className="mx-auto h-6 w-6 text-emerald-500 mb-2" />
+                <TrendingUp className="mx-auto h-6 w-6 text-primary mb-2" />
                 <p className="text-sm text-muted-foreground">Ingresos</p>
-                <p className="text-xl font-bold text-emerald-600">{formatCurrency(totalIncome)}</p>
+                <p className="text-xl font-bold text-primary">{formatCurrency(totalIncome)}</p>
               </CardContent>
             </Card>
             <Card>
@@ -700,7 +700,7 @@ export function ReportsView() {
               <CardContent className="p-4 text-center">
                 <DollarSign className="mx-auto h-6 w-6 text-primary mb-2" />
                 <p className="text-sm text-muted-foreground">Ganancia</p>
-                <p className={`text-xl font-bold ${profit >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
+                <p className={`text-xl font-bold ${profit >= 0 ? 'text-primary' : 'text-destructive'}`}>
                   {formatCurrency(profit)}
                 </p>
                 <p className="text-xs text-muted-foreground">Margen: {profitMargin.toFixed(1)}%</p>

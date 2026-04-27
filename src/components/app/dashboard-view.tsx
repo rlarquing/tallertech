@@ -160,7 +160,7 @@ function StatCard({
   icon: Icon,
   trend,
   trendLabel,
-  iconColor = 'bg-emerald-500/10 text-emerald-600',
+  iconColor = 'bg-primary/10 text-primary',
   valueIsCurrency = true,
 }: {
   title: string
@@ -185,11 +185,11 @@ function StatCard({
         {trend !== undefined && trendLabel && (
           <div className="mt-1 flex items-center gap-1 text-xs">
             {trend >= 0 ? (
-              <ArrowUpRight className="size-3 text-emerald-600" />
+              <ArrowUpRight className="size-3 text-primary" />
             ) : (
               <ArrowDownRight className="size-3 text-red-500" />
             )}
-            <span className={trend >= 0 ? 'text-emerald-600' : 'text-red-500'}>
+            <span className={trend >= 0 ? 'text-primary' : 'text-red-500'}>
               {trend >= 0 ? '+' : ''}
               {trend.toFixed(1)}%
             </span>
@@ -310,25 +310,25 @@ export function DashboardView() {
       label: 'Nueva Venta',
       icon: ShoppingCart,
       view: 'pos' as const,
-      color: 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20',
+      color: 'bg-primary/10 text-primary hover:bg-primary/20',
     },
     {
       label: 'Nueva Reparación',
       icon: Wrench,
       view: 'repairs' as const,
-      color: 'bg-violet-500/10 text-violet-600 hover:bg-violet-500/20',
+      color: 'bg-chart-2/10 text-chart-2 hover:bg-chart-2/20',
     },
     {
       label: 'Agregar Producto',
       icon: Plus,
       view: 'products' as const,
-      color: 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20',
+      color: 'bg-chart-4/10 text-chart-4 hover:bg-chart-4/20',
     },
     {
       label: 'Ver Clientes',
       icon: Users,
       view: 'customers' as const,
-      color: 'bg-sky-500/10 text-sky-600 hover:bg-sky-500/20',
+      color: 'bg-chart-5/10 text-chart-5 hover:bg-chart-5/20',
     },
   ]
 
@@ -339,8 +339,8 @@ export function DashboardView() {
       diagnosing: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
       waiting_parts: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
       repairing: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-      ready: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
-      delivered: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300',
+      ready: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      delivered: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
       cancelled: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
     }
     return colors[status] || 'bg-gray-100 text-gray-700'
@@ -357,14 +357,14 @@ export function DashboardView() {
           icon={DollarSign}
           trend={salesTrend}
           trendLabel="vs ayer"
-          iconColor="bg-emerald-500/10 text-emerald-600"
+          iconColor="bg-primary/10 text-primary"
         />
         <StatCard
           title="Reparaciones Pendientes"
           value={data.pendingRepairs}
           icon={Wrench}
           subtitle={`${data.completedRepairsToday} completada${data.completedRepairsToday !== 1 ? 's' : ''} hoy`}
-          iconColor="bg-violet-500/10 text-violet-600"
+          iconColor="bg-chart-2/10 text-chart-2"
           valueIsCurrency={false}
         />
         <StatCard
@@ -372,7 +372,7 @@ export function DashboardView() {
           value={data.lowStockCount}
           icon={AlertTriangle}
           subtitle={`${data.totalProducts} productos activos`}
-          iconColor="bg-amber-500/10 text-amber-600"
+          iconColor="bg-chart-4/10 text-chart-4"
           valueIsCurrency={false}
         />
         <StatCard
@@ -380,7 +380,7 @@ export function DashboardView() {
           value={data.totalCustomers}
           icon={Users}
           subtitle={`${data.salesWeek.count} venta${data.salesWeek.count !== 1 ? 's' : ''} esta semana`}
-          iconColor="bg-sky-500/10 text-sky-600"
+          iconColor="bg-chart-5/10 text-chart-5"
           valueIsCurrency={false}
         />
       </div>
@@ -528,7 +528,7 @@ export function DashboardView() {
               <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                 {data.topProducts.map((product, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-600">
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                       {i + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -592,8 +592,8 @@ export function DashboardView() {
                   </p>
                   {data.recentSales.slice(0, 3).map((sale) => (
                     <div key={sale.id} className="flex items-start gap-3">
-                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
-                        <CreditCard className="size-3.5 text-emerald-600" />
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <CreditCard className="size-3.5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-medium">
@@ -606,7 +606,7 @@ export function DashboardView() {
                           <span>{formatDateTime(sale.createdAt)}</span>
                         </div>
                       </div>
-                      <span className="text-sm font-semibold whitespace-nowrap text-emerald-600">
+                      <span className="text-sm font-semibold whitespace-nowrap text-primary">
                         +{formatCurrency(sale.total)}
                       </span>
                     </div>
@@ -622,8 +622,8 @@ export function DashboardView() {
                   </p>
                   {data.recentRepairs.slice(0, 3).map((repair) => (
                     <div key={repair.id} className="flex items-start gap-3">
-                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-violet-500/10">
-                        <Phone className="size-3.5 text-violet-600" />
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-chart-2/10">
+                        <Phone className="size-3.5 text-chart-2" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-medium">
@@ -706,8 +706,8 @@ export function DashboardView() {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-              <TrendingUp className="size-5 text-emerald-600" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <TrendingUp className="size-5 text-primary" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Ventas del Mes</p>
@@ -717,8 +717,8 @@ export function DashboardView() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10">
-              <Package className="size-5 text-violet-600" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-2/10">
+              <Package className="size-5 text-chart-2" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Productos en Inventario</p>
@@ -728,8 +728,8 @@ export function DashboardView() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
-              <DollarSign className="size-5 text-amber-600" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-4/10">
+              <DollarSign className="size-5 text-chart-4" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Gastos del Mes</p>

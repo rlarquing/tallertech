@@ -241,7 +241,7 @@ export function SuppliersView() {
             Gestiona los proveedores de tu taller
           </p>
         </div>
-        <Button onClick={handleAdd} className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
+        <Button onClick={handleAdd} className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0">
           <Plus className="mr-2 size-4" />
           Agregar Proveedor
         </Button>
@@ -282,7 +282,7 @@ export function SuppliersView() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Users className="size-4" />
               </div>
               <div>
@@ -293,7 +293,7 @@ export function SuppliersView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                 <Phone className="size-4" />
               </div>
               <div>
@@ -304,7 +304,7 @@ export function SuppliersView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
                 <Mail className="size-4" />
               </div>
               <div>
@@ -315,7 +315,7 @@ export function SuppliersView() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-chart-4/10 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                 <Package className="size-4" />
               </div>
               <div>
@@ -331,7 +331,7 @@ export function SuppliersView() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Truck className="size-4 text-emerald-600" />
+            <Truck className="size-4 text-primary" />
             Lista de Proveedores
             <Badge variant="secondary" className="ml-auto">{filteredSuppliers.length} total</Badge>
           </CardTitle>
@@ -358,7 +358,7 @@ export function SuppliersView() {
                 {search ? 'Intenta ajustar tu búsqueda' : 'Agrega tu primer proveedor para comenzar'}
               </p>
               {!search && (
-                <Button onClick={handleAdd} variant="outline" className="mt-4 border-emerald-600 text-emerald-600 hover:bg-emerald-50">
+                <Button onClick={handleAdd} variant="outline" className="mt-4 border-primary text-primary hover:bg-primary/5">
                   <Plus className="mr-2 size-4" />
                   Agregar Proveedor
                 </Button>
@@ -382,7 +382,7 @@ export function SuppliersView() {
                     <TableRow key={supplier.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="flex size-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold shrink-0">
+                          <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
                             {supplier.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex flex-col">
@@ -555,7 +555,7 @@ export function SuppliersView() {
               <Button type="button" variant="outline" onClick={() => setFormOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="submit" disabled={submitting} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {editingSupplier ? 'Guardar Cambios' : 'Crear Proveedor'}
               </Button>

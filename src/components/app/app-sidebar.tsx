@@ -25,6 +25,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard,
   Package,
@@ -39,9 +40,13 @@ import {
   Shield,
   Building2,
   Database,
+  Moon,
+  Sun,
 } from 'lucide-react'
 import Image from 'next/image'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { useTheme } from 'next-themes'
+import { ThemeSwitcher } from '@/components/app/theme-switcher'
 
 interface NavItem {
   id: ViewType
@@ -124,6 +129,7 @@ const navItems: NavItem[] = [
 
 export function AppSidebar() {
   const { currentView, setCurrentView, user } = useAppStore()
+  const { resolvedTheme, setTheme } = useTheme()
 
   const handleLogout = async () => {
     try {
@@ -247,6 +253,34 @@ export function AppSidebar() {
       {/* Footer / User Info */}
       <SidebarFooter>
         <SidebarSeparator />
+        {/* Theme controls */}
+        <div className="flex items-center justify-between px-2 py-1 group-data-[collapsible=icon]:justify-center">
+          <div className="flex items-center gap-1 group-data-[collapsible=icon]:hidden">
+            <ThemeSwitcher />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              aria-label={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            >
+              {resolvedTheme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </Button>
+          </div>
+          {/* Collapsed: show only icons */}
+          <div className="hidden group-data-[collapsible=icon]:flex items-center gap-1">
+            <ThemeSwitcher />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              aria-label={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            >
+              {resolvedTheme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </Button>
+          </div>
+        </div>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

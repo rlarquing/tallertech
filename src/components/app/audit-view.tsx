@@ -77,14 +77,14 @@ const actionLabels: Record<string, string> = {
 }
 
 const actionColors: Record<string, string> = {
-  CREATE: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
+  CREATE: 'bg-primary/10 text-primary',
   UPDATE: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
   DELETE: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
   LOGIN: 'bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300',
   LOGOUT: 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300',
-  REGISTER: 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300',
+  REGISTER: 'bg-chart-2/10 text-chart-2',
   STATUS_CHANGE: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
-  STOCK_ADJUSTMENT: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+  STOCK_ADJUSTMENT: 'bg-chart-3/10 text-chart-3',
   BACKUP: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300',
   RESTORE: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300',
   EXPORT: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300',
@@ -194,8 +194,8 @@ export function AuditView() {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-              <Activity className="size-5 text-emerald-600" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <Activity className="size-5 text-primary" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Registros</p>
@@ -205,8 +205,8 @@ export function AuditView() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-500/10">
-              <Clock className="size-5 text-sky-600" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-5/10">
+              <Clock className="size-5 text-chart-5" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Registros Hoy</p>
@@ -216,8 +216,8 @@ export function AuditView() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10">
-              <Shield className="size-5 text-violet-600" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-chart-2/10">
+              <Shield className="size-5 text-chart-2" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Acciones Diferentes</p>

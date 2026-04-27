@@ -106,7 +106,7 @@ const roleIcons: Record<string, React.ElementType> = {
 
 const roleBadgeClasses: Record<string, string> = {
   owner: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  admin: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+  admin: 'bg-violet-100 text-chart-2 dark:bg-violet-900/40 dark:text-violet-300',
   employee: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
 }
 
@@ -504,7 +504,7 @@ export function WorkshopsView() {
             Gestiona tus talleres y consulta su rendimiento
           </p>
         </div>
-        <Button onClick={handleAdd} className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
+        <Button onClick={handleAdd} className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0">
           <Plus className="mr-2 size-4" />
           Nuevo Taller
         </Button>
@@ -524,7 +524,7 @@ export function WorkshopsView() {
             <Button
               onClick={handleAdd}
               variant="outline"
-              className="mt-4 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+              className="mt-4 border-primary text-primary hover:bg-primary/5"
             >
               <Plus className="mr-2 size-4" />
               Crear Taller
@@ -548,15 +548,15 @@ export function WorkshopsView() {
                 {/* Active status indicator */}
                 <div
                   className={`absolute top-0 left-0 right-0 h-1 ${
-                    workshop.active ? 'bg-emerald-500' : 'bg-gray-400'
+                    workshop.active ? 'bg-primary' : 'bg-gray-400'
                   }`}
                 />
 
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-                        <Building2 className="size-4 text-emerald-600" />
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <Building2 className="size-4 text-primary" />
                       </div>
                       <div className="min-w-0">
                         <CardTitle className="text-base truncate">{workshop.name}</CardTitle>
@@ -610,7 +610,7 @@ export function WorkshopsView() {
                       variant="outline"
                       className={`text-xs ${
                         workshop.active
-                          ? 'border-emerald-500 text-emerald-600'
+                          ? 'border-primary text-primary'
                           : 'border-gray-400 text-gray-500'
                       }`}
                     >
@@ -644,7 +644,7 @@ export function WorkshopsView() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleViewBI(workshop)}
-                      className="text-xs h-8 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                      className="text-xs h-8 border-primary text-primary hover:bg-primary/5"
                     >
                       <BarChart3 className="mr-1 size-3" />
                       BI
@@ -656,7 +656,7 @@ export function WorkshopsView() {
                       className={`text-xs h-8 ${
                         workshop.active
                           ? 'text-red-600 hover:text-red-700 hover:bg-red-50'
-                          : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
+                          : 'text-primary hover:text-primary/80 hover:bg-primary/5'
                       }`}
                     >
                       {workshop.active ? (
@@ -823,7 +823,7 @@ export function WorkshopsView() {
               <Button
                 type="submit"
                 disabled={submitting || !formData.name.trim()}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {editingWorkshop ? 'Guardar Cambios' : 'Crear Taller'}
@@ -863,7 +863,7 @@ export function WorkshopsView() {
               className={
                 deactivatingWorkshop?.active
                   ? 'bg-destructive text-white hover:bg-destructive/90'
-                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  : 'bg-primary text-primary-foreground hover:bg-primary/90'
               }
             >
               {submitting && <Loader2 className="mr-2 size-4 animate-spin" />}
@@ -891,7 +891,7 @@ export function WorkshopsView() {
             <Card>
               <CardContent className="p-4">
                 <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <UserPlus className="size-4 text-emerald-600" />
+                  <UserPlus className="size-4 text-primary" />
                   Agregar Miembro
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -917,7 +917,7 @@ export function WorkshopsView() {
                   <Button
                     onClick={handleAddMember}
                     disabled={addingMember || !newMemberEmail.trim()}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
                   >
                     {addingMember ? (
                       <Loader2 className="size-4 animate-spin" />
