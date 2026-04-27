@@ -28,7 +28,6 @@ export default defineConfig({
       return new PrismaLibSql({
         url,
         authToken: isLocal ? undefined : process.env.DATABASE_AUTH_TOKEN,
-        intMode: 'bigint',
       })
     },
   },
