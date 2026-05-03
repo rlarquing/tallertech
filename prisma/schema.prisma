@@ -51,8 +51,9 @@ model Workshop {
   sales       Sale[]
   repairs     RepairOrder[]
   expenses    Expense[]
-  settings_kv Setting[]
-  auditLogs   AuditLog[]
+  settings_kv    Setting[]
+  auditLogs      AuditLog[]
+  dailyClosings  DailyClosing[]
 }
 
 model WorkshopUser {
@@ -306,4 +307,31 @@ model AuditLog {
   details    String?  // JSON string with change details
   ip         String?
   createdAt  DateTime @default(now())
+}
+
+// ============================================================
+// DAILY CLOSING (Cierre Diario)
+// ============================================================
+
+model DailyClosing {
+  id            String   @id @default(cuid())
+  workshopId    String
+  workshop      Workshop @relation(fields: [workshopId], references: [id])
+  userId        String
+  userName      String
+  date          DateTime // The date being closed
+  salesCount    Int      @default(0)
+  salesTotal    Float    @default(0)
+  repairsCount  Int      @default(0)
+  repairsTotal  Float    @default(0)
+  expensesTotal Float    @default(0)
+  totalIncome   Float    @default(0) // salesTotal + repairsTotal
+  netTotal      Float    @default(0) // totalIncome - expensesTotal
+  notes         String?
+  status        String   @default("open") // open, closed
+  closedAt      DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([workshopId, userId, date]) // One closing per user per workshop per day
 }

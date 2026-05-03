@@ -186,3 +186,113 @@ Stage Summary:
 - ThemeSwitcher component ready for integration into sidebar/header
 - Theme persistence via localStorage (instant) and settings API (server-side)
 - All CSS variables defined: background, foreground, card, popover, primary, secondary, muted, accent, destructive, border, input, ring, chart-1-5, sidebar-* (28 variables per mode per theme = 280 total variable definitions)
+
+---
+Task ID: 3-7
+Agent: daily-closing-backend
+Task: Implement backend for employee management with daily closing (cierre diario) feature
+
+Work Log:
+- Read worklog.md and existing codebase patterns (Clean Architecture, DI, repositories, mappers, use cases, controllers)
+- Updated Prisma schema (`prisma/schema.prisma`):
+  - Added `DailyClosing` model with fields: id, workshopId, userId, userName, date, salesCount, salesTotal, repairsCount, repairsTotal, expensesTotal, totalIncome, netTotal, notes, status, closedAt, createdAt, updatedAt
+  - Added `@@unique([workshopId, userId, date])` constraint for one closing per user per workshop per day
+  - Added `dailyClosings DailyClosing[]` relation to Workshop model
+  - Ran `bun run db:push` to sync database schema
+- Created domain entity (`src/domain/entities/daily-closing.ts`):
+  - DailyClosing class with private constructor, static `create` factory, `close` method (with status check), `updateTotals` method, and `toPlainObject`
+  - Business logic: can only close if status is 'open' (throws DomainError otherwise)
+- Updated domain entities index (`src/domain/entities/index.ts`): added `export { DailyClosing } from './daily-closing'`
+- Added DTOs (`src/application/dtos/index.ts`):
+  - `CreateDailyClosingRequest`, `CloseDailyClosingRequest`, `DailyClosingFilters`, `DailyClosingSummary`
+- Added repository interface (`src/domain/repositories/index.ts`):
+  - `DailyClosingRepository` with findById, findMany, create, update, findByWorkshopAndUserAndDate, getOpenClosing methods
+  - Imported `DailyClosing` from `@/domain/entities`
+- Created Prisma mapper (`src/infrastructure/persistence/prisma/mappers/daily-closing.mapper.ts`):
+  - `DailyClosingMapper` with `toDomain` and `toPrisma` static methods
+- Updated mapper index: added `DailyClosingMapper` export
+- Created Prisma repository (`src/infrastructure/persistence/prisma/repositories/prisma-daily-closing.repository.ts`):
+  - Full implementation of `DailyClosingRepository` interface
+  - Date range queries using start/end of day normalization
+  - `getOpenClosing` filters by status='open' additionally
+- Updated repository index: added `PrismaDailyClosingRepository` export
+- Created 4 use cases in `src/application/use-cases/daily-closing/`:
+  1. `create-daily-closing.use-case.ts`: Creates open daily closing, validates no existing closing, auto-calculates totals from sales/repairs/expenses
+  2. `close-daily-closing.use-case.ts`: Recalculates totals, closes daily closing, verifies ownership/role
+  3. `get-daily-closings.use-case.ts`: Lists with filters, owner/admin sees all, employee sees own only
+  4. `get-daily-closing-summary.use-case.ts`: Aggregates sales/repairs/expenses for a specific day with optional user filter
+- Created controller (`src/interfaces/http/controllers/daily-closing.controller.ts`):
+  - `list`, `create`, `close`, `getSummary` static methods
+  - Uses validation schemas for create and close operations
+- Created API routes:
+  - `src/app/api/daily-closings/route.ts`: GET (list) and POST (create)
+  - `src/app/api/daily-closings/[id]/route.ts`: PUT (close)
+  - `src/app/api/daily-closings/summary/route.ts`: GET (summary)
+- Added validation schemas (`src/lib/validations.ts`):
+  - `dailyClosingSchema` (workshopId, date, notes)
+  - `closeDailyClosingSchema` (notes only)
+  - Type exports: `DailyClosingInput`, `CloseDailyClosingInput`
+- Wired into DI container:
+  - `src/application/container/index.ts`: Added `dailyClosingRepository` to `AppDependencies`, imported all 4 use cases, added getter methods, added to `all()` object
+  - `src/infrastructure/container.ts`: Added `PrismaDailyClosingRepository` import and instantiation
+- Ran lint check: zero errors
+
+Stage Summary:
+- Complete Daily Closing backend feature following Clean Architecture patterns
+- Key files created: domain entity, repository interface, Prisma mapper, Prisma repository, 4 use cases, controller, 3 API routes, 2 validation schemas
+- Key files modified: Prisma schema, entities index, DTOs index, repositories index, mapper index, repository index, container index, infrastructure container, validations
+- All error messages in Spanish
+- Role-based access: owner/admin can see all employees' closings, employees only see their own
+- Auto-calculation of financial totals from sales/repairs/expenses data
+- Zero lint errors
+
+---
+Task ID: 8-11
+Agent: frontend-employee-daily-closing
+Task: Implement frontend for employee management and daily closing (cierre diario)
+
+Work Log:
+- Read worklog.md and existing codebase patterns (component structure, offlineFetch, useToast, shadcn/ui)
+- Examined existing views (customers-view, expenses-view) for component patterns
+- Examined backend API routes and controllers for request/response shapes
+- Updated store (`src/lib/store.ts`):
+  - Added 'employees' and 'daily-closing' to ViewType union
+  - Added viewLabels: employees → 'Empleados', daily-closing → 'Cierre Diario'
+- Created EmployeesView (`src/components/app/employees-view.tsx`):
+  - Employee list with avatar/initials, name, email, role badge, join date
+  - Owner can manage roles (admin/employee) via dropdown
+  - Owner can remove employees with confirmation dialog
+  - Owner can add employees by email with role selection
+  - Employee activity summary (sales count, repairs count, total sales) fetched per-user from daily-closings summary API
+  - Shows "Selecciona un Taller" message if no workshop selected
+  - Uses offlineFetch, useToast, useAppStore, shadcn/ui components, all text in Spanish
+- Created DailyClosingView (`src/components/app/daily-closing-view.tsx`):
+  - Date selector (defaults to today) with workshop selector if multiple workshops
+  - 4 summary cards: Ventas del Día, Reparaciones del Día, Gastos del Día, Ingreso Neto
+  - Each card shows icon, formatted amount, and count where applicable
+  - "Realizar Cierre" section: Iniciar Cierre / Cerrar Cierre / Cierre Realizado badge
+  - Close dialog with day summary and notes textarea
+  - Closings history table with columns: Fecha, Empleado, Ventas, Reparaciones, Gastos, Neto, Estado
+  - Status badges: "Abierto" (warning), "Cerrado" (success/green)
+  - Pagination for history table
+  - Uses offlineFetch, useToast, useAppStore, all text in Spanish
+- Updated AppSidebar (`src/components/app/app-sidebar.tsx`):
+  - Added Calculator import from lucide-react
+  - Added 'Empleados' (Users icon) and 'Cierre Diario' (Calculator icon) nav items after Reparaciones
+- Updated MobileNav (`src/components/app/mobile-nav.tsx`):
+  - Replaced Building2 import with Calculator from lucide-react
+  - Replaced "Talleres" nav item with "Cierre" (Calculator icon, 'daily-closing' view)
+  - Updated isActive: 'daily-closing' is active when currentView is 'daily-closing' or 'employees'
+- Updated AppShell (`src/components/app/app-shell.tsx`):
+  - Added imports for EmployeesView and DailyClosingView
+  - Added 'employees' and 'daily-closing' cases in ViewRenderer
+  - Added "👥 Empleados" and "📋 Cierre Diario" items to mobile hamburger menu (after "Mis Talleres")
+- Ran lint check: zero errors, zero warnings
+- All text in Spanish, responsive design, uses semantic CSS variable colors
+
+Stage Summary:
+- Complete frontend implementation for employee management and daily closing views
+- Key files created: employees-view.tsx, daily-closing-view.tsx
+- Key files modified: store.ts, app-sidebar.tsx, mobile-nav.tsx, app-shell.tsx
+- All components follow existing patterns (shadcn/ui, offlineFetch, useToast, useAppStore)
+- Zero lint errors

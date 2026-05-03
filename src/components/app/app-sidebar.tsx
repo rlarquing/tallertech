@@ -42,6 +42,7 @@ import {
   Database,
   Moon,
   Sun,
+  Calculator,
 } from 'lucide-react'
 import Image from 'next/image'
 import { offlineFetch } from '@/lib/offline-fetch'
@@ -94,6 +95,16 @@ const navItems: NavItem[] = [
     id: 'repairs',
     label: 'Reparaciones',
     icon: Wrench,
+  },
+  {
+    id: 'employees',
+    label: 'Empleados',
+    icon: Users,
+  },
+  {
+    id: 'daily-closing',
+    label: 'Cierre Diario',
+    icon: Calculator,
   },
   {
     id: 'customers',

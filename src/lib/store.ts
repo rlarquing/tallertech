@@ -9,6 +9,8 @@ export type ViewType =
   | 'sales'
   | 'pos'
   | 'repairs'
+  | 'employees'
+  | 'daily-closing'
   | 'customers'
   | 'reports'
   | 'expenses'
@@ -106,6 +108,8 @@ export const viewLabels: Record<ViewType, string> = {
   sales: 'Ventas',
   pos: 'Nueva Venta',
   repairs: 'Reparaciones',
+  employees: 'Empleados',
+  'daily-closing': 'Cierre Diario',
   customers: 'Clientes',
   reports: 'Reportes',
   expenses: 'Gastos',

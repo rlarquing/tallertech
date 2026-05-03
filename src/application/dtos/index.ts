@@ -325,6 +325,39 @@ export interface WorkshopFilters extends PaginationParams {
 
 // ─── BI DTOs ─────────────────────────────────────────────────
 
+// ─── Daily Closing DTOs ─────────────────────────────────────
+
+export interface CreateDailyClosingRequest {
+  workshopId: string
+  date: string
+  notes?: string
+}
+
+export interface CloseDailyClosingRequest {
+  id: string
+  notes?: string
+}
+
+export interface DailyClosingFilters extends PaginationParams {
+  workshopId?: string
+  userId?: string
+  dateFrom?: string
+  dateTo?: string
+  status?: string
+}
+
+export interface DailyClosingSummary {
+  salesCount: number
+  salesTotal: number
+  repairsCount: number
+  repairsTotal: number
+  expensesTotal: number
+  totalIncome: number
+  netTotal: number
+}
+
+// ─── BI DTOs ─────────────────────────────────────────────────
+
 export interface WorkshopBI {
   workshopId: string
   workshopName: string

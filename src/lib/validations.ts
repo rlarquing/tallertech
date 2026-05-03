@@ -396,6 +396,29 @@ export const passwordChangeSchema = z.object({
 )
 
 // ============================================================
+// 16. Daily Closing Schema
+// ============================================================
+
+export const dailyClosingSchema = z.object({
+  workshopId: z.string({ message: 'El taller es requerido' })
+    .min(1, { message: 'Debe seleccionar un taller' }),
+  date: z.string({ message: 'La fecha es requerida' })
+    .refine(
+      (val) => !isNaN(Date.parse(val)),
+      { message: 'Fecha inválida' }
+    ),
+  notes: optionalString(500, 'Las notas no pueden exceder 500 caracteres'),
+})
+
+// ============================================================
+// 17. Close Daily Closing Schema
+// ============================================================
+
+export const closeDailyClosingSchema = z.object({
+  notes: optionalString(500, 'Las notas no pueden exceder 500 caracteres'),
+})
+
+// ============================================================
 // Type Exports
 // ============================================================
 
@@ -415,6 +438,8 @@ export type SaleInput = z.infer<typeof saleSchema>
 export type WorkshopInput = z.infer<typeof workshopSchema>
 export type SettingsInput = z.infer<typeof settingsSchema>
 export type PasswordChangeInput = z.infer<typeof passwordChangeSchema>
+export type DailyClosingInput = z.infer<typeof dailyClosingSchema>
+export type CloseDailyClosingInput = z.infer<typeof closeDailyClosingSchema>
 
 // ============================================================
 // Helper: Get field error from Zod error tree

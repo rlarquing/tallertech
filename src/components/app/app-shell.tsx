@@ -33,6 +33,8 @@ import { AuditView } from '@/components/app/audit-view'
 import { WorkshopsView } from '@/components/app/workshops-view'
 import { WorkshopBIView } from '@/components/app/workshop-bi-view'
 import { BackupView } from '@/components/app/backup-view'
+import { EmployeesView } from '@/components/app/employees-view'
+import { DailyClosingView } from '@/components/app/daily-closing-view'
 import { OfflineBanner } from '@/components/app/offline-banner'
 import { PwaInstallPrompt } from '@/components/app/pwa-install-prompt'
 import { initializeOfflineCache } from '@/lib/init-cache'
@@ -66,6 +68,10 @@ function ViewRenderer({ currentView }: { currentView: ViewType }) {
       return <SalesView />
     case 'repairs':
       return <RepairsView />
+    case 'employees':
+      return <EmployeesView />
+    case 'daily-closing':
+      return <DailyClosingView />
     case 'audit':
       return <AuditView />
     case 'workshops':
@@ -172,6 +178,12 @@ export function AppShell() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('workshops')}>
                     🏢 Mis Talleres
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('employees')}>
+                    👥 Empleados
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('daily-closing')}>
+                    📋 Cierre Diario
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('workshop-bi')}>
                     📈 BI Taller

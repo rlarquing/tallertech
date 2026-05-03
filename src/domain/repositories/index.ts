@@ -6,7 +6,7 @@
 import type {
   User, Category, Supplier, Product, Customer,
   Sale, RepairOrder, Expense, AuditLog, Setting, StockMovement,
-  Workshop, WorkshopMember, WorkshopWithRole
+  Workshop, WorkshopMember, WorkshopWithRole, DailyClosing
 } from '@/domain/entities'
 
 // ─── Base Repository ─────────────────────────────────────────────
@@ -131,3 +131,22 @@ export interface WorkshopRepository {
 
 // Import SaleItem for SaleRepository
 import type { SaleItem, RepairPart } from '@/domain/entities'
+
+// ─── Daily Closing Repository ──────────────────────────────────
+
+export interface DailyClosingRepository {
+  findById(id: string): Promise<DailyClosing | null>
+  findMany(params: {
+    workshopId?: string
+    userId?: string
+    dateFrom?: Date
+    dateTo?: Date
+    status?: string
+    skip?: number
+    take?: number
+  }): Promise<{ data: DailyClosing[]; total: number }>
+  create(data: Omit<DailyClosing, 'id' | 'createdAt' | 'updatedAt'>): Promise<DailyClosing>
+  update(id: string, data: Partial<DailyClosing>): Promise<DailyClosing>
+  findByWorkshopAndUserAndDate(workshopId: string, userId: string, date: Date): Promise<DailyClosing | null>
+  getOpenClosing(workshopId: string, userId: string, date: Date): Promise<DailyClosing | null>
+}

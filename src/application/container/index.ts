@@ -15,6 +15,7 @@ import type {
   AuditRepository,
   SettingsRepository,
   WorkshopRepository,
+  DailyClosingRepository,
 } from '@/domain/repositories'
 
 import type {
@@ -98,6 +99,11 @@ import { UpdateWorkshopMemberUseCase } from '@/application/use-cases/workshops/u
 import { GetWorkshopBIUseCase } from '@/application/use-cases/bi/get-workshop-bi.use-case'
 import { GetOwnerDashboardUseCase } from '@/application/use-cases/bi/get-owner-dashboard.use-case'
 
+import { CreateDailyClosingUseCase } from '@/application/use-cases/daily-closing/create-daily-closing.use-case'
+import { CloseDailyClosingUseCase } from '@/application/use-cases/daily-closing/close-daily-closing.use-case'
+import { GetDailyClosingsUseCase } from '@/application/use-cases/daily-closing/get-daily-closings.use-case'
+import { GetDailyClosingSummaryUseCase } from '@/application/use-cases/daily-closing/get-daily-closing-summary.use-case'
+
 // ─── Dependencies Interface ──────────────────────────────────
 
 export interface AppDependencies {
@@ -113,6 +119,7 @@ export interface AppDependencies {
   auditRepository: AuditRepository
   settingsRepository: SettingsRepository
   workshopRepository: WorkshopRepository
+  dailyClosingRepository: DailyClosingRepository
 
   // Ports
   auditPort: AuditPort
@@ -591,6 +598,46 @@ export class UseCaseContainer {
     )
   }
 
+  // ─── Daily Closing ────────────────────────────────────────
+
+  get createDailyClosing() {
+    return new CreateDailyClosingUseCase(
+      this.deps.dailyClosingRepository,
+      this.deps.saleRepository,
+      this.deps.repairRepository,
+      this.deps.expenseRepository,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  get closeDailyClosing() {
+    return new CloseDailyClosingUseCase(
+      this.deps.dailyClosingRepository,
+      this.deps.saleRepository,
+      this.deps.repairRepository,
+      this.deps.expenseRepository,
+      this.deps.auditPort,
+      this.deps.sessionPort,
+    )
+  }
+
+  get getDailyClosings() {
+    return new GetDailyClosingsUseCase(
+      this.deps.dailyClosingRepository,
+      this.deps.sessionPort,
+    )
+  }
+
+  get getDailyClosingSummary() {
+    return new GetDailyClosingSummaryUseCase(
+      this.deps.saleRepository,
+      this.deps.repairRepository,
+      this.deps.expenseRepository,
+      this.deps.sessionPort,
+    )
+  }
+
   // ─── BI ────────────────────────────────────────────────────
 
   get getWorkshopBI() {
@@ -689,6 +736,11 @@ export class UseCaseContainer {
       removeWorkshopMember: this.removeWorkshopMember,
       getWorkshopMembers: this.getWorkshopMembers,
       updateWorkshopMember: this.updateWorkshopMember,
+      // Daily Closing
+      createDailyClosing: this.createDailyClosing,
+      closeDailyClosing: this.closeDailyClosing,
+      getDailyClosings: this.getDailyClosings,
+      getDailyClosingSummary: this.getDailyClosingSummary,
       // BI
       getWorkshopBI: this.getWorkshopBI,
       getOwnerDashboard: this.getOwnerDashboard,

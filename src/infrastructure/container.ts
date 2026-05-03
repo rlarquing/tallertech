@@ -19,6 +19,7 @@ import { PrismaExpenseRepository } from '@/infrastructure/persistence/prisma/rep
 import { PrismaAuditRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-audit.repository'
 import { PrismaSettingsRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-settings.repository'
 import { PrismaWorkshopRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-workshop.repository'
+import { PrismaDailyClosingRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-daily-closing.repository'
 
 // Port adapters (bridge infrastructure services to application ports)
 import { AuditAdapter } from '@/infrastructure/adapters/audit-adapter'
@@ -45,6 +46,7 @@ const deps: AppDependencies = {
   auditRepository: new PrismaAuditRepository(),
   settingsRepository: new PrismaSettingsRepository(),
   workshopRepository: new PrismaWorkshopRepository(),
+  dailyClosingRepository: new PrismaDailyClosingRepository(),
 
   // Ports (adapters & direct implementations)
   auditPort: new AuditAdapter(),
