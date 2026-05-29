@@ -31,6 +31,7 @@ export interface AuthRepository {
   findByEmail(email: string): Promise<User | null>
   findById(id: string): Promise<User | null>
   create(data: { email: string; name: string; password: string; role?: string; image?: string }): Promise<User>
+  update(id: string, data: { name?: string; email?: string; password?: string; active?: boolean }): Promise<User>
   updatePassword(id: string, password: string): Promise<void>
 }
 

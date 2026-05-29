@@ -38,6 +38,20 @@ export class PrismaAuthRepository implements AuthRepository {
     return UserMapper.toDomain(user)
   }
 
+  async update(id: string, data: { name?: string; email?: string; password?: string; active?: boolean }): Promise<User> {
+    const updateData: Record<string, unknown> = {}
+    if (data.name !== undefined) updateData.name = data.name
+    if (data.email !== undefined) updateData.email = data.email
+    if (data.password !== undefined) updateData.password = data.password
+    if (data.active !== undefined) updateData.active = data.active
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: updateData,
+    })
+    return UserMapper.toDomain(user)
+  }
+
   async updatePassword(id: string, password: string): Promise<void> {
     await prisma.user.update({
       where: { id },

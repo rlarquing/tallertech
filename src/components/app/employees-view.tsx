@@ -52,6 +52,8 @@ import {
   Wrench,
   DollarSign,
   CalendarDays,
+  Pencil,
+  Key,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { offlineFetch } from '@/lib/offline-fetch'
@@ -67,19 +69,23 @@ interface Member {
   joinedAt: string
 }
 
-interface AddMemberForm {
+interface CreateEmployeeForm {
+  name: string
   email: string
+  password: string
   role: string
 }
 
-interface EmployeeActivity {
-  salesCount: number
-  salesTotal: number
-  repairsCount: number
+interface EditEmployeeForm {
+  name: string
+  email: string
+  password: string
 }
 
-const emptyAddForm: AddMemberForm = {
+const emptyCreateForm: CreateEmployeeForm = {
+  name: '',
   email: '',
+  password: '',
   role: 'employee',
 }
 
@@ -100,12 +106,24 @@ export function EmployeesView() {
   const { currentWorkshopId, workshops, user } = useAppStore()
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
-  const [addDialogOpen, setAddDialogOpen] = useState(false)
-  const [addForm, setAddForm] = useState<AddMemberForm>(emptyAddForm)
-  const [submitting, setSubmitting] = useState(false)
+
+  // Create employee dialog
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [createForm, setCreateForm] = useState<CreateEmployeeForm>(emptyCreateForm)
+  const [creating, setCreating] = useState(false)
+
+  // Edit employee dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editMember, setEditMember] = useState<Member | null>(null)
+  const [editForm, setEditForm] = useState<EditEmployeeForm>({ name: '', email: '', password: '' })
+  const [editing, setEditing] = useState(false)
+
+  // Remove employee dialog
   const [removeMember, setRemoveMember] = useState<Member | null>(null)
   const [removeOpen, setRemoveOpen] = useState(false)
-  const [employeeActivities, setEmployeeActivities] = useState<Record<string, EmployeeActivity>>({})
+
+  // Activity data
+  const [employeeActivities, setEmployeeActivities] = useState<Record<string, { salesCount: number; salesTotal: number; repairsCount: number }>>({})
   const [activitiesLoading, setActivitiesLoading] = useState(false)
 
   const currentWorkshop = workshops.find(w => w.id === currentWorkshopId)
@@ -136,11 +154,7 @@ export function EmployeesView() {
         `/api/daily-closings/summary?workshopId=${currentWorkshopId}&date=${today}`
       )
       if (res.ok) {
-        const data = await res.json()
-        // The summary is an aggregate - we show it per-view
-        // For a per-employee breakdown we'd need individual queries,
-        // but we can show the overall summary per employee from the data
-        const activities: Record<string, EmployeeActivity> = {}
+        const activities: Record<string, { salesCount: number; salesTotal: number; repairsCount: number }> = {}
         for (const member of members) {
           try {
             const empRes = await offlineFetch(
@@ -177,35 +191,100 @@ export function EmployeesView() {
     }
   }, [members.length, fetchEmployeeActivities])
 
-  const handleAddMember = async (e: React.FormEvent) => {
+  // ─── Create Employee ──────────────────────────────────────
+
+  const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!currentWorkshopId) return
-    if (!addForm.email.trim()) {
-      toast({ title: 'Error', description: 'El email es requerido', variant: 'destructive' })
+
+    if (!createForm.name.trim() || !createForm.email.trim() || !createForm.password.trim()) {
+      toast({ title: 'Error', description: 'Todos los campos son requeridos', variant: 'destructive' })
       return
     }
-    setSubmitting(true)
+    if (createForm.password.length < 6) {
+      toast({ title: 'Error', description: 'La contraseña debe tener al menos 6 caracteres', variant: 'destructive' })
+      return
+    }
+
+    setCreating(true)
     try {
-      const res = await offlineFetch(`/api/workshops/${currentWorkshopId}/members`, {
+      const res = await offlineFetch('/api/employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: addForm.email, role: addForm.role }),
+        body: JSON.stringify({
+          name: createForm.name,
+          email: createForm.email,
+          password: createForm.password,
+          role: createForm.role,
+          workshopId: currentWorkshopId,
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
-        toast({ title: 'Error', description: data.error || 'Error al agregar miembro', variant: 'destructive' })
+        toast({ title: 'Error', description: data.error || 'Error al crear empleado', variant: 'destructive' })
         return
       }
-      toast({ title: 'Miembro agregado', description: 'El empleado fue agregado al taller' })
-      setAddDialogOpen(false)
-      setAddForm(emptyAddForm)
+      toast({ title: 'Empleado creado', description: `${createForm.name} fue agregado al taller` })
+      setCreateDialogOpen(false)
+      setCreateForm(emptyCreateForm)
       fetchMembers()
     } catch {
       toast({ title: 'Error', description: 'Error de conexión', variant: 'destructive' })
     } finally {
-      setSubmitting(false)
+      setCreating(false)
     }
   }
+
+  // ─── Edit Employee ────────────────────────────────────────
+
+  const openEditDialog = (member: Member) => {
+    setEditMember(member)
+    setEditForm({ name: member.userName, email: member.userEmail, password: '' })
+    setEditDialogOpen(true)
+  }
+
+  const handleEditEmployee = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editMember || !currentWorkshopId) return
+
+    if (!editForm.name.trim() || !editForm.email.trim()) {
+      toast({ title: 'Error', description: 'Nombre y email son requeridos', variant: 'destructive' })
+      return
+    }
+
+    setEditing(true)
+    try {
+      const body: Record<string, string> = {
+        name: editForm.name,
+        email: editForm.email,
+        workshopId: currentWorkshopId,
+      }
+      if (editForm.password && editForm.password.length >= 6) {
+        body.password = editForm.password
+      }
+
+      const res = await offlineFetch(`/api/employees/${editMember.userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast({ title: 'Error', description: data.error || 'Error al actualizar empleado', variant: 'destructive' })
+        return
+      }
+      toast({ title: 'Empleado actualizado', description: `Datos de ${editForm.name} actualizados` })
+      setEditDialogOpen(false)
+      setEditMember(null)
+      fetchMembers()
+    } catch {
+      toast({ title: 'Error', description: 'Error de conexión', variant: 'destructive' })
+    } finally {
+      setEditing(false)
+    }
+  }
+
+  // ─── Update Role ──────────────────────────────────────────
 
   const handleUpdateRole = async (member: Member, newRole: string) => {
     if (!currentWorkshopId) return
@@ -230,6 +309,8 @@ export function EmployeesView() {
     }
   }
 
+  // ─── Remove Member ────────────────────────────────────────
+
   const handleRemoveMember = async () => {
     if (!removeMember || !currentWorkshopId) return
     try {
@@ -250,6 +331,8 @@ export function EmployeesView() {
       toast({ title: 'Error', description: 'Error de conexión', variant: 'destructive' })
     }
   }
+
+  // ─── Helpers ──────────────────────────────────────────────
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('es-AR', {
@@ -276,6 +359,8 @@ export function EmployeesView() {
       .slice(0, 2)
   }
 
+  // ─── No Workshop ──────────────────────────────────────────
+
   if (!currentWorkshopId) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-6 gap-3">
@@ -290,6 +375,8 @@ export function EmployeesView() {
     )
   }
 
+  // ─── Main View ────────────────────────────────────────────
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
       {/* Header */}
@@ -301,9 +388,9 @@ export function EmployeesView() {
           </p>
         </div>
         {isOwner && (
-          <Button onClick={() => { setAddForm(emptyAddForm); setAddDialogOpen(true) }}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Agregar Empleado
+          <Button onClick={() => { setCreateForm(emptyCreateForm); setCreateDialogOpen(true) }}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Empleado
           </Button>
         )}
       </div>
@@ -384,6 +471,10 @@ export function EmployeesView() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openEditDialog(member)}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Editar
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
                               onClick={() => { setRemoveMember(member); setRemoveOpen(true) }}
@@ -444,31 +535,57 @@ export function EmployeesView() {
         </div>
       )}
 
-      {/* Add Member Dialog */}
-      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+      {/* ─── Create Employee Dialog ──────────────────────────── */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Agregar Empleado</DialogTitle>
+            <DialogTitle>Nuevo Empleado</DialogTitle>
             <DialogDescription>
-              Ingrese el email del usuario que desea agregar al taller
+              Cree una cuenta para el nuevo empleado y agréguelo al taller
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleAddMember}>
+          <form onSubmit={handleCreateEmployee}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email del usuario *</Label>
+                <Label htmlFor="create-name">Nombre completo *</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={addForm.email}
-                  onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
-                  placeholder="correo@ejemplo.com"
+                  id="create-name"
+                  type="text"
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                  placeholder="Juan Pérez"
                   required
+                  disabled={creating}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="role">Rol</Label>
-                <Select value={addForm.role} onValueChange={(v) => setAddForm({ ...addForm, role: v })}>
+                <Label htmlFor="create-email">Email *</Label>
+                <Input
+                  id="create-email"
+                  type="email"
+                  value={createForm.email}
+                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                  placeholder="correo@ejemplo.com"
+                  required
+                  disabled={creating}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-password">Contraseña *</Label>
+                <Input
+                  id="create-password"
+                  type="password"
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  minLength={6}
+                  disabled={creating}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-role">Rol</Label>
+                <Select value={createForm.role} onValueChange={(v) => setCreateForm({ ...createForm, role: v })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -480,19 +597,85 @@ export function EmployeesView() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setAddDialogOpen(false)} disabled={submitting}>
+              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)} disabled={creating}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Agregar
+              <Button type="submit" disabled={creating}>
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Crear Empleado
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Remove Confirmation */}
+      {/* ─── Edit Employee Dialog ────────────────────────────── */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Empleado</DialogTitle>
+            <DialogDescription>
+              Modifique los datos del empleado. Deje la contraseña vacía si no desea cambiarla.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditEmployee}>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-name">Nombre completo *</Label>
+                <Input
+                  id="edit-name"
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  placeholder="Juan Pérez"
+                  required
+                  disabled={editing}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-email">Email *</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  placeholder="correo@ejemplo.com"
+                  required
+                  disabled={editing}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-password">Nueva Contraseña</Label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="edit-password"
+                    type="password"
+                    value={editForm.password}
+                    onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                    placeholder="Dejar vacío para no cambiar"
+                    className="pl-9"
+                    minLength={6}
+                    disabled={editing}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">Mínimo 6 caracteres. Dejar vacío para mantener la actual.</p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)} disabled={editing}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={editing}>
+                {editing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Guardar Cambios
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Remove Confirmation ─────────────────────────────── */}
       <AlertDialog open={removeOpen} onOpenChange={setRemoveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
