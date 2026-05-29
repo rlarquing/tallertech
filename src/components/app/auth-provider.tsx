@@ -17,9 +17,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Form fields
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  // Form fields (pre-filled with demo creds in development)
+  const isDev = process.env.NODE_ENV === 'development'
+  const [email, setEmail] = useState(isDev ? 'admin@tallertech.com' : '')
+  const [password, setPassword] = useState(isDev ? 'admin123' : '')
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Check session on mount
