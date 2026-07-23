@@ -5,7 +5,6 @@
 
 export { UserMapper } from './user.mapper'
 export { ProductMapper } from './product.mapper'
-export { CustomerMapper } from './customer.mapper'
 export { SaleMapper } from './sale.mapper'
 export { SaleItemMapper } from './sale-item.mapper'
 export { RepairOrderMapper } from './repair-order.mapper'

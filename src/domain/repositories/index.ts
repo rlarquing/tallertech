@@ -4,7 +4,7 @@
 // ============================================================
 
 import type {
-  User, Category, Supplier, Product, Customer,
+  User, Category, Supplier, Product,
   Sale, RepairOrder, Expense, AuditLog, Setting, StockMovement,
   Workshop, WorkshopMember, WorkshopWithRole, DailyClosing
 } from '@/domain/entities'
@@ -51,12 +51,6 @@ export type CategoryRepository = BaseRepository<Category>
 // ─── Supplier Repository ─────────────────────────────────────────
 
 export type SupplierRepository = BaseRepository<Supplier>
-
-// ─── Customer Repository ─────────────────────────────────────────
-
-export interface CustomerRepository extends BaseRepository<Customer> {
-  findWithHistory(id: string): Promise<Customer & { sales: Sale[]; repairOrders: RepairOrder[] } | null>
-}
 
 // ─── Sale Repository ─────────────────────────────────────────────
 

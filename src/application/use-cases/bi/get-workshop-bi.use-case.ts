@@ -8,7 +8,6 @@ import type {
   RepairRepository,
   ProductRepository,
   ExpenseRepository,
-  CustomerRepository,
   WorkshopRepository,
 } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
@@ -23,7 +22,6 @@ export class GetWorkshopBIUseCase {
     private repairRepository: RepairRepository,
     private productRepository: ProductRepository,
     private expenseRepository: ExpenseRepository,
-    private customerRepository: CustomerRepository,
     private sessionPort: SessionPort,
   ) {}
 
@@ -81,16 +79,13 @@ export class GetWorkshopBIUseCase {
     const allProducts = await this.productRepository.findMany({ take: 1000, workshopId })
     const lowStockProducts = await this.productRepository.findLowStock()
 
-    // 8. Get customers count
-    const allCustomers = await this.customerRepository.findMany({ take: 1, workshopId })
-
-    // 9. Calculate total expenses
+    // 8. Calculate total expenses
     let totalExpenses = 0
     for (const e of expensesByCategory) {
       totalExpenses += e.total
     }
 
-    // 10. Build revenue chart
+    // 9. Build revenue chart
     const revenueByDate: Record<string, number> = {}
     const expensesByDate: Record<string, number> = {}
     for (let i = 0; i < 30; i++) {
@@ -118,19 +113,19 @@ export class GetWorkshopBIUseCase {
       expenses: expensesByDate[date] || 0,
     }))
 
-    // 11. Top products from sales
+    // 10. Top products from sales
     const topProducts = salesStats30Days.byDay.slice(0, 10).map((d) => ({
       name: d.date,
       total: d.total,
       quantity: d.count,
     }))
 
-    // 12. Sales by payment method
+    // 11. Sales by payment method
     const salesByPaymentMethod = Object.entries(salesStats.byPaymentMethod).map(
       ([method, total]) => ({ method, total, count: 0 }),
     )
 
-    // 13. Build BI response
+    // 12. Build BI response
     return {
       workshopId,
       workshopName: workshop.name,
@@ -140,7 +135,6 @@ export class GetWorkshopBIUseCase {
       netProfit: salesStats.totalRevenue - totalExpenses,
       salesCount: salesStats.totalSales,
       repairsCount: allRepairs.total,
-      customersCount: allCustomers.total,
       productsCount: allProducts.total,
       lowStockCount: lowStockProducts.length,
       pendingRepairsCount: pendingRepairs,

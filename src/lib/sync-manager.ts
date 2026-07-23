@@ -5,7 +5,6 @@ import {
   removeFromSyncQueue,
   updateSyncQueueError,
   cacheProducts,
-  cacheCustomers,
   cacheCategories,
   cacheSuppliers,
   cacheSales,
@@ -112,7 +111,6 @@ export class SyncManagerService {
       url: string
     }> = [
       { cache: (d) => cacheProducts(d as Parameters<typeof cacheProducts>[0]), url: '/api/products?limit=1000' },
-      { cache: (d) => cacheCustomers(d as Parameters<typeof cacheCustomers>[0]), url: '/api/customers?limit=1000' },
       { cache: (d) => cacheCategories(d as Parameters<typeof cacheCategories>[0]), url: '/api/categories' },
       { cache: (d) => cacheSuppliers(d as Parameters<typeof cacheSuppliers>[0]), url: '/api/suppliers' },
       { cache: (d) => cacheSales(d as Parameters<typeof cacheSales>[0]), url: '/api/sales?limit=100' },

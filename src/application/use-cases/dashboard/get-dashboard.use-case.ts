@@ -8,7 +8,6 @@ import type {
   RepairRepository,
   ProductRepository,
   ExpenseRepository,
-  CustomerRepository,
 } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
 import type { DashboardRequest } from '@/application/dtos'
@@ -21,7 +20,6 @@ export class GetDashboardUseCase {
     private repairRepository: RepairRepository,
     private productRepository: ProductRepository,
     private expenseRepository: ExpenseRepository,
-    private customerRepository: CustomerRepository,
     private sessionPort: SessionPort,
   ) {}
 
@@ -128,8 +126,7 @@ export class GetDashboardUseCase {
       expenses: expensesByDate[date] || 0,
     }))
 
-    // 9. Get total customers and products
-    const allCustomers = await this.customerRepository.findMany({ take: 1 })
+    // 9. Get total products
     const allProducts = await this.productRepository.findMany({ take: 1 })
 
     // 10. Get recent sales
@@ -167,7 +164,6 @@ export class GetDashboardUseCase {
         category: e.category,
         total: e.total,
       })),
-      totalCustomers: allCustomers.total,
       totalProducts: allProducts.total,
       pendingRepairs,
       completedRepairsToday,
@@ -177,7 +173,6 @@ export class GetDashboardUseCase {
         total: s.total,
         paymentMethod: s.paymentMethod,
         createdAt: String(s.createdAt),
-        customer: s.customer ?? null,
       })),
       recentRepairs: recentRepairsResult.data.map((r: RepairOrder) => ({
         id: r.id,
@@ -186,7 +181,6 @@ export class GetDashboardUseCase {
         status: r.status,
         totalCost: r.totalCost,
         createdAt: String(r.createdAt),
-        customer: r.customer ?? null,
       })),
     }
   }

@@ -9,12 +9,11 @@ import { SaleItemMapper } from './sale-item.mapper'
 export class SaleMapper {
   /**
    * Convert a Prisma Sale record to a Domain Sale entity
-   * Supports both with and without included items/customer
+   * Supports both with and without included items
    */
   static toDomain(prismaSale: {
     id: string
     code: string
-    customerId: string | null
     userId: string
     userName: string
     subtotal: number
@@ -37,7 +36,6 @@ export class SaleMapper {
       total: number
       type: string
     }>
-    customer?: { name: string } | null
   }): Sale {
     const items: SaleItem[] = prismaSale.items
       ? prismaSale.items.map((item) => SaleItemMapper.toDomain(item))
@@ -46,7 +44,6 @@ export class SaleMapper {
     return Sale.create({
       id: prismaSale.id,
       code: prismaSale.code,
-      customerId: prismaSale.customerId,
       userId: prismaSale.userId,
       userName: prismaSale.userName,
       subtotal: prismaSale.subtotal,
@@ -59,7 +56,6 @@ export class SaleMapper {
       createdAt: prismaSale.createdAt,
       updatedAt: prismaSale.updatedAt,
       items,
-      customer: prismaSale.customer ?? null,
     })
   }
 
@@ -69,7 +65,6 @@ export class SaleMapper {
   static toPrisma(sale: Sale): {
     id: string
     code: string
-    customerId: string | null
     userId: string
     userName: string
     subtotal: number
@@ -86,7 +81,6 @@ export class SaleMapper {
     return {
       id: plain.id,
       code: plain.code,
-      customerId: plain.customerId,
       userId: plain.userId,
       userName: plain.userName,
       subtotal: plain.subtotal,

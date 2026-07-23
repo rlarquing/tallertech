@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return <>{children}</>
   }
 
-  // Not authenticated - show login/register
+  // Not authenticated - show login
   return (
     <div className="flex min-h-svh items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/5 p-4">
       <div className="w-full max-w-md">

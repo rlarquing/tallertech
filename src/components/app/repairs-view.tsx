@@ -27,16 +27,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import {
   Table,
   TableBody,
   TableCell,
@@ -64,8 +54,6 @@ import {
   Printer,
   Package,
   ArrowRight,
-  User,
-  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { offlineFetch } from '@/lib/offline-fetch'
@@ -74,13 +62,6 @@ import { repairSchema, repairUpdateSchema, repairPartSchema } from '@/lib/valida
 // ============================================================
 // Types
 // ============================================================
-
-interface Customer {
-  id: string
-  name: string
-  phone: string | null
-  dni: string | null
-}
 
 interface RepairPart {
   id: string
@@ -95,7 +76,6 @@ interface RepairPart {
 interface RepairOrder {
   id: string
   code: string
-  customerId: string
   device: string
   brand: string | null
   imei: string | null
@@ -116,7 +96,6 @@ interface RepairOrder {
   deliveredAt: string | null
   notes: string | null
   createdAt: string
-  customer: { id: string; name: string; phone: string | null }
   parts: RepairPart[]
 }
 
@@ -150,12 +129,6 @@ const priorityConfig: Record<string, { label: string; variant: 'default' | 'seco
   normal: { label: 'Normal', variant: 'outline' },
   high: { label: 'Alta', variant: 'default' },
   urgent: { label: 'Urgente', variant: 'destructive' },
-}
-
-const paymentLabels: Record<string, string> = {
-  efectivo: 'Efectivo',
-  transferencia: 'Transferencia',
-  mixto: 'Mixto',
 }
 
 // ============================================================
@@ -209,19 +182,12 @@ export function RepairsView() {
   const [partProductsLoading, setPartProductsLoading] = useState(false)
   const [addingPart, setAddingPart] = useState(false)
 
-  // Customer search for new repair form
-  const [customerSearch, setCustomerSearch] = useState('')
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [customersLoading, setCustomersLoading] = useState(false)
-
   // Validation errors
   const [newRepairErrors, setNewRepairErrors] = useState<Record<string, string>>({})
   const [editRepairErrors, setEditRepairErrors] = useState<Record<string, string>>({})
   const [addPartErrors, setAddPartErrors] = useState<Record<string, string>>({})
 
   // New repair form
-  const [formCustomerId, setFormCustomerId] = useState('')
-  const [formCustomerName, setFormCustomerName] = useState('')
   const [formDevice, setFormDevice] = useState('')
   const [formBrand, setFormBrand] = useState('')
   const [formImei, setFormImei] = useState('')
@@ -241,7 +207,6 @@ export function RepairsView() {
   const [partQuantity, setPartQuantity] = useState('1')
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>()
-  const customerSearchTimeout = useRef<ReturnType<typeof setTimeout>>()
   const partSearchTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   // ============================================================
@@ -314,40 +279,6 @@ export function RepairsView() {
   }, [searchQuery])
 
   // ============================================================
-  // Customer search
-  // ============================================================
-
-  const searchCustomers = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      setCustomers([])
-      return
-    }
-    setCustomersLoading(true)
-    try {
-      const res = await offlineFetch(`/api/customers?search=${encodeURIComponent(query)}&limit=20`)
-      if (res.ok) {
-        const data = await res.json()
-        setCustomers(data.data || [])
-      }
-    } catch {
-      // ignore
-    } finally {
-      setCustomersLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!newRepairOpen) return
-    if (customerSearchTimeout.current) clearTimeout(customerSearchTimeout.current)
-    customerSearchTimeout.current = setTimeout(() => {
-      searchCustomers(customerSearch)
-    }, 300)
-    return () => {
-      if (customerSearchTimeout.current) clearTimeout(customerSearchTimeout.current)
-    }
-  }, [customerSearch, newRepairOpen, searchCustomers])
-
-  // ============================================================
   // Part product search
   // ============================================================
 
@@ -387,7 +318,6 @@ export function RepairsView() {
 
   const createRepair = async () => {
     const formData = {
-      customerId: formCustomerId,
       device: formDevice,
       brand: formBrand || undefined,
       imei: formImei || undefined,
@@ -413,7 +343,6 @@ export function RepairsView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerId: formCustomerId,
           device: formDevice,
           brand: formBrand || undefined,
           imei: formImei || undefined,
@@ -439,16 +368,12 @@ export function RepairsView() {
   }
 
   const resetNewForm = () => {
-    setFormCustomerId('')
-    setFormCustomerName('')
     setFormDevice('')
     setFormBrand('')
     setFormImei('')
     setFormIssue('')
     setFormPriority('normal')
     setFormCostEstimate('')
-    setCustomerSearch('')
-    setCustomers([])
     setNewRepairErrors({})
   }
 
@@ -641,7 +566,6 @@ export function RepairsView() {
           <p style="text-align:center;">Orden de Reparación</p>
           <div class="line"></div>
           <div class="row"><span>Código:</span><span>${repair.code}</span></div>
-          <div class="row"><span>Cliente:</span><span>${repair.customer.name}</span></div>
           <div class="row"><span>Dispositivo:</span><span>${repair.device}</span></div>
           ${repair.brand ? `<div class="row"><span>Marca:</span><span>${repair.brand}</span></div>` : ''}
           ${repair.imei ? `<div class="row"><span>IMEI:</span><span>${repair.imei}</span></div>` : ''}
@@ -709,7 +633,7 @@ export function RepairsView() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar por código, cliente o dispositivo..."
+                placeholder="Buscar por código o dispositivo..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -756,7 +680,6 @@ export function RepairsView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Código</TableHead>
-                    <TableHead>Cliente</TableHead>
                     <TableHead>Dispositivo</TableHead>
                     <TableHead>Problema</TableHead>
                     <TableHead>Estado</TableHead>
@@ -772,7 +695,6 @@ export function RepairsView() {
                       <TableCell className="font-mono text-xs font-semibold text-primary">
                         {repair.code}
                       </TableCell>
-                      <TableCell className="max-w-[120px] truncate">{repair.customer.name}</TableCell>
                       <TableCell className="max-w-[120px] truncate">{repair.device}</TableCell>
                       <TableCell className="max-w-[150px] truncate text-xs text-muted-foreground">{repair.issue}</TableCell>
                       <TableCell><StatusBadge status={repair.status} /></TableCell>
@@ -869,10 +791,6 @@ export function RepairsView() {
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Cliente:</span>
-                    <span>{repair.customer.name}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Dispositivo:</span>
                     <span>{repair.device}{repair.brand ? ` (${repair.brand})` : ''}</span>
                   </div>
@@ -958,51 +876,6 @@ export function RepairsView() {
             <DialogDescription>Complete los datos para registrar una nueva orden</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Customer */}
-            <div className="space-y-2">
-              <Label>Cliente *</Label>
-              {formCustomerId ? (
-                <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
-                  <User className="size-4 text-muted-foreground" />
-                  <span className="text-sm font-medium flex-1">{formCustomerName}</span>
-                  <Button variant="ghost" size="icon" className="size-6" onClick={() => { setFormCustomerId(''); setFormCustomerName(''); setNewRepairErrors((prev) => { const next = {...prev}; delete next.customerId; return next }) }}>
-                    <X className="size-3" />
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar cliente por nombre, teléfono, DNI..."
-                      value={customerSearch}
-                      onChange={(e) => setCustomerSearch(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  {customersLoading && <Skeleton className="h-8 w-full" />}
-                  {customers.length > 0 && (
-                    <ScrollArea className="max-h-32">
-                      <div className="space-y-1">
-                        {customers.map((c) => (
-                          <button
-                            key={c.id}
-                            className="w-full flex items-center gap-2 rounded-md p-2 text-left hover:bg-muted transition-colors text-sm"
-                            onClick={() => { setFormCustomerId(c.id); setFormCustomerName(c.name); setCustomerSearch(''); setCustomers([]); setNewRepairErrors((prev) => { const next = {...prev}; delete next.customerId; return next }) }}
-                          >
-                            <User className="size-4 text-muted-foreground" />
-                            <span>{c.name}</span>
-                            <span className="text-xs text-muted-foreground ml-auto">{c.phone || c.dni || ''}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  )}
-                </>
-              )}
-              {newRepairErrors.customerId && <p className="text-sm text-destructive">{newRepairErrors.customerId}</p>}
-            </div>
-
             {/* Device */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
@@ -1074,7 +947,7 @@ export function RepairsView() {
             </DialogTitle>
             <DialogDescription>
               {editingRepair?.code && (
-                <span>Orden: <span className="font-mono">{editingRepair.code}</span> — {editingRepair.customer?.name} — {editingRepair.device}</span>
+                <span>Orden: <span className="font-mono">{editingRepair.code}</span> — {editingRepair.device}</span>
               )}
             </DialogDescription>
           </DialogHeader>
@@ -1207,10 +1080,6 @@ export function RepairsView() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Código:</span>
                   <span className="font-mono font-semibold">{detailRepair.code}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Cliente:</span>
-                  <span>{detailRepair.customer.name}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Dispositivo:</span>

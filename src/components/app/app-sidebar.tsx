@@ -107,11 +107,6 @@ const navItems: NavItem[] = [
     icon: Calculator,
   },
   {
-    id: 'customers',
-    label: 'Clientes',
-    icon: Users,
-  },
-  {
     id: 'reports',
     label: 'Reportes',
     icon: BarChart3,

@@ -96,7 +96,6 @@ const entityLabels: Record<string, string> = {
   product: 'Producto',
   sale: 'Venta',
   repair: 'Reparación',
-  customer: 'Cliente',
   expense: 'Gasto',
   category: 'Categoría',
   supplier: 'Proveedor',

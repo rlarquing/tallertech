@@ -3,7 +3,6 @@
 import {
   addToSyncQueue,
   getCachedProducts,
-  getCachedCustomers,
   getCachedSales,
   getCachedRepairOrders,
   getCachedCategories,
@@ -11,7 +10,6 @@ import {
   getCachedExpenses,
   getCachedDashboardData,
   cacheProducts,
-  cacheCustomers,
   cacheSales,
   cacheRepairOrders,
   cacheCategories,
@@ -86,8 +84,6 @@ function getActionFromUrl(url: string, method: string): string {
   if (url.includes('/api/repairs') && url.includes('/parts') && method === 'POST') return 'ADD_REPAIR_PART'
   if (url.includes('/api/repairs') && method === 'POST') return 'CREATE_REPAIR'
   if (url.includes('/api/repairs') && method === 'PUT') return 'UPDATE_REPAIR'
-  if (url.includes('/api/customers') && method === 'POST') return 'CREATE_CUSTOMER'
-  if (url.includes('/api/customers') && method === 'PUT') return 'UPDATE_CUSTOMER'
   if (url.includes('/api/products') && method === 'POST') return 'CREATE_PRODUCT'
   if (url.includes('/api/products') && method === 'PUT') return 'UPDATE_PRODUCT'
   if (url.includes('/api/categories') && method === 'POST') return 'CREATE_CATEGORY'
@@ -118,8 +114,6 @@ async function cacheResponse(url: string, data: any): Promise<void> {
       })
     } else if (url.includes('/api/products') && Array.isArray(items)) {
       await cacheProducts(items)
-    } else if (url.includes('/api/customers') && Array.isArray(items)) {
-      await cacheCustomers(items)
     } else if (url.includes('/api/categories') && Array.isArray(items)) {
       await cacheCategories(items)
     } else if (url.includes('/api/suppliers') && Array.isArray(items)) {
@@ -161,10 +155,6 @@ async function getCachedResponse(url: string): Promise<any> {
 
     if (url.includes('/api/products')) {
       const data = await getCachedProducts()
-      return { data, total: data.length }
-    }
-    if (url.includes('/api/customers')) {
-      const data = await getCachedCustomers()
       return { data, total: data.length }
     }
     if (url.includes('/api/categories')) {

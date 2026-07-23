@@ -12,7 +12,6 @@ import { PrismaAuthRepository } from '@/infrastructure/persistence/prisma/reposi
 import { PrismaProductRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-product.repository'
 import { PrismaCategoryRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-category.repository'
 import { PrismaSupplierRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-supplier.repository'
-import { PrismaCustomerRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-customer.repository'
 import { PrismaSaleRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-sale.repository'
 import { PrismaRepairRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-repair.repository'
 import { PrismaExpenseRepository } from '@/infrastructure/persistence/prisma/repositories/prisma-expense.repository'
@@ -39,7 +38,6 @@ const deps: AppDependencies = {
   productRepository: new PrismaProductRepository(),
   categoryRepository: new PrismaCategoryRepository(),
   supplierRepository: new PrismaSupplierRepository(),
-  customerRepository: new PrismaCustomerRepository(),
   saleRepository: new PrismaSaleRepository(),
   repairRepository: new PrismaRepairRepository(),
   expenseRepository: new PrismaExpenseRepository(),

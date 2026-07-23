@@ -4,13 +4,12 @@ import { RepairPart } from './repair-part'
 
 /**
  * RepairOrder Entity
- * Represents a repair order for a customer's device.
+ * Represents a repair order for a device.
  */
 export class RepairOrder {
   private constructor(
     public readonly id: string,
     public code: string,
-    public readonly customerId: string,
     public readonly userId: string,
     public userName: string,
     public device: string,
@@ -35,13 +34,11 @@ export class RepairOrder {
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
     private _parts: RepairPart[],
-    public readonly customer?: { name: string } | null,
   ) {}
 
   static create(params: {
     id: string
     code: string
-    customerId: string
     userId: string
     userName: string
     device: string
@@ -73,7 +70,6 @@ export class RepairOrder {
     createdAt?: Date
     updatedAt?: Date
     parts?: RepairPart[]
-    customer?: { name: string } | null
   }): RepairOrder {
     const status = RepairStatus.from(params.status || 'received')
     const parts = params.parts || []
@@ -81,7 +77,6 @@ export class RepairOrder {
     return new RepairOrder(
       params.id,
       params.code,
-      params.customerId,
       params.userId,
       params.userName,
       params.device,
@@ -106,7 +101,6 @@ export class RepairOrder {
       params.createdAt || new Date(),
       params.updatedAt || new Date(),
       parts,
-      params.customer ?? null,
     )
   }
 
@@ -263,7 +257,6 @@ export class RepairOrder {
     return {
       id: this.id,
       code: this.code,
-      customerId: this.customerId,
       userId: this.userId,
       userName: this.userName,
       device: this.device,
@@ -288,7 +281,6 @@ export class RepairOrder {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       parts: this._parts.map((part) => part.toPlainObject()),
-      customer: this.customer,
     }
   }
 }

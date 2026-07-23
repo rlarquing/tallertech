@@ -15,7 +15,6 @@ function getExportMetadata(format: string, entity: string) {
     sales: 'Ventas',
     products: 'Productos',
     repairs: 'Reparaciones',
-    customers: 'Clientes',
     expenses: 'Gastos',
     stock: 'Movimientos_de_Stock',
   }

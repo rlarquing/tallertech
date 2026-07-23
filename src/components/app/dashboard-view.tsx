@@ -55,7 +55,6 @@ interface DashboardData {
   topProducts: { name: string; total: number; quantity: number }[]
   revenueChart: { date: string; revenue: number; expenses: number }[]
   expensesByCategory: { category: string; total: number }[]
-  totalCustomers: number
   totalProducts: number
   pendingRepairs: number
   completedRepairsToday: number
@@ -65,7 +64,6 @@ interface DashboardData {
     total: number
     paymentMethod: string
     createdAt: string
-    customer: { name: string } | null
   }[]
   recentRepairs: {
     id: string
@@ -74,7 +72,6 @@ interface DashboardData {
     status: string
     totalCost: number
     createdAt: string
-    customer: { name: string } | null
   }[]
 }
 
@@ -114,6 +111,12 @@ const revenueChartConfig: ChartConfig = {
     label: 'Gastos',
     color: 'var(--warning)',
   },
+}
+
+const paymentLabels: Record<string, string> = {
+  efectivo: 'Efectivo',
+  transferencia: 'Transferencia',
+  mixto: 'Mixto',
 }
 
 const statusLabels: Record<string, string> = {
@@ -325,9 +328,9 @@ export function DashboardView() {
       color: 'bg-chart-4/10 text-chart-4 hover:bg-chart-4/20',
     },
     {
-      label: 'Ver Clientes',
-      icon: Users,
-      view: 'customers' as const,
+      label: 'Ver Gastos',
+      icon: Receipt,
+      view: 'expenses' as const,
       color: 'bg-chart-5/10 text-chart-5 hover:bg-chart-5/20',
     },
   ]
@@ -376,12 +379,11 @@ export function DashboardView() {
           valueIsCurrency={false}
         />
         <StatCard
-          title="Clientes Totales"
-          value={data.totalCustomers}
-          icon={Users}
+          title="Ventas del Mes"
+          value={data.salesMonth.total}
+          icon={TrendingUp}
           subtitle={`${data.salesWeek.count} venta${data.salesWeek.count !== 1 ? 's' : ''} esta semana`}
           iconColor="bg-chart-5/10 text-chart-5"
-          valueIsCurrency={false}
         />
       </div>
 
@@ -597,10 +599,10 @@ export function DashboardView() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-medium">
-                          {sale.customer?.name || 'Cliente general'}
+                          {sale.code}
                         </p>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <span>{sale.code}</span>
+                          <span>{paymentLabels[sale.paymentMethod] || sale.paymentMethod}</span>
                           <span>·</span>
                           <Clock className="size-3" />
                           <span>{formatDateTime(sale.createdAt)}</span>
@@ -627,10 +629,10 @@ export function DashboardView() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-medium">
-                          {repair.customer?.name || 'Cliente'}
+                          {repair.device}
                         </p>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <span>{repair.device}</span>
+                          <span>{repair.code}</span>
                           <span>·</span>
                           <Clock className="size-3" />
                           <span>{formatDateTime(repair.createdAt)}</span>

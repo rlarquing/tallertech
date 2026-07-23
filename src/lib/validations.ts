@@ -6,7 +6,6 @@ import { z } from 'zod'
 
 const phoneRegex = /^[+]?[\d\s\-]{6,30}$/
 const skuRegex = /^[a-zA-Z0-9\-]*$/
-const dniRegex = /^[a-zA-Z0-9]*$/
 const imeiRegex = /^\d{15}$/
 
 // ============================================================
@@ -50,22 +49,6 @@ export const loginSchema = z.object({
   password: z.string({ message: 'La contraseña es requerida' })
     .min(6, { message: 'La contraseña debe tener al menos 6 caracteres' }),
 })
-
-export const registerSchema = z.object({
-  email: z.string({ message: 'El email es requerido' })
-    .min(1, { message: 'El email es requerido' })
-    .email({ message: 'Formato de email inválido' }),
-  password: z.string({ message: 'La contraseña es requerida' })
-    .min(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
-    .regex(/[A-Z]/, { message: 'La contraseña debe contener al menos una letra mayúscula' })
-    .regex(/[0-9]/, { message: 'La contraseña debe contener al menos un número' }),
-  name: z.string({ message: 'El nombre es requerido' })
-    .min(2, { message: 'El nombre debe tener al menos 2 caracteres' })
-    .max(100, { message: 'El nombre no puede exceder 100 caracteres' }),
-})
-
-/** Combined auth schema for convenience */
-export const authSchema = z.union([loginSchema, registerSchema])
 
 // ============================================================
 // 2. Product Schema
@@ -129,30 +112,7 @@ export const stockAdjustmentSchema = z.object({
 })
 
 // ============================================================
-// 4. Customer Schema
-// ============================================================
-
-export const customerSchema = z.object({
-  name: z.string({ message: 'El nombre es requerido' })
-    .min(2, { message: 'El nombre debe tener al menos 2 caracteres' })
-    .max(150, { message: 'El nombre no puede exceder 150 caracteres' }),
-  phone: optionalStringWithValidation(
-    30,
-    'El teléfono no puede exceder 30 caracteres',
-    { regex: phoneRegex, message: 'Formato de teléfono inválido (solo dígitos, espacios, guiones y +)' }
-  ),
-  email: optionalEmail('El email no puede exceder 254 caracteres', 'Formato de email inválido'),
-  address: optionalString(200, 'La dirección no puede exceder 200 caracteres'),
-  dni: optionalStringWithValidation(
-    20,
-    'El DNI no puede exceder 20 caracteres',
-    { regex: dniRegex, message: 'El DNI solo puede contener letras y números' }
-  ),
-  notes: optionalString(500, 'Las notas no pueden exceder 500 caracteres'),
-})
-
-// ============================================================
-// 5. Supplier Schema
+// 4. Supplier Schema
 // ============================================================
 
 export const supplierSchema = z.object({
@@ -184,12 +144,10 @@ export const categorySchema = z.object({
 })
 
 // ============================================================
-// 7. Repair Schema (Create)
+// 5. Repair Schema (Create)
 // ============================================================
 
 export const repairSchema = z.object({
-  customerId: z.string({ message: 'El cliente es requerido' })
-    .min(1, { message: 'Debe seleccionar un cliente' }),
   device: z.string({ message: 'El dispositivo es requerido' })
     .min(2, { message: 'El dispositivo debe tener al menos 2 caracteres' })
     .max(150, { message: 'El dispositivo no puede exceder 150 caracteres' }),
@@ -213,7 +171,7 @@ export const repairSchema = z.object({
 })
 
 // ============================================================
-// 8. Repair Update Schema
+// 6. Repair Update Schema
 // ============================================================
 
 export const repairUpdateSchema = z.object({
@@ -247,7 +205,7 @@ export const repairUpdateSchema = z.object({
 })
 
 // ============================================================
-// 9. Repair Part Schema
+// 7. Repair Part Schema
 // ============================================================
 
 export const repairPartSchema = z.object({
@@ -266,7 +224,7 @@ export const repairPartSchema = z.object({
 })
 
 // ============================================================
-// 10. Expense Schema
+// 8. Expense Schema
 // ============================================================
 
 export const expenseSchema = z.object({
@@ -292,7 +250,7 @@ export const expenseSchema = z.object({
 })
 
 // ============================================================
-// 11. Sale Item Schema
+// 9. Sale Item Schema
 // ============================================================
 
 export const saleItemSchema = z.object({
@@ -313,11 +271,10 @@ export const saleItemSchema = z.object({
 })
 
 // ============================================================
-// 12. Sale Schema
+// 10. Sale Schema
 // ============================================================
 
 export const saleSchema = z.object({
-  customerId: z.string().optional(),
   paymentMethod: z.enum(['efectivo', 'transferencia', 'mixto'], {
     message: 'Método de pago inválido',
   }),
@@ -330,7 +287,7 @@ export const saleSchema = z.object({
 })
 
 // ============================================================
-// 13. Workshop Schema
+// 11. Workshop Schema
 // ============================================================
 
 export const workshopSchema = z.object({
@@ -353,7 +310,7 @@ export const workshopSchema = z.object({
 })
 
 // ============================================================
-// 14. Settings Schema
+// 12. Settings Schema
 // ============================================================
 
 export const settingsSchema = z.object({
@@ -376,7 +333,7 @@ export const settingsSchema = z.object({
 })
 
 // ============================================================
-// 15. Password Change Schema
+// 13. Password Change Schema
 // ============================================================
 
 export const passwordChangeSchema = z.object({
@@ -396,7 +353,7 @@ export const passwordChangeSchema = z.object({
 )
 
 // ============================================================
-// 16. Daily Closing Schema
+// 14. Daily Closing Schema
 // ============================================================
 
 export const dailyClosingSchema = z.object({
@@ -411,7 +368,7 @@ export const dailyClosingSchema = z.object({
 })
 
 // ============================================================
-// 17. Close Daily Closing Schema
+// 15. Close Daily Closing Schema
 // ============================================================
 
 export const closeDailyClosingSchema = z.object({
@@ -423,10 +380,8 @@ export const closeDailyClosingSchema = z.object({
 // ============================================================
 
 export type LoginInput = z.infer<typeof loginSchema>
-export type RegisterInput = z.infer<typeof registerSchema>
 export type ProductInput = z.infer<typeof productSchema>
 export type StockAdjustmentInput = z.infer<typeof stockAdjustmentSchema>
-export type CustomerInput = z.infer<typeof customerSchema>
 export type SupplierInput = z.infer<typeof supplierSchema>
 export type CategoryInput = z.infer<typeof categorySchema>
 export type RepairInput = z.infer<typeof repairSchema>

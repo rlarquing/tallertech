@@ -26,12 +26,6 @@ export interface LoginRequest {
   password: string
 }
 
-export interface RegisterRequest {
-  email: string
-  name: string
-  password: string
-}
-
 export interface AuthResponse {
   user: {
     id: string
@@ -73,29 +67,9 @@ export interface ProductFilters extends PaginationParams {
   active?: string
 }
 
-// ─── Customer DTOs ───────────────────────────────────────────
-
-export interface CreateCustomerRequest {
-  name: string
-  phone?: string
-  email?: string
-  address?: string
-  dni?: string
-  notes?: string
-}
-
-export interface UpdateCustomerRequest extends Partial<CreateCustomerRequest> {
-  id: string
-}
-
-export interface CustomerFilters extends PaginationParams {
-  active?: string
-}
-
 // ─── Sale DTOs ───────────────────────────────────────────────
 
 export interface CreateSaleRequest {
-  customerId?: string
   items: CreateSaleItemRequest[]
   discount?: number
   tax?: number
@@ -121,7 +95,6 @@ export interface SaleFilters extends PaginationParams {
 // ─── Repair DTOs ─────────────────────────────────────────────
 
 export interface CreateRepairRequest {
-  customerId: string
   device: string
   brand?: string
   imei?: string
@@ -367,7 +340,6 @@ export interface WorkshopBI {
   netProfit: number
   salesCount: number
   repairsCount: number
-  customersCount: number
   productsCount: number
   lowStockCount: number
   pendingRepairsCount: number

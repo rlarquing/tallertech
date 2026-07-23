@@ -8,7 +8,6 @@ import type {
   ProductRepository,
   CategoryRepository,
   SupplierRepository,
-  CustomerRepository,
   SaleRepository,
   RepairRepository,
   ExpenseRepository,
@@ -29,7 +28,6 @@ import type {
 
 // Import all use cases
 import { LoginUseCase } from '@/application/use-cases/auth/login.use-case'
-import { RegisterUseCase } from '@/application/use-cases/auth/register.use-case'
 import { LogoutUseCase } from '@/application/use-cases/auth/logout.use-case'
 
 import { CreateProductUseCase } from '@/application/use-cases/products/create-product.use-case'
@@ -47,11 +45,6 @@ import { GetRepairsUseCase } from '@/application/use-cases/repairs/get-repairs.u
 import { UpdateRepairUseCase } from '@/application/use-cases/repairs/update-repair.use-case'
 import { DeleteRepairUseCase } from '@/application/use-cases/repairs/delete-repair.use-case'
 import { AddRepairPartUseCase } from '@/application/use-cases/repairs/add-repair-part.use-case'
-
-import { CreateCustomerUseCase } from '@/application/use-cases/customers/create-customer.use-case'
-import { GetCustomersUseCase } from '@/application/use-cases/customers/get-customers.use-case'
-import { UpdateCustomerUseCase } from '@/application/use-cases/customers/update-customer.use-case'
-import { DeleteCustomerUseCase } from '@/application/use-cases/customers/delete-customer.use-case'
 
 import { CreateCategoryUseCase } from '@/application/use-cases/categories/create-category.use-case'
 import { GetCategoriesUseCase } from '@/application/use-cases/categories/get-categories.use-case'
@@ -112,7 +105,6 @@ export interface AppDependencies {
   productRepository: ProductRepository
   categoryRepository: CategoryRepository
   supplierRepository: SupplierRepository
-  customerRepository: CustomerRepository
   saleRepository: SaleRepository
   repairRepository: RepairRepository
   expenseRepository: ExpenseRepository
@@ -156,14 +148,6 @@ export class UseCaseContainer {
 
   get login() {
     return new LoginUseCase(
-      this.deps.authRepository,
-      this.deps.auditPort,
-      this.deps.passwordPort,
-    )
-  }
-
-  get register() {
-    return new RegisterUseCase(
       this.deps.authRepository,
       this.deps.auditPort,
       this.deps.passwordPort,
@@ -250,7 +234,6 @@ export class UseCaseContainer {
   get createRepair() {
     return new CreateRepairUseCase(
       this.deps.repairRepository,
-      this.deps.customerRepository,
       this.deps.auditPort,
       this.deps.sessionPort,
       this.deps.codeGeneratorPort,
@@ -284,39 +267,6 @@ export class UseCaseContainer {
     return new AddRepairPartUseCase(
       this.deps.repairRepository,
       this.deps.productRepository,
-      this.deps.auditPort,
-      this.deps.sessionPort,
-    )
-  }
-
-  // ─── Customers ─────────────────────────────────────────────
-
-  get createCustomer() {
-    return new CreateCustomerUseCase(
-      this.deps.customerRepository,
-      this.deps.auditPort,
-      this.deps.sessionPort,
-    )
-  }
-
-  get getCustomers() {
-    return new GetCustomersUseCase(
-      this.deps.customerRepository,
-      this.deps.sessionPort,
-    )
-  }
-
-  get updateCustomer() {
-    return new UpdateCustomerUseCase(
-      this.deps.customerRepository,
-      this.deps.auditPort,
-      this.deps.sessionPort,
-    )
-  }
-
-  get deleteCustomer() {
-    return new DeleteCustomerUseCase(
-      this.deps.customerRepository,
       this.deps.auditPort,
       this.deps.sessionPort,
     )
@@ -439,7 +389,6 @@ export class UseCaseContainer {
       this.deps.repairRepository,
       this.deps.productRepository,
       this.deps.expenseRepository,
-      this.deps.customerRepository,
       this.deps.sessionPort,
     )
   }
@@ -647,7 +596,6 @@ export class UseCaseContainer {
       this.deps.repairRepository,
       this.deps.productRepository,
       this.deps.expenseRepository,
-      this.deps.customerRepository,
       this.deps.sessionPort,
     )
   }
@@ -659,7 +607,6 @@ export class UseCaseContainer {
       this.deps.repairRepository,
       this.deps.productRepository,
       this.deps.expenseRepository,
-      this.deps.customerRepository,
       this.deps.sessionPort,
     )
   }
@@ -670,7 +617,6 @@ export class UseCaseContainer {
     return {
       // Auth
       login: this.login,
-      register: this.register,
       logout: this.logout,
       // Products
       createProduct: this.createProduct,
@@ -688,11 +634,6 @@ export class UseCaseContainer {
       updateRepair: this.updateRepair,
       deleteRepair: this.deleteRepair,
       addRepairPart: this.addRepairPart,
-      // Customers
-      createCustomer: this.createCustomer,
-      getCustomers: this.getCustomers,
-      updateCustomer: this.updateCustomer,
-      deleteCustomer: this.deleteCustomer,
       // Categories
       createCategory: this.createCategory,
       getCategories: this.getCategories,

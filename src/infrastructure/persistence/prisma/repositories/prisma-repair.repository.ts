@@ -13,7 +13,6 @@ export class PrismaRepairRepository implements RepairRepository {
     const repair = await prisma.repairOrder.findUnique({
       where: { id },
       include: {
-        customer: { select: { name: true } },
         parts: true,
       },
     })
@@ -37,7 +36,6 @@ export class PrismaRepairRepository implements RepairRepository {
       where.OR = [
         { code: { contains: params.search } },
         { device: { contains: params.search } },
-        { customer: { name: { contains: params.search } } },
         { brand: { contains: params.search } },
         { imei: { contains: params.search } },
       ]
@@ -50,9 +48,6 @@ export class PrismaRepairRepository implements RepairRepository {
       if (params.filters.priority) {
         where.priority = params.filters.priority
       }
-      if (params.filters.customerId) {
-        where.customerId = params.filters.customerId
-      }
     }
 
     const skip = params?.skip || 0
@@ -62,7 +57,6 @@ export class PrismaRepairRepository implements RepairRepository {
       prisma.repairOrder.findMany({
         where,
         include: {
-          customer: { select: { name: true } },
           parts: true,
         },
         orderBy: { createdAt: 'desc' },
@@ -84,7 +78,6 @@ export class PrismaRepairRepository implements RepairRepository {
       data: {
         workshopId: plain.workshopId || '',
         code: plain.code,
-        customerId: plain.customerId,
         userId: plain.userId,
         userName: plain.userName,
         device: plain.device,
@@ -108,7 +101,6 @@ export class PrismaRepairRepository implements RepairRepository {
         notes: plain.notes,
       },
       include: {
-        customer: { select: { name: true } },
         parts: true,
       },
     })
@@ -118,7 +110,6 @@ export class PrismaRepairRepository implements RepairRepository {
   async update(id: string, data: Partial<RepairOrder>): Promise<RepairOrder> {
     const updateData: Record<string, unknown> = {}
     if (data.code !== undefined) updateData.code = data.code
-    if (data.customerId !== undefined) updateData.customerId = data.customerId
     if (data.userId !== undefined) updateData.userId = data.userId
     if (data.userName !== undefined) updateData.userName = data.userName
     if (data.device !== undefined) updateData.device = data.device
@@ -145,7 +136,6 @@ export class PrismaRepairRepository implements RepairRepository {
       where: { id },
       data: updateData,
       include: {
-        customer: { select: { name: true } },
         parts: true,
       },
     })
@@ -162,7 +152,6 @@ export class PrismaRepairRepository implements RepairRepository {
     const repairs = await prisma.repairOrder.findMany({
       where,
       include: {
-        customer: { select: { name: true } },
         parts: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -200,7 +189,6 @@ export class PrismaRepairRepository implements RepairRepository {
       where: { id },
       data: updateData,
       include: {
-        customer: { select: { name: true } },
         parts: true,
       },
     })

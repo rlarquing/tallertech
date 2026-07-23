@@ -8,7 +8,7 @@ import '@/infrastructure/container'
 import { UseCaseContainer } from '@/application/container'
 import { ResponsePresenter } from '../presenters/response.presenter'
 import { CookieSession } from '@/infrastructure/auth/cookie-session'
-import { validateWithSchema, loginSchema, registerSchema } from '@/lib/validations'
+import { validateWithSchema, loginSchema } from '@/lib/validations'
 
 const cookieSession = new CookieSession()
 const useCases = UseCaseContainer.getInstance()
@@ -21,21 +21,6 @@ export class AuthController {
       const ip = request.headers.get('x-forwarded-for') || undefined
       const result = await useCases.login.execute(body, ip)
       const response = ResponsePresenter.success(result)
-      const sessionCookie = cookieSession.createSessionCookie(result.user)
-      response.cookies.set(sessionCookie)
-      return response
-    } catch (error) {
-      return ResponsePresenter.error(error)
-    }
-  }
-
-  static async register(request: NextRequest) {
-    try {
-      const rawBody = await request.json()
-      const body = validateWithSchema(registerSchema, rawBody)
-      const ip = request.headers.get('x-forwarded-for') || undefined
-      const result = await useCases.register.execute(body, ip)
-      const response = ResponsePresenter.created(result)
       const sessionCookie = cookieSession.createSessionCookie(result.user)
       response.cookies.set(sessionCookie)
       return response

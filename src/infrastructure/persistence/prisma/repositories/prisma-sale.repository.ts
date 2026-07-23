@@ -13,7 +13,6 @@ export class PrismaSaleRepository implements SaleRepository {
     const sale = await prisma.sale.findUnique({
       where: { id },
       include: {
-        customer: { select: { name: true } },
         items: {
           include: { product: true },
         },
@@ -38,7 +37,6 @@ export class PrismaSaleRepository implements SaleRepository {
     if (params?.search) {
       where.OR = [
         { code: { contains: params.search } },
-        { customer: { name: { contains: params.search } } },
       ]
     }
 
@@ -66,7 +64,6 @@ export class PrismaSaleRepository implements SaleRepository {
       prisma.sale.findMany({
         where,
         include: {
-          customer: true,
           items: {
             include: { product: true },
           },
@@ -90,7 +87,6 @@ export class PrismaSaleRepository implements SaleRepository {
       data: {
         workshopId: plain.workshopId || '',
         code: plain.code,
-        customerId: plain.customerId,
         userId: plain.userId,
         userName: plain.userName,
         subtotal: plain.subtotal,
@@ -102,7 +98,6 @@ export class PrismaSaleRepository implements SaleRepository {
         notes: plain.notes,
       },
       include: {
-        customer: true,
         items: { include: { product: true } },
       },
     })
@@ -112,7 +107,6 @@ export class PrismaSaleRepository implements SaleRepository {
   async update(id: string, data: Partial<Sale>): Promise<Sale> {
     const updateData: Record<string, unknown> = {}
     if (data.code !== undefined) updateData.code = data.code
-    if (data.customerId !== undefined) updateData.customerId = data.customerId
     if (data.userId !== undefined) updateData.userId = data.userId
     if (data.userName !== undefined) updateData.userName = data.userName
     if (data.subtotal !== undefined) updateData.subtotal = data.subtotal
@@ -127,7 +121,6 @@ export class PrismaSaleRepository implements SaleRepository {
       where: { id },
       data: updateData,
       include: {
-        customer: true,
         items: { include: { product: true } },
       },
     })
@@ -154,7 +147,6 @@ export class PrismaSaleRepository implements SaleRepository {
         data: {
           workshopId: plain.workshopId || '',
           code: plain.code,
-          customerId: plain.customerId,
           userId: plain.userId,
           userName: plain.userName,
           subtotal: plain.subtotal,
@@ -176,7 +168,6 @@ export class PrismaSaleRepository implements SaleRepository {
           },
         },
         include: {
-          customer: true,
           items: {
             include: { product: true },
           },
@@ -234,7 +225,6 @@ export class PrismaSaleRepository implements SaleRepository {
     const sales = await prisma.sale.findMany({
       where,
       include: {
-        customer: true,
         items: true,
       },
       orderBy: { createdAt: 'desc' },

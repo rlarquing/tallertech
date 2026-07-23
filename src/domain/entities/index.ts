@@ -7,7 +7,6 @@
 
 export { User } from './user'
 export { Product } from './product'
-export { Customer } from './customer'
 export { Sale } from './sale'
 export { SaleItem } from './sale-item'
 export { RepairOrder } from './repair-order'
@@ -64,7 +63,6 @@ export interface DashboardData {
   topProducts: { name: string; total: number; quantity: number }[]
   revenueChart: { date: string; revenue: number; expenses: number }[]
   expensesByCategory: { category: string; total: number }[]
-  totalCustomers: number
   totalProducts: number
   pendingRepairs: number
   completedRepairsToday: number
@@ -74,7 +72,6 @@ export interface DashboardData {
     total: number
     paymentMethod: string
     createdAt: string
-    customer: { name: string } | null
   }[]
   recentRepairs: {
     id: string
@@ -83,7 +80,6 @@ export interface DashboardData {
     status: string
     totalCost: number
     createdAt: string
-    customer: { name: string } | null
   }[]
 }
 

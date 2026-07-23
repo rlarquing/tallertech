@@ -47,7 +47,6 @@ model Workshop {
   categories  Category[]
   suppliers   Supplier[]
   products    Product[]
-  customers   Customer[]
   sales       Sale[]
   repairs     RepairOrder[]
   expenses    Expense[]
@@ -133,27 +132,6 @@ model Product {
 }
 
 // ============================================================
-// CUSTOMERS
-// ============================================================
-
-model Customer {
-  id           String        @id @default(cuid())
-  workshopId   String
-  workshop     Workshop      @relation(fields: [workshopId], references: [id])
-  name         String
-  phone        String?
-  email        String?
-  address      String?
-  dni          String?       // Carnet de identidad
-  notes        String?
-  active       Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  sales        Sale[]
-  repairOrders RepairOrder[]
-}
-
-// ============================================================
 // SALES / POS
 // ============================================================
 
@@ -162,8 +140,6 @@ model Sale {
   workshopId   String
   workshop     Workshop   @relation(fields: [workshopId], references: [id])
   code         String     @unique
-  customerId   String?
-  customer     Customer?  @relation(fields: [customerId], references: [id])
   userId       String
   userName     String
   subtotal     Float      @default(0)
@@ -201,8 +177,6 @@ model RepairOrder {
   workshopId     String
   workshop       Workshop      @relation(fields: [workshopId], references: [id])
   code           String        @unique
-  customerId     String
-  customer       Customer      @relation(fields: [customerId], references: [id])
   userId         String
   userName       String
   device         String        // Modelo del dispositivo
@@ -302,7 +276,7 @@ model AuditLog {
   userId     String
   userName   String
   action     String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, REGISTER, STATUS_CHANGE, STOCK_ADJUSTMENT, BACKUP, RESTORE, EXPORT, CANCEL
-  entity     String   // user, product, sale, repair, customer, expense, category, supplier, setting, backup, workshop
+  entity     String   // user, product, sale, repair, expense, category, supplier, setting, backup, workshop
   entityId   String?
   details    String?  // JSON string with change details
   ip         String?

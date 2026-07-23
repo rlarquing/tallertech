@@ -296,3 +296,107 @@ Stage Summary:
 - Key files modified: store.ts, app-sidebar.tsx, mobile-nav.tsx, app-shell.tsx
 - All components follow existing patterns (shadcn/ui, offlineFetch, useToast, useAppStore)
 - Zero lint errors
+
+---
+Task ID: 1
+Agent: customer-removal-agent
+Task: Remove all customers-related code from tallertech
+
+Work Log:
+- Read worklog.md to understand prior conventions and project structure
+- Deleted standalone customer files:
+  - src/domain/entities/customer.ts
+  - src/infrastructure/persistence/prisma/mappers/customer.mapper.ts
+  - src/infrastructure/persistence/prisma/repositories/prisma-customer.repository.ts
+  - src/interfaces/http/controllers/customer.controller.ts
+  - src/components/app/customers-view.tsx
+  - src/app/api/customers/route.ts and src/app/api/customers/[id]/route.ts
+  - src/application/use-cases/customers/ folder (create/get/update/delete)
+- Updated prisma/schema.prisma:
+  - Deleted the Customer model entirely
+  - Removed customers Customer[] relation from Workshop model
+  - Removed customerId String? and customer Customer? from Sale model
+  - Removed customerId String and customer Customer from RepairOrder model
+  - Removed customer from the AuditLog entity comment
+- Updated domain entities:
+  - src/domain/entities/sale.ts: removed customerId field, customer optional property, and from toPlainObject
+  - src/domain/entities/repair-order.ts: removed customerId field, customer optional property, and from toPlainObject; updated class docstring
+  - src/domain/entities/index.ts: removed Customer export and removed customer/totalCustomers from DashboardData interface
+  - src/domain/repositories/index.ts: removed Customer import, CustomerRepository interface
+- Updated application layer:
+  - src/application/dtos/index.ts: removed Customer DTOs (Create/Update/Filters), removed customerId from CreateSaleRequest and CreateRepairRequest, removed customersCount from WorkshopBI
+  - src/application/container/index.ts: removed CustomerRepository import and dependency, removed customer use case imports and getters, removed createRepair customerRepository arg, removed getDashboard customerRepository arg, removed getWorkshopBI/getOwnerDashboard customerRepository args, removed customer entries from `all()` map
+  - src/application/use-cases/sales/create-sale.use-case.ts: removed customerId from sale creation payload
+  - src/application/use-cases/repairs/create-repair.use-case.ts: removed customerRepository dependency, removed customer validation/lookup, removed customerId from repair payload
+  - src/application/use-cases/dashboard/get-dashboard.use-case.ts: removed customerRepository dep, removed totalCustomers from result, removed customer from recentSales/recentRepairs
+  - src/application/use-cases/bi/get-workshop-bi.use-case.ts: removed customerRepository dep, removed customersCount from response
+  - src/application/use-cases/bi/get-owner-dashboard.use-case.ts: removed customerRepository dep, removed customersCount from response
+- Updated infrastructure layer:
+  - src/infrastructure/container.ts: removed PrismaCustomerRepository import and instantiation
+  - src/infrastructure/persistence/prisma/mappers/index.ts: removed CustomerMapper export
+  - src/infrastructure/persistence/prisma/repositories/index.ts: removed PrismaCustomerRepository export
+  - src/infrastructure/persistence/prisma/mappers/sale.mapper.ts: removed customerId and customer from toDomain/toPrisma types
+  - src/infrastructure/persistence/prisma/mappers/repair-order.mapper.ts: removed customerId and customer from toDomain/toPrisma types
+  - src/infrastructure/persistence/prisma/repositories/prisma-sale.repository.ts: removed customer includes/selects and customerId from search filters, create, update, createWithItems, findByDateRange
+  - src/infrastructure/persistence/prisma/repositories/prisma-repair.repository.ts: removed customer includes, customerId from search filters, create, update, findByStatus, updateStatus
+  - src/infrastructure/services/export-service.ts: removed customer column from sales/repairs export, removed customers case in fetchExportData and from getEntityLabel
+  - src/infrastructure/services/backup-service.ts: removed customers from getDatabaseStats, exportAllData, and importJsonData (deleteMany and createMany)
+- Updated interfaces:
+  - src/interfaces/http/controllers/export.controller.ts: removed customers from entityLabels
+- Updated frontend components:
+  - src/lib/store.ts: removed 'customers' from ViewType union and viewLabels
+  - src/lib/validations.ts: removed customerSchema, CustomerInput type, dniRegex helper, removed customerId from repairSchema and saleSchema, renumbered schema comment headers
+  - src/lib/offline-db.ts: removed customers store from TallerTechDB, removed customer store creation in upgrade(), removed cacheCustomers/getCachedCustomers functions, removed 'customers' from clearAllData, removed customerId from sales/repairOrders value types
+  - src/lib/sync-manager.ts: removed cacheCustomers import and /api/customers endpoint from refreshAllData
+  - src/lib/offline-fetch.ts: removed getCachedCustomers/cacheCustomers imports, removed CREATE_CUSTOMER/UPDATE_CUSTOMER action mappings, removed /api/customers branches in cacheResponse and getCachedResponse
+  - src/lib/db-setup.ts: removed Customer table DDL, removed customerId columns from Sale/RepairOrder tables, removed customer-related foreign keys and indexes
+  - src/app/api/seed/route.ts: removed customer deletion in force-reset, removed sample customer creation, removed customerId from sample sales/repairs, removed customer count from seed response
+  - src/components/app/app-sidebar.tsx: removed 'customers' nav item
+  - src/components/app/app-shell.tsx: removed CustomersView import and 'customers' case in ViewRenderer
+  - src/components/app/audit-view.tsx: removed 'customer' from entityLabels
+  - src/components/app/dashboard-view.tsx: removed totalCustomers from DashboardData, removed 'Ver Clientes' quick action (replaced with 'Ver Gastos'), replaced 'Clientes Totales' stat card with 'Ventas del Mes' stat card, removed customer name from recentSales/recentRepairs lists, added paymentLabels helper
+  - src/components/app/pos-view.tsx: removed Customer interface, CustomerDialog, customerId/customerName state, customer search state/effects, quickAddCustomer function, customerValidationErrors state, removed customer card UI, removed 'Cliente' line from receipt dialog, removed customerId from sale request body, removed customerSchema import, removed unused User/Search imports
+  - src/components/app/repairs-view.tsx: removed Customer interface, customerId from RepairOrder, customerSearch state/effects, formCustomerId/formCustomerName state, customer column in desktop table, customer field in mobile cards, customer section in new repair form, customer name in detail dialog and edit dialog header, customer name in print template, removed search placeholder text mentioning 'cliente', removed unused User/X imports and unused paymentLabels const
+  - src/components/app/sales-view.tsx: removed customer field from Sale interface, removed 'Cliente:' line from print template, removed 'Buscar por código o cliente' (now 'Buscar por código'), removed Cliente column from desktop table, removed Cliente row from mobile cards, removed Cliente line from detail dialog
+  - src/components/app/settings-view.tsx: removed 'clientes' from backup description text, removed Clientes option from export entity dropdown, removed 'Clientes' from export button label conditional
+- Verification:
+  - `grep -ri "customer" src/ prisma/` returns ZERO matches (excluding generated folder)
+  - `grep -ri "cliente" src/ prisma/` returns ZERO matches (excluding generated folder)
+  - `bun run lint` passes with zero errors
+  - `bun run db:push` succeeds (database in sync with new schema)
+  - `bun run db:generate` succeeds (Prisma client regenerated)
+  - Final lint run again: zero errors
+
+Stage Summary:
+- Customer functionality completely removed from the entire tallertech project (domain, application, infrastructure, interfaces, frontend, lib, API routes, prisma schema, db-setup, offline DB)
+- Files DELETED (11 total): customer.ts (entity), customer.mapper.ts, prisma-customer.repository.ts, customer.controller.ts, customers-view.tsx, src/app/api/customers/route.ts, src/app/api/customers/[id]/route.ts, and 4 use case files in src/application/use-cases/customers/
+- Files MODIFIED (27 total): prisma/schema.prisma, src/domain/entities/{sale,repair-order,index}.ts, src/domain/repositories/index.ts, src/application/dtos/index.ts, src/application/container/index.ts, src/application/use-cases/sales/create-sale.use-case.ts, src/application/use-cases/repairs/create-repair.use-case.ts, src/application/use-cases/dashboard/get-dashboard.use-case.ts, src/application/use-cases/bi/{get-workshop-bi,get-owner-dashboard}.use-case.ts, src/infrastructure/container.ts, src/infrastructure/persistence/prisma/mappers/index.ts, src/infrastructure/persistence/prisma/mappers/{sale,repair-order}.mapper.ts, src/infrastructure/persistence/prisma/repositories/index.ts, src/infrastructure/persistence/prisma/repositories/{prisma-sale,prisma-repair}.repository.ts, src/infrastructure/services/{export-service,backup-service}.ts, src/interfaces/http/controllers/export.controller.ts, src/lib/{store,validations,offline-db,sync-manager,offline-fetch,db-setup}.ts, src/app/api/seed/route.ts, src/components/app/{app-sidebar,app-shell,audit-view,dashboard-view,pos-view,repairs-view,sales-view,settings-view}.tsx
+- All error messages remain in Spanish
+- POS now operates without any customer card (no "Cliente general" placeholder); repairs can be created without a customer
+- Zero lint errors, zero customer/cliente references, db schema synced
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Remove public registration endpoint (employees don't self-register; only the boss creates them)
+
+Work Log:
+- Verified employee management already implemented: POST /api/employees (owner/admin only) creates user + workshop member; EmployeesView lets owner create/edit/remove employees with name, email, password, role
+- Verified login UI has no register link (prior commit removed it); only login form is shown
+- Deleted src/app/api/auth/register/route.ts (public register endpoint)
+- Deleted src/application/use-cases/auth/register.use-case.ts
+- Removed `register` static method from src/interfaces/http/controllers/auth.controller.ts
+- Removed `registerSchema` import from auth.controller.ts
+- Removed RegisterUseCase import, `register` getter, and `register` from `all()` in src/application/container/index.ts
+- Removed `registerSchema`, `authSchema`, and `RegisterInput` from src/lib/validations.ts
+- Removed `RegisterRequest` interface from src/application/dtos/index.ts
+- Updated comment in auth-provider.tsx from "show login/register" to "show login"
+- Confirmed RegisterPWA component and layout.tsx references are PWA service-worker registration (unrelated, kept)
+- Confirmed seed route uses db.user.create directly (not register use-case), so seeding still works
+- Ran `bun run lint` — passes with zero errors
+
+Stage Summary:
+- Public self-registration fully removed; the only way to create an employee account is via the owner/admin "Nuevo Empleado" flow in the Empleados view (POST /api/employees)
+- All auth now goes through login only; no register endpoint, use case, schema, or DTO remains
+- Seed route still functional for initial owner/admin bootstrap
+- Zero lint errors

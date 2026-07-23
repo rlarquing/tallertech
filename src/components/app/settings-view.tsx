@@ -690,7 +690,7 @@ export function SettingsView() {
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  La copia de seguridad incluye todos los datos del sistema: productos, ventas, reparaciones, clientes, gastos, configuración y registros de auditoría.
+                  La copia de seguridad incluye todos los datos del sistema: productos, ventas, reparaciones, gastos, configuración y registros de auditoría.
                   Se descargará como un archivo SQLite (.db) que puede restaurar en cualquier momento.
                 </p>
                 <Button onClick={handleBackup} disabled={backingUp} className="w-full sm:w-auto">
@@ -765,7 +765,6 @@ export function SettingsView() {
                         <SelectItem value="sales">Ventas</SelectItem>
                         <SelectItem value="products">Productos</SelectItem>
                         <SelectItem value="repairs">Reparaciones</SelectItem>
-                        <SelectItem value="customers">Clientes</SelectItem>
                         <SelectItem value="expenses">Gastos</SelectItem>
                         <SelectItem value="stock">Movimientos de Stock</SelectItem>
                       </SelectContent>
@@ -811,7 +810,7 @@ export function SettingsView() {
 
                 <Button onClick={handleExport} disabled={exporting} className="w-full sm:w-auto">
                   {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                  Exportar {exportEntity === 'sales' ? 'Ventas' : exportEntity === 'products' ? 'Productos' : exportEntity === 'repairs' ? 'Reparaciones' : exportEntity === 'customers' ? 'Clientes' : exportEntity === 'expenses' ? 'Gastos' : 'Stock'}
+                  Exportar {exportEntity === 'sales' ? 'Ventas' : exportEntity === 'products' ? 'Productos' : exportEntity === 'repairs' ? 'Reparaciones' : exportEntity === 'expenses' ? 'Gastos' : 'Stock'}
                 </Button>
               </div>
             </CardContent>

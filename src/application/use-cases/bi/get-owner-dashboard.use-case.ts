@@ -8,7 +8,6 @@ import type {
   RepairRepository,
   ProductRepository,
   ExpenseRepository,
-  CustomerRepository,
   WorkshopRepository,
 } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
@@ -23,7 +22,6 @@ export class GetOwnerDashboardUseCase {
     private repairRepository: RepairRepository,
     private productRepository: ProductRepository,
     private expenseRepository: ExpenseRepository,
-    private customerRepository: CustomerRepository,
     private sessionPort: SessionPort,
   ) {}
 
@@ -80,9 +78,6 @@ export class GetOwnerDashboardUseCase {
       const allProducts = await this.productRepository.findMany({ take: 1000, workshopId })
       const lowStockProducts = await this.productRepository.findLowStock()
 
-      // Get customers
-      const allCustomers = await this.customerRepository.findMany({ take: 1, workshopId })
-
       // Calculate total expenses
       let totalExpenses = 0
       for (const e of expensesByCategory) {
@@ -136,7 +131,6 @@ export class GetOwnerDashboardUseCase {
         netProfit: salesStats.totalRevenue - totalExpenses,
         salesCount: salesStats.totalSales,
         repairsCount: allRepairs.total,
-        customersCount: allCustomers.total,
         productsCount: allProducts.total,
         lowStockCount: lowStockProducts.length,
         pendingRepairsCount: pendingRepairs,

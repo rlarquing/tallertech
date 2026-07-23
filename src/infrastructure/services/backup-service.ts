@@ -149,7 +149,6 @@ export class BackupService {
       { name: 'products', count: await prisma.product.count() },
       { name: 'categories', count: await prisma.category.count() },
       { name: 'suppliers', count: await prisma.supplier.count() },
-      { name: 'customers', count: await prisma.customer.count() },
       { name: 'sales', count: await prisma.sale.count() },
       { name: 'saleItems', count: await prisma.saleItem.count() },
       { name: 'repairOrders', count: await prisma.repairOrder.count() },
@@ -284,7 +283,7 @@ export class BackupService {
   private async exportAllData(): Promise<Record<string, unknown[]>> {
     const [
       users, workshops, workshopUsers, categories, suppliers,
-      products, customers, sales, saleItems, repairOrders,
+      products, sales, saleItems, repairOrders,
       repairParts, stockMovements, expenses, settings, auditLogs,
     ] = await Promise.all([
       prisma.user.findMany(),
@@ -293,7 +292,6 @@ export class BackupService {
       prisma.category.findMany(),
       prisma.supplier.findMany(),
       prisma.product.findMany(),
-      prisma.customer.findMany(),
       prisma.sale.findMany(),
       prisma.saleItem.findMany(),
       prisma.repairOrder.findMany(),
@@ -316,7 +314,6 @@ export class BackupService {
       categories,
       suppliers,
       products,
-      customers,
       sales,
       saleItems,
       repairOrders,
@@ -347,7 +344,6 @@ export class BackupService {
         prisma.saleItem.deleteMany(),
         prisma.sale.deleteMany(),
         prisma.expense.deleteMany(),
-        prisma.customer.deleteMany(),
         prisma.product.deleteMany(),
         prisma.category.deleteMany(),
         prisma.supplier.deleteMany(),
@@ -376,9 +372,6 @@ export class BackupService {
       }
       if (data.products?.length) {
         await prisma.product.createMany({ data: data.products as Record<string, unknown>[] as any })
-      }
-      if (data.customers?.length) {
-        await prisma.customer.createMany({ data: data.customers as Record<string, unknown>[] as any })
       }
       if (data.sales?.length) {
         await prisma.sale.createMany({ data: data.sales as Record<string, unknown>[] as any })

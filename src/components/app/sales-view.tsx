@@ -81,7 +81,6 @@ interface Sale {
   status: string
   notes: string | null
   createdAt: string
-  customer: { id: string; name: string; phone: string | null } | null
   items: SaleItem[]
 }
 
@@ -287,7 +286,6 @@ export function SalesView() {
           <div class="line"></div>
           <div class="row"><span>Código:</span><span>${sale.code}</span></div>
           <div class="row"><span>Fecha:</span><span>${new Date(sale.createdAt).toLocaleString('es-CU')}</span></div>
-          <div class="row"><span>Cliente:</span><span>${sale.customer?.name || 'General'}</span></div>
           <div class="row"><span>Pago:</span><span>${paymentLabels[sale.paymentMethod] || sale.paymentMethod}</span></div>
           <div class="line"></div>
           ${sale.items.map((item) => `<div class="row"><span>${item.name} x${item.quantity}</span><span>$${item.total.toFixed(2)}</span></div>`).join('')}
@@ -358,7 +356,7 @@ export function SalesView() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar por código o cliente..."
+                placeholder="Buscar por código..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -392,7 +390,6 @@ export function SalesView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Código</TableHead>
-                    <TableHead>Cliente</TableHead>
                     <TableHead className="text-center">Items</TableHead>
                     <TableHead className="text-right">Total</TableHead>
                     <TableHead>Pago</TableHead>
@@ -407,9 +404,6 @@ export function SalesView() {
                     return (
                       <TableRow key={sale.id}>
                         <TableCell className="font-mono text-xs">{sale.code}</TableCell>
-                        <TableCell className="max-w-[150px] truncate">
-                          {sale.customer?.name || 'General'}
-                        </TableCell>
                         <TableCell className="text-center">{sale.items.length}</TableCell>
                         <TableCell className="text-right font-semibold">
                           {formatCurrency(sale.total)}
@@ -515,10 +509,6 @@ export function SalesView() {
                   </div>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Cliente:</span>
-                      <span>{sale.customer?.name || 'General'}</span>
-                    </div>
-                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Items:</span>
                       <span>{sale.items.length}</span>
                     </div>
@@ -612,10 +602,6 @@ export function SalesView() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Código:</span>
                   <span className="font-mono font-semibold">{selectedSale.code}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Cliente:</span>
-                  <span>{selectedSale.customer?.name || 'Cliente general'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Método de pago:</span>

@@ -85,7 +85,6 @@ export class CreateSaleUseCase {
     const sale = await this.saleRepository.createWithItems(
       {
         code,
-        customerId: request.customerId || null,
         userId: user.id,
         userName: user.name,
         subtotal,

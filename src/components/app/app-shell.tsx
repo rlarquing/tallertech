@@ -22,7 +22,6 @@ import { ProductsView } from '@/components/app/products-view'
 import { CategoriesView } from '@/components/app/categories-view'
 import { SuppliersView } from '@/components/app/suppliers-view'
 import { DashboardView } from '@/components/app/dashboard-view'
-import { CustomersView } from '@/components/app/customers-view'
 import { ExpensesView } from '@/components/app/expenses-view'
 import { ReportsView } from '@/components/app/reports-view'
 import { SettingsView } from '@/components/app/settings-view'
@@ -54,8 +53,6 @@ function ViewRenderer({ currentView }: { currentView: ViewType }) {
       return <CategoriesView />
     case 'suppliers':
       return <SuppliersView />
-    case 'customers':
-      return <CustomersView />
     case 'expenses':
       return <ExpensesView />
     case 'reports':

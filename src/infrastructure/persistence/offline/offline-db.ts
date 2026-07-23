@@ -51,28 +51,11 @@ interface TallerTechDB extends DBSchema {
     }
     indexes: { 'by-type': string; 'by-category': string }
   }
-  customers: {
-    key: string
-    value: {
-      id: string
-      name: string
-      phone: string | null
-      email: string | null
-      address: string | null
-      dni: string | null
-      notes: string | null
-      active: boolean
-      createdAt: string
-      updatedAt: string
-    }
-    indexes: { 'by-name': string }
-  }
   sales: {
     key: string
     value: {
       id: string
       code: string
-      customerId: string | null
       userId: string
       userName: string
       subtotal: number
@@ -93,7 +76,6 @@ interface TallerTechDB extends DBSchema {
     value: {
       id: string
       code: string
-      customerId: string
       userId: string
       userName: string
       device: string
@@ -201,12 +183,6 @@ export async function getDB(): Promise<IDBPDatabase<TallerTechDB>> {
         productStore.createIndex('by-category', 'categoryId')
       }
 
-      // Customers store
-      if (!db.objectStoreNames.contains('customers')) {
-        const customerStore = db.createObjectStore('customers', { keyPath: 'id' })
-        customerStore.createIndex('by-name', 'name')
-      }
-
       // Sales store
       if (!db.objectStoreNames.contains('sales')) {
         const salesStore = db.createObjectStore('sales', { keyPath: 'id' })
@@ -274,28 +250,6 @@ export async function cacheProducts(products: TallerTechDB['products']['value'][
 export async function getCachedProducts(): Promise<TallerTechDB['products']['value'][]> {
   const db = await getDB()
   return db.getAll('products')
-}
-
-// ============================================================
-// Customers
-// ============================================================
-
-export async function cacheCustomers(customers: TallerTechDB['customers']['value'][]): Promise<void> {
-  const db = await getDB()
-  const tx = db.transaction('customers', 'readwrite')
-  const store = tx.objectStore('customers')
-
-  await store.clear()
-  for (const customer of customers) {
-    await store.put(customer)
-  }
-
-  await tx.done
-}
-
-export async function getCachedCustomers(): Promise<TallerTechDB['customers']['value'][]> {
-  const db = await getDB()
-  return db.getAll('customers')
 }
 
 // ============================================================
@@ -476,7 +430,6 @@ export async function clearAllData(): Promise<void> {
   const db = await getDB()
   const storeNames = [
     'products',
-    'customers',
     'sales',
     'repairOrders',
     'categories',

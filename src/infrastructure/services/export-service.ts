@@ -32,12 +32,11 @@ async function fetchExportData(entity: string, params: ExportParams) {
       const where = { ...dateFilter, status: { not: 'cancelled' } }
       const sales = await prisma.sale.findMany({
         where,
-        include: { items: true, customer: { select: { name: true } } },
+        include: { items: true },
         orderBy: { createdAt: 'desc' },
       })
       return sales.map((s) => ({
         'Código': s.code,
-        'Cliente': s.customer?.name || 'General',
         'Subtotal': s.subtotal,
         'Descuento': s.discount,
         'Impuesto': s.tax,
@@ -76,12 +75,11 @@ async function fetchExportData(entity: string, params: ExportParams) {
     case 'repairs': {
       const repairs = await prisma.repairOrder.findMany({
         where: dateFilter,
-        include: { customer: { select: { name: true } }, parts: true },
+        include: { parts: true },
         orderBy: { createdAt: 'desc' },
       })
       return repairs.map((r) => ({
         'Código': r.code,
-        'Cliente': r.customer?.name || '',
         'Dispositivo': r.device,
         'Marca': r.brand || '',
         'IMEI': r.imei || '',
@@ -95,21 +93,6 @@ async function fetchExportData(entity: string, params: ExportParams) {
         'Total': r.totalCost,
         'Pagado': r.paid ? 'Sí' : 'No',
         'Fecha Recepción': r.receivedAt.toLocaleDateString('es-BO'),
-      }))
-    }
-    case 'customers': {
-      const customers = await prisma.customer.findMany({
-        where: { active: true },
-        orderBy: { name: 'asc' },
-      })
-      return customers.map((c) => ({
-        'Nombre': c.name,
-        'Teléfono': c.phone || '',
-        'Email': c.email || '',
-        'Dirección': c.address || '',
-        'DNI': c.dni || '',
-        'Notas': c.notes || '',
-        'Fecha Registro': c.createdAt.toLocaleDateString('es-BO'),
       }))
     }
     case 'expenses': {
@@ -321,7 +304,6 @@ function getEntityLabel(entity: string): string {
     sales: 'Ventas',
     products: 'Productos',
     repairs: 'Reparaciones',
-    customers: 'Clientes',
     expenses: 'Gastos',
     stock: 'Movimientos de Stock',
   }

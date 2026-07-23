@@ -9,12 +9,11 @@ import { RepairPartMapper } from './repair-part.mapper'
 export class RepairOrderMapper {
   /**
    * Convert a Prisma RepairOrder record to a Domain RepairOrder entity
-   * Supports both with and without included parts/customer
+   * Supports both with and without included parts
    */
   static toDomain(prismaRepair: {
     id: string
     code: string
-    customerId: string
     userId: string
     userName: string
     device: string
@@ -47,7 +46,6 @@ export class RepairOrderMapper {
       unitPrice: number
       total: number
     }>
-    customer?: { name: string } | null
   }): RepairOrder {
     const parts: RepairPart[] = prismaRepair.parts
       ? prismaRepair.parts.map((part) => RepairPartMapper.toDomain(part))
@@ -56,7 +54,6 @@ export class RepairOrderMapper {
     return RepairOrder.create({
       id: prismaRepair.id,
       code: prismaRepair.code,
-      customerId: prismaRepair.customerId,
       userId: prismaRepair.userId,
       userName: prismaRepair.userName,
       device: prismaRepair.device,
@@ -81,7 +78,6 @@ export class RepairOrderMapper {
       createdAt: prismaRepair.createdAt,
       updatedAt: prismaRepair.updatedAt,
       parts,
-      customer: prismaRepair.customer ?? null,
     })
   }
 
@@ -91,7 +87,6 @@ export class RepairOrderMapper {
   static toPrisma(repair: RepairOrder): {
     id: string
     code: string
-    customerId: string
     userId: string
     userName: string
     device: string
@@ -120,7 +115,6 @@ export class RepairOrderMapper {
     return {
       id: plain.id,
       code: plain.code,
-      customerId: plain.customerId,
       userId: plain.userId,
       userName: plain.userName,
       device: plain.device,

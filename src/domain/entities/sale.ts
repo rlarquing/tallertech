@@ -10,7 +10,6 @@ export class Sale {
   private constructor(
     public readonly id: string,
     public code: string,
-    public readonly customerId: string | null,
     public readonly userId: string,
     public userName: string,
     private _subtotal: Money,
@@ -23,13 +22,11 @@ export class Sale {
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
     private _items: SaleItem[],
-    public readonly customer?: { name: string } | null,
   ) {}
 
   static create(params: {
     id: string
     code: string
-    customerId?: string | null
     userId: string
     userName: string
     subtotal?: number
@@ -42,7 +39,6 @@ export class Sale {
     createdAt?: Date
     updatedAt?: Date
     items?: SaleItem[]
-    customer?: { name: string } | null
   }): Sale {
     const status = SaleStatus.from(params.status || 'completed')
     const items = params.items || []
@@ -50,7 +46,6 @@ export class Sale {
     return new Sale(
       params.id,
       params.code,
-      params.customerId ?? null,
       params.userId,
       params.userName,
       Money.from(params.subtotal ?? 0),
@@ -63,7 +58,6 @@ export class Sale {
       params.createdAt || new Date(),
       params.updatedAt || new Date(),
       items,
-      params.customer ?? null,
     )
   }
 
@@ -147,7 +141,6 @@ export class Sale {
     return {
       id: this.id,
       code: this.code,
-      customerId: this.customerId,
       userId: this.userId,
       userName: this.userName,
       subtotal: this.subtotal,
@@ -160,7 +153,6 @@ export class Sale {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       items: this._items.map((item) => item.toPlainObject()),
-      customer: this.customer,
     }
   }
 }

@@ -32,14 +32,13 @@ import {
   Trash2,
   X,
   Loader2,
-  User,
   CheckCircle2,
   Receipt,
   Package,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { offlineFetch } from '@/lib/offline-fetch'
-import { saleSchema, saleItemSchema, customerSchema } from '@/lib/validations'
+import { saleSchema, saleItemSchema } from '@/lib/validations'
 
 // ============================================================
 // Types
@@ -67,13 +66,6 @@ interface Product {
   category: { name: string } | null
 }
 
-interface Customer {
-  id: string
-  name: string
-  phone: string | null
-  dni: string | null
-}
-
 interface SaleResponse {
   id: string
   code: string
@@ -83,7 +75,6 @@ interface SaleResponse {
   total: number
   paymentMethod: string
   status: string
-  customer: { name: string } | null
   items: {
     name: string
     quantity: number
@@ -104,8 +95,6 @@ export function PosView() {
 
   // Cart state
   const [cart, setCart] = useState<CartItem[]>([])
-  const [customerId, setCustomerId] = useState<string>('')
-  const [customerName, setCustomerName] = useState<string>('')
   const [discount, setDiscount] = useState<number>(0)
   const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage')
   const [paymentMethod, setPaymentMethod] = useState<string>('efectivo')
@@ -116,17 +105,8 @@ export function PosView() {
   const [products, setProducts] = useState<Product[]>([])
   const [productsLoading, setProductsLoading] = useState(false)
 
-  // Customer search
-  const [customerSearch, setCustomerSearch] = useState('')
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [customersLoading, setCustomersLoading] = useState(false)
-  const [showCustomerSelect, setShowCustomerSelect] = useState(false)
-  const [newCustomerName, setNewCustomerName] = useState('')
-  const [newCustomerPhone, setNewCustomerPhone] = useState('')
-
   // Validation errors
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-  const [customerValidationErrors, setCustomerValidationErrors] = useState<Record<string, string>>({})
 
   // Sale completion
   const [submitting, setSubmitting] = useState(false)
@@ -134,7 +114,6 @@ export function PosView() {
   const [showReceipt, setShowReceipt] = useState(false)
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>()
-  const customerSearchTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   // Sync cart count with global store for mobile nav badge
   useEffect(() => {
@@ -173,40 +152,6 @@ export function PosView() {
       if (searchTimeout.current) clearTimeout(searchTimeout.current)
     }
   }, [productSearch, searchProducts])
-
-  // ============================================================
-  // Customer search
-  // ============================================================
-
-  const searchCustomers = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      setCustomers([])
-      return
-    }
-    setCustomersLoading(true)
-    try {
-      const res = await offlineFetch(`/api/customers?search=${encodeURIComponent(query)}&limit=20`)
-      if (res.ok) {
-        const data = await res.json()
-        setCustomers(data.data || [])
-      }
-    } catch {
-      // ignore
-    } finally {
-      setCustomersLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!showCustomerSelect) return
-    if (customerSearchTimeout.current) clearTimeout(customerSearchTimeout.current)
-    customerSearchTimeout.current = setTimeout(() => {
-      searchCustomers(customerSearch)
-    }, 300)
-    return () => {
-      if (customerSearchTimeout.current) clearTimeout(customerSearchTimeout.current)
-    }
-  }, [customerSearch, showCustomerSelect, searchCustomers])
 
   // ============================================================
   // Cart operations
@@ -268,8 +213,6 @@ export function PosView() {
 
   const clearCart = useCallback(() => {
     setCart([])
-    setCustomerId('')
-    setCustomerName('')
     setDiscount(0)
     setNotes('')
     setValidationErrors({})
@@ -286,48 +229,6 @@ export function PosView() {
   const total = subtotal - discountAmount + tax
 
   // ============================================================
-  // Quick add customer
-  // ============================================================
-
-  const quickAddCustomer = async () => {
-    setCustomerValidationErrors({})
-    const result = customerSchema.safeParse({
-      name: newCustomerName,
-      phone: newCustomerPhone || '',
-    })
-    if (!result.success) {
-      const errors: Record<string, string> = {}
-      for (const issue of result.error.issues) {
-        const key = issue.path.join('.')
-        if (!errors[key]) errors[key] = issue.message
-      }
-      setCustomerValidationErrors(errors)
-      return
-    }
-    try {
-      const res = await offlineFetch('/api/customers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newCustomerName, phone: newCustomerPhone || undefined }),
-      })
-      if (res.ok) {
-        const customer = await res.json()
-        setCustomerId(customer.id)
-        setCustomerName(customer.name)
-        setShowCustomerSelect(false)
-        setNewCustomerName('')
-        setNewCustomerPhone('')
-        toast.success('Cliente creado correctamente')
-      } else {
-        const data = await res.json()
-        toast.error(data.error || 'Error al crear cliente')
-      }
-    } catch {
-      toast.error('Error de conexión')
-    }
-  }
-
-  // ============================================================
   // Complete sale
   // ============================================================
 
@@ -337,7 +238,6 @@ export function PosView() {
     // Validate sale-level fields
     const discountValue = discountType === 'percentage' ? discount : discountAmount
     const saleData = {
-      customerId: customerId || undefined,
       paymentMethod,
       discount: discountValue,
       notes: notes || undefined,
@@ -406,7 +306,6 @@ export function PosView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerId: customerId || undefined,
           items: cart.map((item) => ({
             productId: item.productId,
             name: item.name,
@@ -474,10 +373,6 @@ export function PosView() {
                 <span className="font-mono font-semibold">{completedSale.code}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Cliente:</span>
-                <span>{completedSale.customer?.name || 'Cliente general'}</span>
-              </div>
-              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Método de pago:</span>
                 <span className="capitalize">{completedSale.paymentMethod}</span>
               </div>
@@ -537,115 +432,6 @@ export function PosView() {
             </div>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
-  )
-
-  // ============================================================
-  // Customer Select Dialog
-  // ============================================================
-
-  const CustomerDialog = () => (
-    <Dialog open={showCustomerSelect} onOpenChange={(open) => { setShowCustomerSelect(open); if (!open) setCustomerValidationErrors({}) }}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Seleccionar Cliente</DialogTitle>
-          <DialogDescription>Busque un cliente existente o cree uno nuevo</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nombre, teléfono, DNI..."
-              value={customerSearch}
-              onChange={(e) => setCustomerSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
-          {/* Results */}
-          <ScrollArea className="max-h-48">
-            {customersLoading ? (
-              <div className="space-y-2 p-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ) : customers.length > 0 ? (
-              <div className="space-y-1">
-                {customers.map((c) => (
-                  <button
-                    key={c.id}
-                    className="w-full flex items-center gap-3 rounded-md p-2 text-left hover:bg-muted transition-colors"
-                    onClick={() => {
-                      setCustomerId(c.id)
-                      setCustomerName(c.name)
-                      setShowCustomerSelect(false)
-                      setCustomerSearch('')
-                    }}
-                  >
-                    <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <User className="size-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{c.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {c.phone || c.dni || 'Sin datos'}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : customerSearch ? (
-              <p className="text-center text-sm text-muted-foreground py-4">
-                No se encontraron clientes
-              </p>
-            ) : null}
-          </ScrollArea>
-
-          <Separator />
-
-          {/* Quick add */}
-          <div className="space-y-3">
-            <p className="text-sm font-medium">Crear nuevo cliente</p>
-            <div>
-              <Input
-                placeholder="Nombre del cliente"
-                value={newCustomerName}
-                onChange={(e) => {
-                  setNewCustomerName(e.target.value)
-                  if (customerValidationErrors['name']) {
-                    setCustomerValidationErrors((prev) => { const next = { ...prev }; delete next['name']; return next })
-                  }
-                }}
-                className={customerValidationErrors['name'] ? 'border-destructive' : ''}
-              />
-              {customerValidationErrors['name'] && (
-                <p className="text-xs text-destructive mt-1">{customerValidationErrors['name']}</p>
-              )}
-            </div>
-            <div>
-              <Input
-                placeholder="Teléfono (opcional)"
-                value={newCustomerPhone}
-                onChange={(e) => {
-                  setNewCustomerPhone(e.target.value)
-                  if (customerValidationErrors['phone']) {
-                    setCustomerValidationErrors((prev) => { const next = { ...prev }; delete next['phone']; return next })
-                  }
-                }}
-                className={customerValidationErrors['phone'] ? 'border-destructive' : ''}
-              />
-              {customerValidationErrors['phone'] && (
-                <p className="text-xs text-destructive mt-1">{customerValidationErrors['phone']}</p>
-              )}
-            </div>
-            <Button onClick={quickAddCustomer} className="w-full" size="sm">
-              <Plus className="mr-2 size-4" />
-              Crear Cliente
-            </Button>
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   )
@@ -751,47 +537,6 @@ export function PosView() {
 
       {/* Right Panel - Cart */}
       <div className="w-full lg:w-96 flex flex-col gap-4">
-        {/* Customer */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
-                <User className="size-4 text-muted-foreground shrink-0" />
-                {customerId ? (
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{customerName}</p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Cliente general</p>
-                )}
-              </div>
-              <div className="flex gap-1">
-                {customerId && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="size-8 p-0 text-destructive"
-                    onClick={() => {
-                      setCustomerId('')
-                      setCustomerName('')
-                    }}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCustomerSelect(true)}
-                >
-                  <User className="mr-1 size-3" />
-                  Cliente
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Cart Items */}
         <Card className="flex-1">
           <CardHeader className="pb-3">
@@ -1002,7 +747,6 @@ export function PosView() {
 
       {/* Dialogs */}
       <ReceiptDialog />
-      <CustomerDialog />
     </div>
   )
 }

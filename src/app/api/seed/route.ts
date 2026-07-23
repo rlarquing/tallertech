@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
         db.saleItem.deleteMany(),
         db.sale.deleteMany(),
         db.expense.deleteMany(),
-        db.customer.deleteMany(),
         db.product.deleteMany(),
         db.category.deleteMany(),
         db.supplier.deleteMany(),
@@ -340,45 +339,31 @@ export async function POST(request: NextRequest) {
         )
     );
 
-    // Create sample customers
-    const customers = await Promise.all([
-      db.customer.create({ data: { workshopId, name: 'María López', phone: '+54 11 6666-0001', email: 'maria@email.com', dni: '12345678' } }),
-      db.customer.create({ data: { workshopId, name: 'Juan Pérez', phone: '+54 11 6666-0002', email: 'juan@email.com', dni: '23456789' } }),
-      db.customer.create({ data: { workshopId, name: 'Ana Martínez', phone: '+54 11 6666-0003', email: 'ana@email.com', dni: '34567890' } }),
-      db.customer.create({ data: { workshopId, name: 'Roberto Sánchez', phone: '+54 11 6666-0004', dni: '45678901' } }),
-      db.customer.create({ data: { workshopId, name: 'Laura Torres', phone: '+54 11 6666-0005', email: 'laura@email.com', dni: '56789012' } }),
-    ]);
-
     // Create some sample sales
     const now = new Date();
     const salesData = [
       {
         daysAgo: 0,
-        customerIdx: 0,
         items: [{ productIdx: 8, quantity: 2 }, { productIdx: 9, quantity: 1 }],
         paymentMethod: 'efectivo',
       },
       {
         daysAgo: 1,
-        customerIdx: 1,
         items: [{ productIdx: 11, quantity: 1 }],
         paymentMethod: 'transferencia',
       },
       {
         daysAgo: 3,
-        customerIdx: 2,
         items: [{ productIdx: 4, quantity: 3 }],
         paymentMethod: 'efectivo',
       },
       {
         daysAgo: 5,
-        customerIdx: 3,
         items: [{ productIdx: 8, quantity: 1 }, { productIdx: 11, quantity: 1 }],
         paymentMethod: 'efectivo',
       },
       {
         daysAgo: 10,
-        customerIdx: 4,
         items: [{ productIdx: 9, quantity: 2 }],
         paymentMethod: 'mixto',
       },
@@ -411,7 +396,6 @@ export async function POST(request: NextRequest) {
         data: {
           workshopId,
           code,
-          customerId: customers[saleData.customerIdx].id,
           userId: admin.id,
           userName: admin.name,
           subtotal,
@@ -433,7 +417,6 @@ export async function POST(request: NextRequest) {
     const repairData = [
       {
         daysAgo: 0,
-        customerIdx: 0,
         device: 'iPhone 13',
         brand: 'Apple',
         imei: '123456789012345',
@@ -444,7 +427,6 @@ export async function POST(request: NextRequest) {
       },
       {
         daysAgo: 2,
-        customerIdx: 1,
         device: 'Samsung A54',
         brand: 'Samsung',
         issue: 'No carga la batería',
@@ -454,7 +436,6 @@ export async function POST(request: NextRequest) {
       },
       {
         daysAgo: 5,
-        customerIdx: 2,
         device: 'iPhone 14',
         brand: 'Apple',
         issue: 'Cámara frontal no funciona',
@@ -465,7 +446,6 @@ export async function POST(request: NextRequest) {
       },
       {
         daysAgo: 7,
-        customerIdx: 3,
         device: 'Samsung S23',
         brand: 'Samsung',
         issue: 'Batería se descarga rápido',
@@ -475,7 +455,6 @@ export async function POST(request: NextRequest) {
       },
       {
         daysAgo: 14,
-        customerIdx: 4,
         device: 'iPhone 13 Pro',
         brand: 'Apple',
         issue: 'Carcaza rota',
@@ -499,7 +478,6 @@ export async function POST(request: NextRequest) {
       const repairCreateData: Record<string, unknown> = {
         workshopId,
         code,
-        customerId: customers[rd.customerIdx].id,
         userId: admin.id,
         userName: admin.name,
         device: rd.device,
@@ -577,7 +555,6 @@ export async function POST(request: NextRequest) {
         categories: categories.length,
         suppliers: suppliers.length,
         products: products.length,
-        customers: customers.length,
         sales: createdSales.length,
         expenses: expenseData.length,
         settings: 7,

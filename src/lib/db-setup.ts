@@ -97,26 +97,19 @@ CREATE TABLE IF NOT EXISTS Product (
   FOREIGN KEY (supplierId) REFERENCES Supplier(id)
 );
 
-CREATE TABLE IF NOT EXISTS Customer (
+CREATE TABLE IF NOT EXISTS Setting (
   id TEXT PRIMARY KEY NOT NULL,
   workshopId TEXT NOT NULL,
-  name TEXT NOT NULL,
-  phone TEXT,
-  email TEXT,
-  address TEXT,
-  dni TEXT,
-  notes TEXT,
-  active BOOLEAN NOT NULL DEFAULT true,
-  createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (workshopId) REFERENCES Workshop(id)
+  key TEXT NOT NULL,
+  value TEXT NOT NULL,
+  FOREIGN KEY (workshopId) REFERENCES Workshop(id),
+  UNIQUE(workshopId, key)
 );
 
 CREATE TABLE IF NOT EXISTS Sale (
   id TEXT PRIMARY KEY NOT NULL,
   workshopId TEXT NOT NULL,
   code TEXT NOT NULL UNIQUE,
-  customerId TEXT,
   userId TEXT NOT NULL,
   userName TEXT NOT NULL,
   subtotal REAL NOT NULL DEFAULT 0,
@@ -128,8 +121,7 @@ CREATE TABLE IF NOT EXISTS Sale (
   notes TEXT,
   createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (workshopId) REFERENCES Workshop(id),
-  FOREIGN KEY (customerId) REFERENCES Customer(id)
+  FOREIGN KEY (workshopId) REFERENCES Workshop(id)
 );
 
 CREATE TABLE IF NOT EXISTS SaleItem (
@@ -150,7 +142,6 @@ CREATE TABLE IF NOT EXISTS RepairOrder (
   id TEXT PRIMARY KEY NOT NULL,
   workshopId TEXT NOT NULL,
   code TEXT NOT NULL UNIQUE,
-  customerId TEXT NOT NULL,
   userId TEXT NOT NULL,
   userName TEXT NOT NULL,
   device TEXT NOT NULL,
@@ -174,8 +165,7 @@ CREATE TABLE IF NOT EXISTS RepairOrder (
   notes TEXT,
   createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (workshopId) REFERENCES Workshop(id),
-  FOREIGN KEY (customerId) REFERENCES Customer(id)
+  FOREIGN KEY (workshopId) REFERENCES Workshop(id)
 );
 
 CREATE TABLE IF NOT EXISTS RepairPart (
@@ -218,15 +208,6 @@ CREATE TABLE IF NOT EXISTS Expense (
   FOREIGN KEY (workshopId) REFERENCES Workshop(id)
 );
 
-CREATE TABLE IF NOT EXISTS Setting (
-  id TEXT PRIMARY KEY NOT NULL,
-  workshopId TEXT NOT NULL,
-  key TEXT NOT NULL,
-  value TEXT NOT NULL,
-  FOREIGN KEY (workshopId) REFERENCES Workshop(id),
-  UNIQUE(workshopId, key)
-);
-
 CREATE TABLE IF NOT EXISTS AuditLog (
   id TEXT PRIMARY KEY NOT NULL,
   workshopId TEXT NOT NULL,
@@ -248,13 +229,10 @@ CREATE INDEX IF NOT EXISTS Supplier_workshopId_idx ON Supplier(workshopId);
 CREATE INDEX IF NOT EXISTS Product_workshopId_idx ON Product(workshopId);
 CREATE INDEX IF NOT EXISTS Product_categoryId_idx ON Product(categoryId);
 CREATE INDEX IF NOT EXISTS Product_supplierId_idx ON Product(supplierId);
-CREATE INDEX IF NOT EXISTS Customer_workshopId_idx ON Customer(workshopId);
 CREATE INDEX IF NOT EXISTS Sale_workshopId_idx ON Sale(workshopId);
-CREATE INDEX IF NOT EXISTS Sale_customerId_idx ON Sale(customerId);
 CREATE INDEX IF NOT EXISTS SaleItem_saleId_idx ON SaleItem(saleId);
 CREATE INDEX IF NOT EXISTS SaleItem_productId_idx ON SaleItem(productId);
 CREATE INDEX IF NOT EXISTS RepairOrder_workshopId_idx ON RepairOrder(workshopId);
-CREATE INDEX IF NOT EXISTS RepairOrder_customerId_idx ON RepairOrder(customerId);
 CREATE INDEX IF NOT EXISTS RepairPart_repairOrderId_idx ON RepairPart(repairOrderId);
 CREATE INDEX IF NOT EXISTS RepairPart_productId_idx ON RepairPart(productId);
 CREATE INDEX IF NOT EXISTS StockMovement_productId_idx ON StockMovement(productId);
