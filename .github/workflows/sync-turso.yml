@@ -1,0 +1,52 @@
+name: Sync DB to Turso
+
+# Sincroniza el esquema de Prisma hacia la base Turso de producción.
+# Se dispara cuando cambia el schema o manualmente desde Actions tab.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'prisma/schema.prisma'
+      - 'prisma.config.ts'
+      - '.github/workflows/sync-turso.yml'
+  workflow_dispatch:
+
+# Evita dos syncs concurrentes que pisen la base
+concurrency:
+  group: turso-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+      DATABASE_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Verify Turso connection
+        run: |
+          node -e "
+            const c = require('@libsql/client').createClient({
+              url: process.env.DATABASE_URL,
+              authToken: process.env.DATABASE_AUTH_TOKEN
+            });
+            c.execute('SELECT 1')
+              .then(() => console.log('Turso OK'))
+              .catch(e => { console.error('Turso FAIL:', e); process.exit(1); });
+          "
+
+      - name: Push schema to Turso
+        run: bunx prisma db push --skip-generate
+
+      - name: Generate Prisma Client
+        run: bunx prisma generate
