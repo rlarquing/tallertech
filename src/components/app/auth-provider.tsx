@@ -48,7 +48,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await offlineFetch('/api/workshops')
       if (res.ok) {
         const data = await res.json()
-        const ws = (data.data || []) as WorkshopInfo[]
+        // El backend devuelve el rol del usuario en el taller como `userRole`,
+        // pero el store espera `role`. Mapeamos para que sean consistentes.
+        const raw = (data.data || []) as Array<Record<string, unknown>>
+        const ws: WorkshopInfo[] = raw.map((w) => ({
+          id: String(w.id),
+          name: String(w.name),
+          slug: String(w.slug),
+          role: String(w.userRole ?? w.role ?? 'employee'),
+          active: Boolean(w.active),
+        }))
         setWorkshops(ws)
         if (ws.length > 0 && !currentWorkshopId) {
           setCurrentWorkshopId(ws[0].id)
@@ -115,7 +124,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const wsRes = await offlineFetch('/api/workshops')
         if (wsRes.ok) {
           const wsData = await wsRes.json()
-          const ws = (wsData.data || []) as WorkshopInfo[]
+          // Mismo mapeo userRole → role que en fetchWorkshops
+          const raw = (wsData.data || []) as Array<Record<string, unknown>>
+          const ws: WorkshopInfo[] = raw.map((w) => ({
+            id: String(w.id),
+            name: String(w.name),
+            slug: String(w.slug),
+            role: String(w.userRole ?? w.role ?? 'employee'),
+            active: Boolean(w.active),
+          }))
           setWorkshops(ws)
           if (ws.length > 0) {
             setCurrentWorkshopId(ws[0].id)
