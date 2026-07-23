@@ -1,14 +1,16 @@
 name: Sync DB to Turso
 
-# Sincroniza migraciones de Prisma hacia la base Turso de producción.
-# Se dispara cuando cambia el schema/migraciones o manualmente desde Actions tab.
+# Sincroniza el schema de Prisma hacia la base Turso de producción.
+# Usa un script Node propio (@libsql/client) porque el CLI de Prisma 7
+# no soporta el esquema libsql:// en datasource.url.
+# Se dispara cuando cambia el schema o manualmente desde Actions tab.
 on:
   push:
     branches: [main]
     paths:
       - 'prisma/schema.prisma'
-      - 'prisma/migrations/**'
       - 'prisma.config.ts'
+      - 'scripts/sync-turso.mjs'
       - '.github/workflows/sync-turso.yml'
   workflow_dispatch:
 
@@ -46,11 +48,8 @@ jobs:
               .catch(e => { console.error('Turso FAIL:', e); process.exit(1); });
           "
 
-      - name: Mark baseline as applied (idempotent — Turso already has the tables)
-        run: bunx prisma migrate resolve --applied 0_init || true
-
-      - name: Apply pending migrations
-        run: bunx prisma migrate deploy
+      - name: Sync schema to Turso
+        run: bun run scripts/sync-turso.mjs
 
       - name: Generate Prisma Client
         run: bunx prisma generate
