@@ -46,6 +46,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { offlineFetch } from '@/lib/offline-fetch'
 import { useAppStore } from '@/lib/store'
+import { formatCurrency as safeFormatCurrency } from '@/lib/format'
 
 interface DailyClosing {
   id: string
@@ -260,12 +261,8 @@ export function DailyClosingView() {
     }
   }
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      maximumFractionDigits: 0,
-    }).format(val)
+  const formatCurrency = (val: number | string | null | undefined) => {
+    return safeFormatCurrency(val, { currency: 'ARS', locale: 'es-AR', maximumFractionDigits: 0 })
   }
 
   const formatDate = (dateStr: string) => {

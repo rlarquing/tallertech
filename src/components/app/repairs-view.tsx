@@ -58,6 +58,7 @@ import {
 import { toast } from 'sonner'
 import { offlineFetch } from '@/lib/offline-fetch'
 import { repairSchema, repairUpdateSchema, repairPartSchema } from '@/lib/validations'
+import { formatCurrency as safeFormatCurrency } from '@/lib/format'
 
 // ============================================================
 // Types
@@ -135,12 +136,8 @@ const priorityConfig: Record<string, { label: string; variant: 'default' | 'seco
 // Helpers
 // ============================================================
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('es-CU', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(amount)
+const formatCurrency = (amount: number | string | null | undefined) =>
+  safeFormatCurrency(amount, { currency: 'USD', locale: 'es-CU', minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 // ============================================================
 // Repairs View Component

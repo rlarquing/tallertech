@@ -36,6 +36,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { formatCurrency as safeFormatCurrency } from '@/lib/format'
 
 const COLORS = [
   'oklch(0.508 0.164 160)',
@@ -121,8 +122,8 @@ export function ReportsView() {
     fetchData()
   }, [fetchData])
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val)
+  const formatCurrency = (val: number | string | null | undefined) => {
+    return safeFormatCurrency(val, { currency: 'ARS', locale: 'es-AR', maximumFractionDigits: 0 })
   }
 
   const formatDate = (dateStr: string) => {

@@ -54,6 +54,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { formatCurrency as safeFormatCurrency } from '@/lib/format'
 
 // ============================================================
 // Types
@@ -88,12 +89,8 @@ interface Sale {
 // Helpers
 // ============================================================
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('es-CU', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(amount)
+const formatCurrency = (amount: number | string | null | undefined) =>
+  safeFormatCurrency(amount, { currency: 'USD', locale: 'es-CU', minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 const paymentLabels: Record<string, string> = {
   efectivo: 'Efectivo',

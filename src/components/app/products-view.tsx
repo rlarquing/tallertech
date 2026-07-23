@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
 import { productSchema, stockAdjustmentSchema } from '@/lib/validations'
+import { formatCurrency as safeFormatCurrency } from '@/lib/format'
 
 // Types
 interface Category {
@@ -454,9 +455,9 @@ export function ProductsView() {
     return <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs">En stock</Badge>
   }
 
-  // Format currency
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('es-CU', { style: 'currency', currency: 'USD' }).format(val)
+  // Format currency (safe — handles null/undefined/NaN without producing "US$NaN")
+  const formatCurrency = (val: number | string | null | undefined) => {
+    return safeFormatCurrency(val, { currency: 'USD', locale: 'es-CU' })
   }
 
   const totalPages = Math.ceil(total / limit)

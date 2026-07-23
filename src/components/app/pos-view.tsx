@@ -39,6 +39,7 @@ import {
 import { toast } from 'sonner'
 import { offlineFetch } from '@/lib/offline-fetch'
 import { saleSchema, saleItemSchema } from '@/lib/validations'
+import { formatCurrency as safeFormatCurrency } from '@/lib/format'
 
 // ============================================================
 // Types
@@ -343,12 +344,8 @@ export function PosView() {
   // Format currency
   // ============================================================
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CU', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount)
+  const formatCurrency = (amount: number | string | null | undefined) => {
+    return safeFormatCurrency(amount, { currency: 'USD', locale: 'es-CU', minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
   // ============================================================

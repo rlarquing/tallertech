@@ -48,6 +48,7 @@ import {
   Warehouse,
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { formatCurrency as safeFormatCurrency } from '@/lib/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -81,7 +82,7 @@ interface BIData {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatCurrency(amount: number, currency = 'CUP'): string {
+function formatCurrency(amount: number | string | null | undefined, currency = 'CUP'): string {
   const currencyMap: Record<string, string> = {
     CUP: 'CUP',
     MLC: 'USD',
@@ -92,11 +93,12 @@ function formatCurrency(amount: number, currency = 'CUP'): string {
     MXN: 'MXN',
     COP: 'COP',
   }
-  return new Intl.NumberFormat('es-BO', {
-    style: 'currency',
+  return safeFormatCurrency(amount, {
     currency: currencyMap[currency] || 'USD',
+    locale: 'es-BO',
     minimumFractionDigits: 2,
-  }).format(amount)
+    maximumFractionDigits: 2,
+  })
 }
 
 function formatDate(dateStr: string): string {

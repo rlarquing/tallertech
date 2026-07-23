@@ -58,6 +58,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { offlineFetch } from '@/lib/offline-fetch'
 import { useAppStore } from '@/lib/store'
+import { formatCurrency } from '@/lib/format'
 
 interface Member {
   id: string
@@ -334,14 +335,6 @@ export function EmployeesView() {
 
   // ─── Helpers ──────────────────────────────────────────────
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      maximumFractionDigits: 0,
-    }).format(val)
-  }
-
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('es-AR', {
       day: '2-digit',
@@ -394,6 +387,22 @@ export function EmployeesView() {
           </Button>
         )}
       </div>
+
+      {/* Permission notice for non-owners */}
+      {!isOwner && !loading && (
+        <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <Shield className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <div className="text-sm">
+            <p className="font-medium text-foreground">Solo lectura</p>
+            <p className="text-muted-foreground">
+              Solo el propietario o administrador del taller puede agregar, editar o eliminar empleados.
+              {currentWorkshop?.role && (
+                <> Tu rol actual es <span className="font-medium">{roleLabels[currentWorkshop.role] || currentWorkshop.role}</span>.</>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
 
       <Separator />
 
@@ -515,7 +524,7 @@ export function EmployeesView() {
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground">Total ventas</p>
-                          <p className="text-sm font-semibold">{formatCurrency(activity.salesTotal)}</p>
+                          <p className="text-sm font-semibold">{formatCurrency(activity.salesTotal, { currency: 'ARS', locale: 'es-AR', maximumFractionDigits: 0 })}</p>
                         </div>
                       </div>
                     </div>

@@ -43,6 +43,7 @@ import {
   Receipt,
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
+import { formatCurrency as safeFormatCurrency } from '@/lib/format'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -78,12 +79,8 @@ interface DashboardData {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('es-BO', {
-    style: 'currency',
-    currency: 'BOB',
-    minimumFractionDigits: 2,
-  }).format(amount)
+function formatCurrency(amount: number | string | null | undefined): string {
+  return safeFormatCurrency(amount, { currency: 'BOB', locale: 'es-BO', minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function formatDate(dateStr: string): string {
