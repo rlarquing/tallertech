@@ -98,4 +98,8 @@ export class Expense {
       updatedAt: this.updatedAt,
     }
   }
+
+  toJSON() {
+    return this.toPlainObject()
+  }
 }

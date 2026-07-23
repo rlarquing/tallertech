@@ -47,4 +47,8 @@ export class Setting {
       value: this.value,
     }
   }
+
+  toJSON() {
+    return this.toPlainObject()
+  }
 }

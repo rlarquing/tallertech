@@ -283,4 +283,8 @@ export class RepairOrder {
       parts: this._parts.map((part) => part.toPlainObject()),
     }
   }
+
+  toJSON() {
+    return this.toPlainObject()
+  }
 }

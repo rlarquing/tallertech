@@ -162,4 +162,9 @@ export class Product {
       updatedAt: this.updatedAt,
     }
   }
+
+  /** Allow JSON.stringify to serialize getters (not private fields) */
+  toJSON() {
+    return this.toPlainObject()
+  }
 }

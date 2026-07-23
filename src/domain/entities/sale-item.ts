@@ -100,4 +100,8 @@ export class SaleItem {
       type: this.type,
     }
   }
+
+  toJSON() {
+    return this.toPlainObject()
+  }
 }

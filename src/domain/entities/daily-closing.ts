@@ -135,4 +135,8 @@ export class DailyClosing {
       updatedAt: this.updatedAt,
     }
   }
+
+  toJSON() {
+    return this.toPlainObject()
+  }
 }

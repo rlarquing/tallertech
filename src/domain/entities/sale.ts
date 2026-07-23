@@ -155,4 +155,9 @@ export class Sale {
       items: this._items.map((item) => item.toPlainObject()),
     }
   }
+
+  /** Allow JSON.stringify to serialize getters (not private fields) */
+  toJSON() {
+    return this.toPlainObject()
+  }
 }

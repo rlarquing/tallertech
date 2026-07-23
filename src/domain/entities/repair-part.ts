@@ -81,4 +81,8 @@ export class RepairPart {
       total: this.total,
     }
   }
+
+  toJSON() {
+    return this.toPlainObject()
+  }
 }
