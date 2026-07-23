@@ -40,6 +40,7 @@ import {
   CreditCard,
   TrendingUp,
   Phone,
+  Receipt,
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
 
