@@ -6,7 +6,7 @@
 import type { RepairRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { UpdateRepairRequest } from '@/application/dtos'
-import { EntityNotFoundError, ValidationError, InvalidStateTransitionError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError, InvalidStateTransitionError } from '@/domain/errors'
 import type { RepairOrder } from '@/domain/entities'
 
 export class UpdateRepairUseCase {
@@ -22,7 +22,7 @@ export class UpdateRepairUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

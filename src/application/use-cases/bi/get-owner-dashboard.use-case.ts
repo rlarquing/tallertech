@@ -12,7 +12,7 @@ import type {
 } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
 import type { OwnerDashboard, WorkshopBI } from '@/application/dtos'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 import type { RepairOrder, Expense as ExpenseEntity } from '@/domain/entities'
 
 export class GetOwnerDashboardUseCase {
@@ -31,7 +31,7 @@ export class GetOwnerDashboardUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Get all workshops for this user

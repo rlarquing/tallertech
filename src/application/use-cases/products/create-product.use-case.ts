@@ -6,7 +6,7 @@
 import type { ProductRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { CreateProductRequest } from '@/application/dtos'
-import { DuplicateSkuError, ValidationError } from '@/domain/errors'
+import { AuthenticationError, DuplicateSkuError, ValidationError } from '@/domain/errors'
 
 export class CreateProductUseCase {
   constructor(
@@ -21,7 +21,7 @@ export class CreateProductUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate business rules

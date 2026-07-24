@@ -6,7 +6,7 @@
 import type { ProductRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { UpdateProductRequest } from '@/application/dtos'
-import { EntityNotFoundError, ValidationError, DuplicateSkuError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError, DuplicateSkuError } from '@/domain/errors'
 
 export class UpdateProductUseCase {
   constructor(
@@ -21,7 +21,7 @@ export class UpdateProductUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

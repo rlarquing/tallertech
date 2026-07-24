@@ -5,7 +5,7 @@
 
 import type { SettingsRepository } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 
 export class GetSettingsUseCase {
   constructor(
@@ -19,7 +19,7 @@ export class GetSettingsUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Get all settings

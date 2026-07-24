@@ -6,7 +6,7 @@
 import type { ExpenseRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { CreateExpenseRequest } from '@/application/dtos'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 import type { Expense } from '@/domain/entities'
 
 export class CreateExpenseUseCase {
@@ -22,7 +22,7 @@ export class CreateExpenseUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

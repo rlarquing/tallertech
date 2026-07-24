@@ -6,7 +6,7 @@
 import type { CategoryRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { CreateCategoryRequest } from '@/application/dtos'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 import type { Category } from '@/domain/entities'
 
 export class CreateCategoryUseCase {
@@ -22,7 +22,7 @@ export class CreateCategoryUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

@@ -6,7 +6,7 @@
 import type { ProductRepository } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
 import type { ProductFilters, PaginatedResult } from '@/application/dtos'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 import type { Product } from '@/domain/entities'
 
 export class GetProductsUseCase {
@@ -24,7 +24,7 @@ export class GetProductsUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Build filter params

@@ -6,7 +6,7 @@
 import type { DailyClosingRepository, SaleRepository, RepairRepository, ExpenseRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { CloseDailyClosingRequest } from '@/application/dtos'
-import { ValidationError, EntityNotFoundError } from '@/domain/errors'
+import { AuthenticationError, ValidationError, EntityNotFoundError } from '@/domain/errors'
 
 export class CloseDailyClosingUseCase {
   constructor(
@@ -24,7 +24,7 @@ export class CloseDailyClosingUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Find the daily closing

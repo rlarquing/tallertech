@@ -5,7 +5,7 @@
 
 import type { AuditRepository } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 import type { AuditLog } from '@/domain/entities'
 
 export interface AuditStatsResult {
@@ -27,7 +27,7 @@ export class GetAuditStatsUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Get all logs for stats calculation

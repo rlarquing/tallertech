@@ -6,7 +6,7 @@
 import type { ExpenseRepository } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
 import type { ExpenseFilters, PaginatedResult } from '@/application/dtos'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 
 export class GetExpensesUseCase {
   constructor(
@@ -23,7 +23,7 @@ export class GetExpensesUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Build filter params

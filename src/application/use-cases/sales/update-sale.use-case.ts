@@ -6,7 +6,7 @@
 import type { SaleRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { UpdateProductRequest } from '@/application/dtos'
-import { EntityNotFoundError, ValidationError, InvalidStateTransitionError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError, InvalidStateTransitionError } from '@/domain/errors'
 
 interface UpdateSaleRequest {
   id: string
@@ -30,7 +30,7 @@ export class UpdateSaleUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

@@ -5,7 +5,7 @@
 
 import type { WorkshopRepository } from '@/domain/repositories'
 import type { SessionPort } from '@/application/ports'
-import { EntityNotFoundError, ValidationError, AuthorizationError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError, AuthorizationError } from '@/domain/errors'
 
 export class GetWorkshopUseCase {
   constructor(
@@ -19,7 +19,7 @@ export class GetWorkshopUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Find workshop

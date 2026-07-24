@@ -14,6 +14,10 @@ import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
 import { PrismaLibSql } from '@prisma/adapter-libsql'
 
+// `earlyAccess` and `migrations.adapter` are early-access Prisma 7 features
+// not yet present in the stable @prisma/config type definitions. They work at
+// runtime, so we cast the config to suppress the TS error while keeping the
+// runtime behaviour intact.
 export default defineConfig({
   earlyAccess: true,
   schema: './prisma/schema.prisma',
@@ -31,4 +35,4 @@ export default defineConfig({
       })
     },
   },
-})
+} as Parameters<typeof defineConfig>[0])

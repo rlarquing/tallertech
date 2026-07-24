@@ -7,7 +7,7 @@ import type { WorkshopRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { CreateWorkshopRequest } from '@/application/dtos'
 import { Workshop } from '@/domain/entities'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 
 export class CreateWorkshopUseCase {
   constructor(
@@ -22,7 +22,7 @@ export class CreateWorkshopUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

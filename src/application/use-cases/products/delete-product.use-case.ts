@@ -5,7 +5,7 @@
 
 import type { ProductRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
-import { EntityNotFoundError, ValidationError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError } from '@/domain/errors'
 
 export class DeleteProductUseCase {
   constructor(
@@ -20,7 +20,7 @@ export class DeleteProductUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Find existing product

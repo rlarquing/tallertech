@@ -7,7 +7,7 @@ import type { RepairRepository, ProductRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { AddRepairPartRequest } from '@/application/dtos'
 import type { RepairPart } from '@/domain/entities'
-import { EntityNotFoundError, ValidationError, InsufficientStockError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError, InsufficientStockError } from '@/domain/errors'
 
 export class AddRepairPartUseCase {
   constructor(
@@ -27,7 +27,7 @@ export class AddRepairPartUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

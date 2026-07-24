@@ -5,7 +5,7 @@
 
 import type { ExpenseRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
-import { EntityNotFoundError, ValidationError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError } from '@/domain/errors'
 
 export class DeleteExpenseUseCase {
   constructor(
@@ -20,7 +20,7 @@ export class DeleteExpenseUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Find existing expense

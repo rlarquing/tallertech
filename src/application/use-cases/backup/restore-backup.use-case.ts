@@ -4,7 +4,7 @@
 // ============================================================
 
 import type { AuditPort, SessionPort, BackupPort } from '@/application/ports'
-import { ValidationError, AuthorizationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError, AuthorizationError } from '@/domain/errors'
 
 export class RestoreBackupUseCase {
   constructor(
@@ -21,7 +21,7 @@ export class RestoreBackupUseCase {
     // 1. Authenticate & authorize
     const user = await this.sessionPort.getSessionUser(sessionRequest)
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
     if (user.role !== 'admin' && user.role !== 'owner') {
       throw new AuthorizationError('Solo administradores pueden restaurar backups')

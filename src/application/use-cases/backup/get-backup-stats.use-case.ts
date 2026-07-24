@@ -5,7 +5,7 @@
 
 import type { SessionPort, BackupPort } from '@/application/ports'
 import type { BackupStatsResponse } from '@/application/dtos'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 
 export class GetBackupStatsUseCase {
   constructor(
@@ -19,7 +19,7 @@ export class GetBackupStatsUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Get database stats

@@ -6,7 +6,7 @@
 import type { AuditPort, SessionPort, ExportPort } from '@/application/ports'
 import type { ExportRequest } from '@/application/dtos'
 import type { ExportOptions } from '@/domain/entities'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 
 export class ExportDataUseCase {
   constructor(
@@ -21,7 +21,7 @@ export class ExportDataUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

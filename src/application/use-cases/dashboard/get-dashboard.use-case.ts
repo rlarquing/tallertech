@@ -12,7 +12,7 @@ import type {
 import type { SessionPort } from '@/application/ports'
 import type { DashboardRequest } from '@/application/dtos'
 import type { DashboardData, RepairOrder, Expense as ExpenseEntity, Product, Sale } from '@/domain/entities'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 
 export class GetDashboardUseCase {
   constructor(
@@ -29,7 +29,7 @@ export class GetDashboardUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Calculate date ranges

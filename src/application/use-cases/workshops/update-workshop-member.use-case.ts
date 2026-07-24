@@ -6,7 +6,7 @@
 import type { WorkshopRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { UpdateWorkshopMemberRequest } from '@/application/dtos'
-import { EntityNotFoundError, ValidationError, AuthorizationError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError, AuthorizationError } from '@/domain/errors'
 
 export class UpdateWorkshopMemberUseCase {
   constructor(
@@ -21,7 +21,7 @@ export class UpdateWorkshopMemberUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Find workshop

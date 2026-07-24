@@ -6,7 +6,7 @@
 import type { CategoryRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { UpdateCategoryRequest } from '@/application/dtos'
-import { EntityNotFoundError, ValidationError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError } from '@/domain/errors'
 
 export class UpdateCategoryUseCase {
   constructor(
@@ -21,7 +21,7 @@ export class UpdateCategoryUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

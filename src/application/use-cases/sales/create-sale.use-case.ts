@@ -10,7 +10,7 @@ import type { SaleRepository, ProductRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort, CodeGeneratorPort } from '@/application/ports'
 import type { CreateSaleRequest } from '@/application/dtos'
 import type { Sale, SaleItem, Product } from '@/domain/entities'
-import { ValidationError, InsufficientStockError, EntityNotFoundError } from '@/domain/errors'
+import { AuthenticationError, ValidationError, InsufficientStockError, EntityNotFoundError } from '@/domain/errors'
 
 export class CreateSaleUseCase {
   constructor(
@@ -27,7 +27,7 @@ export class CreateSaleUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate request

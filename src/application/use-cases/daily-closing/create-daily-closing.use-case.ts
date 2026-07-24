@@ -6,7 +6,7 @@
 import type { DailyClosingRepository, SaleRepository, RepairRepository, ExpenseRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { CreateDailyClosingRequest } from '@/application/dtos'
-import { ValidationError } from '@/domain/errors'
+import { AuthenticationError, ValidationError } from '@/domain/errors'
 import type { DailyClosing } from '@/domain/entities'
 
 export class CreateDailyClosingUseCase {
@@ -25,7 +25,7 @@ export class CreateDailyClosingUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate

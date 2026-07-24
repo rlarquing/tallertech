@@ -6,7 +6,7 @@
 import type { ExpenseRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { UpdateExpenseRequest } from '@/application/dtos'
-import { EntityNotFoundError, ValidationError } from '@/domain/errors'
+import { AuthenticationError, EntityNotFoundError, ValidationError } from '@/domain/errors'
 
 export class UpdateExpenseUseCase {
   constructor(
@@ -21,7 +21,7 @@ export class UpdateExpenseUseCase {
       ? await this.sessionPort.getSessionUser(sessionRequest)
       : null
     if (!user) {
-      throw new ValidationError('No autenticado')
+      throw new AuthenticationError('No autenticado')
     }
 
     // 2. Validate
