@@ -519,6 +519,7 @@ export class UseCaseContainer {
   get addWorkshopMember() {
     return new AddWorkshopMemberUseCase(
       this.deps.workshopRepository,
+      this.deps.authRepository,
       this.deps.auditPort,
       this.deps.sessionPort,
     )

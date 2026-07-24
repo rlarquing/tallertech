@@ -3,7 +3,7 @@
 // Clean Architecture: Application Business Rules Layer
 // ============================================================
 
-import type { WorkshopRepository } from '@/domain/repositories'
+import type { AuthRepository, WorkshopRepository } from '@/domain/repositories'
 import type { AuditPort, SessionPort } from '@/application/ports'
 import type { AddWorkshopMemberRequest } from '@/application/dtos'
 import { EntityNotFoundError, ValidationError, AuthorizationError } from '@/domain/errors'
@@ -11,6 +11,7 @@ import { EntityNotFoundError, ValidationError, AuthorizationError } from '@/doma
 export class AddWorkshopMemberUseCase {
   constructor(
     private workshopRepository: WorkshopRepository,
+    private authRepository: AuthRepository,
     private auditPort: AuditPort,
     private sessionPort: SessionPort,
   ) {}
@@ -36,27 +37,40 @@ export class AddWorkshopMemberUseCase {
       throw new AuthorizationError('Solo el dueño o administrador puede agregar miembros')
     }
 
-    // 4. Check if already a member
-    const existingRole = await this.workshopRepository.getMemberRole(request.workshopId, request.userId)
+    // 4. Resolve userId from email if not provided directly
+    let userId = request.userId
+    if (!userId) {
+      if (!request.email) {
+        throw new ValidationError('userId o email son requeridos')
+      }
+      const foundUser = await this.authRepository.findByEmail(request.email)
+      if (!foundUser) {
+        throw new EntityNotFoundError('Usuario', request.email)
+      }
+      userId = foundUser.id
+    }
+
+    // 5. Check if already a member
+    const existingRole = await this.workshopRepository.getMemberRole(request.workshopId, userId)
     if (existingRole) {
       throw new ValidationError('El usuario ya es miembro de este taller')
     }
 
-    // 5. Add member
+    // 6. Add member
     const member = await this.workshopRepository.addMember(
       request.workshopId,
-      request.userId,
+      userId,
       request.role,
     )
 
-    // 6. Log audit
+    // 7. Log audit
     await this.auditPort.log({
       userId: user.id,
       userName: user.name,
       action: 'CREATE',
       entity: 'workshop',
       entityId: request.workshopId,
-      details: `Miembro agregado: ${request.userId} con rol ${request.role}`,
+      details: `Miembro agregado: ${userId} con rol ${request.role}`,
     })
 
     return member

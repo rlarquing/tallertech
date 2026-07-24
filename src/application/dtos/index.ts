@@ -282,7 +282,8 @@ export interface UpdateWorkshopRequest {
 
 export interface AddWorkshopMemberRequest {
   workshopId: string
-  userId: string
+  userId?: string
+  email?: string
   role: 'owner' | 'admin' | 'employee'
 }
 

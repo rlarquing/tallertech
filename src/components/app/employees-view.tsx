@@ -54,6 +54,7 @@ import {
   CalendarDays,
   Pencil,
   Key,
+  Building2,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { offlineFetch } from '@/lib/offline-fetch'
@@ -75,6 +76,7 @@ interface CreateEmployeeForm {
   email: string
   password: string
   role: string
+  workshopId: string
 }
 
 interface EditEmployeeForm {
@@ -88,6 +90,7 @@ const emptyCreateForm: CreateEmployeeForm = {
   email: '',
   password: '',
   role: 'employee',
+  workshopId: '',
 }
 
 const roleLabels: Record<string, string> = {
@@ -123,12 +126,24 @@ export function EmployeesView() {
   const [removeMember, setRemoveMember] = useState<Member | null>(null)
   const [removeOpen, setRemoveOpen] = useState(false)
 
+  // Assign to workshop dialog
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false)
+  const [assignMember, setAssignMember] = useState<Member | null>(null)
+  const [assignForm, setAssignForm] = useState({ workshopId: '', role: 'employee' })
+  const [assigning, setAssigning] = useState(false)
+
+  // Workshops each member belongs to
+  const [memberWorkshops, setMemberWorkshops] = useState<Record<string, Array<{ name: string; role: string }>>>({})
+
   // Activity data
   const [employeeActivities, setEmployeeActivities] = useState<Record<string, { salesCount: number; salesTotal: number; repairsCount: number }>>({})
   const [activitiesLoading, setActivitiesLoading] = useState(false)
 
   const currentWorkshop = workshops.find(w => w.id === currentWorkshopId)
   const isOwner = currentWorkshop?.role === 'owner' || currentWorkshop?.role === 'admin'
+
+  // Workshops where the current user is owner or admin (can manage members)
+  const ownedWorkshops = workshops.filter(w => w.role === 'owner' || w.role === 'admin')
 
   const fetchMembers = useCallback(async () => {
     if (!currentWorkshopId) return
@@ -182,6 +197,30 @@ export function EmployeesView() {
     }
   }, [currentWorkshopId, members])
 
+  // Fetch all workshops each member belongs to (for multi-workshop display)
+  const fetchMemberWorkshops = useCallback(async () => {
+    if (ownedWorkshops.length === 0) return
+    const result: Record<string, Array<{ name: string; role: string; workshopId: string }>> = {}
+    await Promise.all(
+      ownedWorkshops.map(async (ws) => {
+        try {
+          const res = await offlineFetch(`/api/workshops/${ws.id}/members`)
+          if (res.ok) {
+            const data = await res.json()
+            const list = data.data || data
+            for (const m of list) {
+              if (!result[m.userId]) result[m.userId] = []
+              result[m.userId].push({ name: ws.name, role: m.role, workshopId: ws.id })
+            }
+          }
+        } catch {
+          // ignore individual workshop errors
+        }
+      })
+    )
+    setMemberWorkshops(result)
+  }, [ownedWorkshops])
+
   useEffect(() => {
     fetchMembers()
   }, [fetchMembers])
@@ -192,11 +231,16 @@ export function EmployeesView() {
     }
   }, [members.length, fetchEmployeeActivities])
 
+  useEffect(() => {
+    fetchMemberWorkshops()
+  }, [fetchMemberWorkshops])
+
   // ─── Create Employee ──────────────────────────────────────
 
   const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!currentWorkshopId) return
+    const targetWorkshopId = createForm.workshopId || currentWorkshopId
+    if (!targetWorkshopId) return
 
     if (!createForm.name.trim() || !createForm.email.trim() || !createForm.password.trim()) {
       toast({ title: 'Error', description: 'Todos los campos son requeridos', variant: 'destructive' })
@@ -217,7 +261,7 @@ export function EmployeesView() {
           email: createForm.email,
           password: createForm.password,
           role: createForm.role,
-          workshopId: currentWorkshopId,
+          workshopId: targetWorkshopId,
         }),
       })
       const data = await res.json()
@@ -225,10 +269,12 @@ export function EmployeesView() {
         toast({ title: 'Error', description: data.error || 'Error al crear empleado', variant: 'destructive' })
         return
       }
-      toast({ title: 'Empleado creado', description: `${createForm.name} fue agregado al taller` })
+      const targetWorkshop = workshops.find(w => w.id === targetWorkshopId)
+      toast({ title: 'Empleado creado', description: `${createForm.name} fue asignado al taller "${targetWorkshop?.name || 'seleccionado'}"` })
       setCreateDialogOpen(false)
       setCreateForm(emptyCreateForm)
       fetchMembers()
+      fetchMemberWorkshops()
     } catch {
       toast({ title: 'Error', description: 'Error de conexión', variant: 'destructive' })
     } finally {
@@ -328,8 +374,49 @@ export function EmployeesView() {
       setRemoveOpen(false)
       setRemoveMember(null)
       fetchMembers()
+      fetchMemberWorkshops()
     } catch {
       toast({ title: 'Error', description: 'Error de conexión', variant: 'destructive' })
+    }
+  }
+
+  // ─── Assign to Workshop ───────────────────────────────────
+
+  const openAssignDialog = (member: Member) => {
+    setAssignMember(member)
+    setAssignForm({ workshopId: '', role: 'employee' })
+    setAssignDialogOpen(true)
+  }
+
+  const handleAssignToWorkshop = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!assignMember || !assignForm.workshopId) return
+
+    setAssigning(true)
+    try {
+      const res = await offlineFetch(`/api/workshops/${assignForm.workshopId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: assignMember.userEmail,
+          role: assignForm.role,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast({ title: 'Error', description: data.error || 'Error al asignar empleado', variant: 'destructive' })
+        return
+      }
+      const targetWs = workshops.find(w => w.id === assignForm.workshopId)
+      toast({ title: 'Empleado asignado', description: `${assignMember.userName} fue asignado a "${targetWs?.name || 'el taller'}"` })
+      setAssignDialogOpen(false)
+      setAssignMember(null)
+      fetchMembers()
+      fetchMemberWorkshops()
+    } catch {
+      toast({ title: 'Error', description: 'Error de conexión', variant: 'destructive' })
+    } finally {
+      setAssigning(false)
     }
   }
 
@@ -381,7 +468,7 @@ export function EmployeesView() {
           </p>
         </div>
         {isOwner && (
-          <Button onClick={() => { setCreateForm(emptyCreateForm); setCreateDialogOpen(true) }}>
+          <Button onClick={() => { setCreateForm({ ...emptyCreateForm, workshopId: currentWorkshopId || '' }); setCreateDialogOpen(true) }}>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Empleado
           </Button>
@@ -455,6 +542,21 @@ export function EmployeesView() {
                             {formatDate(member.joinedAt)}
                           </span>
                         </div>
+                        {/* Workshops this member belongs to */}
+                        {memberWorkshops[member.userId] && memberWorkshops[member.userId].length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                            <Building2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                            {memberWorkshops[member.userId].map((ws, idx) => (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className={`text-xs ${ws.workshopId === currentWorkshopId ? 'border-primary/40 bg-primary/5 text-primary' : ''}`}
+                              >
+                                {ws.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -484,6 +586,12 @@ export function EmployeesView() {
                               <Pencil className="mr-2 h-4 w-4" />
                               Editar
                             </DropdownMenuItem>
+                            {ownedWorkshops.length > 1 && (
+                              <DropdownMenuItem onClick={() => openAssignDialog(member)}>
+                                <Building2 className="mr-2 h-4 w-4" />
+                                Asignar a Taller
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
                               onClick={() => { setRemoveMember(member); setRemoveOpen(true) }}
@@ -555,6 +663,28 @@ export function EmployeesView() {
           </DialogHeader>
           <form onSubmit={handleCreateEmployee}>
             <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="create-workshop">Taller al que pertenece *</Label>
+                <Select
+                  value={createForm.workshopId}
+                  onValueChange={(v) => setCreateForm({ ...createForm, workshopId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar taller..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ownedWorkshops.map((ws) => (
+                      <SelectItem key={ws.id} value={ws.id}>
+                        <Building2 className="mr-2 h-3.5 w-3.5" />
+                        {ws.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {ownedWorkshops.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No tienes talleres donde puedas agregar empleados.</p>
+                )}
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="create-name">Nombre completo *</Label>
                 <Input
@@ -702,6 +832,82 @@ export function EmployeesView() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ─── Assign to Workshop Dialog ───────────────────────── */}
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Asignar a Taller</DialogTitle>
+            <DialogDescription>
+              Asigne a <span className="font-medium text-foreground">{assignMember?.userName}</span> a otro taller donde usted es propietario o administrador.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAssignToWorkshop}>
+            <div className="grid gap-4 py-4">
+              {/* Current workshops */}
+              {assignMember && memberWorkshops[assignMember.userId] && memberWorkshops[assignMember.userId].length > 0 && (
+                <div className="rounded-md bg-muted/50 p-3">
+                  <p className="text-xs text-muted-foreground mb-2">Talleres actuales ({memberWorkshops[assignMember.userId].length}):</p>
+                  <div className="flex flex-wrap gap-1">
+                    {memberWorkshops[assignMember.userId].map((ws, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs">
+                        {ws.name} · {roleLabels[ws.role] || ws.role}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="grid gap-2">
+                <Label htmlFor="assign-workshop">Taller destino *</Label>
+                <Select
+                  value={assignForm.workshopId}
+                  onValueChange={(v) => setAssignForm({ ...assignForm, workshopId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar taller..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ownedWorkshops
+                      .filter(ws => !memberWorkshops[assignMember?.userId || '']?.some(mw => mw.workshopId === ws.id))
+                      .map(ws => (
+                        <SelectItem key={ws.id} value={ws.id}>
+                          <Building2 className="mr-2 h-3.5 w-3.5" />
+                          {ws.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                {assignMember && ownedWorkshops.filter(ws => !memberWorkshops[assignMember.userId]?.some(mw => mw.workshopId === ws.id)).length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Este empleado ya pertenece a todos los talleres que usted administra.
+                  </p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="assign-role">Rol en el taller</Label>
+                <Select value={assignForm.role} onValueChange={(v) => setAssignForm({ ...assignForm, role: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="employee">Empleado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAssignDialogOpen(false)} disabled={assigning}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={assigning || !assignForm.workshopId}>
+                {assigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Asignar al Taller
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
