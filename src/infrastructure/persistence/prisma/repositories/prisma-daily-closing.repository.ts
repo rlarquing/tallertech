@@ -7,6 +7,7 @@ import { DailyClosingRepository } from '@/domain/repositories'
 import { DailyClosing } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { DailyClosingMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaDailyClosingRepository implements DailyClosingRepository {
   async findById(id: string): Promise<DailyClosing | null> {
@@ -69,11 +70,7 @@ export class PrismaDailyClosingRepository implements DailyClosingRepository {
   }
 
   async create(data: Omit<DailyClosing, 'id' | 'createdAt' | 'updatedAt'>): Promise<DailyClosing> {
-    // Support both DailyClosing entity instances and plain data objects
-    // (use cases may pass a plain object literal cast to the entity type)
-    const source = data as unknown as { toPlainObject?: () => Record<string, unknown> } & Record<string, unknown>
-    const plain: Record<string, unknown> =
-      typeof source.toPlainObject === 'function' ? source.toPlainObject() : source
+    const plain = toPlain(data)
     const dailyClosing = await prisma.dailyClosing.create({
       data: {
         workshopId: plain.workshopId as string,

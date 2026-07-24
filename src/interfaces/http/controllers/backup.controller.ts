@@ -112,4 +112,72 @@ export class BackupController {
       return ResponsePresenter.error(error)
     }
   }
+
+  static async create(request: NextRequest) {
+    try {
+      const user = await cookieSession.getSessionUser(request)
+      if (!user) {
+        throw new AuthenticationError('No autenticado')
+      }
+      if (user.role !== 'admin' && user.role !== 'owner') {
+        throw new AuthorizationError('Solo administradores pueden crear backups')
+      }
+
+      let description = 'Backup manual'
+      try {
+        const body = await request.json()
+        if (body && typeof body.description === 'string') {
+          description = body.description
+        }
+      } catch {
+        // Body may be empty; use default description
+      }
+
+      const result = await backupService.createBackup(description)
+
+      await auditAdapter.log({
+        userId: user.id,
+        userName: user.name,
+        action: 'BACKUP',
+        entity: 'backup',
+        details: `Backup creado: ${result.filename} (${result.size} bytes)`,
+      })
+
+      return ResponsePresenter.success(result)
+    } catch (error) {
+      return ResponsePresenter.error(error)
+    }
+  }
+
+  static async deleteBackup(request: NextRequest) {
+    try {
+      const user = await cookieSession.getSessionUser(request)
+      if (!user) {
+        throw new AuthenticationError('No autenticado')
+      }
+      if (user.role !== 'admin' && user.role !== 'owner') {
+        throw new AuthorizationError('Solo administradores pueden eliminar backups')
+      }
+
+      const { searchParams } = new URL(request.url)
+      const filename = searchParams.get('filename')
+      if (!filename) {
+        throw new ValidationError('El parámetro filename es requerido')
+      }
+
+      const result = await backupService.deleteBackup(filename)
+
+      await auditAdapter.log({
+        userId: user.id,
+        userName: user.name,
+        action: 'DELETE',
+        entity: 'backup',
+        details: `Backup eliminado: ${filename}`,
+      })
+
+      return ResponsePresenter.success({ success: result })
+    } catch (error) {
+      return ResponsePresenter.error(error)
+    }
+  }
 }

@@ -450,7 +450,7 @@ export function ReportsView() {
                 <div className="rounded-lg border p-3 text-center">
                   <p className="text-sm text-muted-foreground">Hoy</p>
                   <p className="text-xl font-bold">
-                    {formatCurrency(Number(dashboardData?.salesToday?.total || 0))}
+                    {formatCurrency(Number((dashboardData?.salesToday as { total?: number } | undefined)?.total || 0))}
                   </p>
                 </div>
               </div>
@@ -627,7 +627,7 @@ export function ReportsView() {
                       <div key={String(p.id)} className="flex items-center justify-between rounded-lg border p-2">
                         <div>
                           <p className="text-sm font-medium">{String(p.name)}</p>
-                          {p.sku && <p className="text-xs text-muted-foreground">{String(p.sku)}</p>}
+                          {p.sku ? <p className="text-xs text-muted-foreground">{String(p.sku)}</p> : null}
                         </div>
                         <div className="text-right">
                           <Badge variant={Number(p.quantity || 0) === 0 ? 'destructive' : 'secondary'}>

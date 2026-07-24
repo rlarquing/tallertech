@@ -19,7 +19,7 @@ export type { StockMovementType } from './stock-movement'
 export { AuditLog } from './audit-log'
 export { Setting } from './setting'
 export { Workshop } from './workshop'
-export type { WorkshopMember, WorkshopWithRole, WorkshopRole } from './workshop'
+export type { WorkshopMember, WorkshopWithRole } from './workshop'
 export { DailyClosing } from './daily-closing'
 
 // ─── Value Object Re-exports (for convenience) ──────────────────

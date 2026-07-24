@@ -32,6 +32,7 @@ export class CreateSupplierUseCase {
 
     // 3. Build supplier data for persistence
     const supplierData = {
+      workshopId: request.workshopId,
       name: request.name,
       phone: request.phone ?? null,
       email: request.email ?? null,

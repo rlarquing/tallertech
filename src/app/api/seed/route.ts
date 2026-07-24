@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
     // If force reset, delete all existing data in correct order
     if (force && userCount > 0) {
       await db.$transaction([
+        db.dailyClosing.deleteMany(),
         db.stockMovement.deleteMany(),
         db.repairPart.deleteMany(),
         db.repairOrder.deleteMany(),
@@ -369,7 +370,7 @@ export async function POST(request: NextRequest) {
       },
     ];
 
-    const createdSales = [];
+    const createdSales: Array<{ id: string }> = [];
     for (const saleData of salesData) {
       const saleDate = new Date(now);
       saleDate.setDate(saleDate.getDate() - saleData.daysAgo);

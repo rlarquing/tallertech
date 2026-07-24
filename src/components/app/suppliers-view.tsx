@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
 import { supplierSchema } from '@/lib/validations'
+import { useAppStore } from '@/lib/store'
 
 // Types
 interface Supplier {
@@ -64,6 +65,7 @@ const emptyForm: SupplierFormData = {
 
 export function SuppliersView() {
   const { toast } = useToast()
+  const currentWorkshopId = useAppStore((s) => s.currentWorkshopId)
 
   // Data state
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -143,8 +145,14 @@ export function SuppliersView() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!currentWorkshopId) {
+      toast({ title: 'Error', description: 'Selecciona un taller primero', variant: 'destructive' })
+      return
+    }
+
     // Validate with Zod
     const result = supplierSchema.safeParse({
+      workshopId: currentWorkshopId,
       name: formData.name,
       phone: formData.phone || undefined,
       email: formData.email || undefined,
@@ -165,6 +173,7 @@ export function SuppliersView() {
 
     try {
       const payload = {
+        workshopId: currentWorkshopId,
         name: formData.name,
         phone: formData.phone || null,
         email: formData.email || null,

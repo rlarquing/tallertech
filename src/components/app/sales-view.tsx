@@ -138,7 +138,7 @@ export function SalesView() {
   const [cancelId, setCancelId] = useState<string | null>(null)
   const [cancelling, setCancelling] = useState(false)
 
-  const searchTimeout = React.useRef<ReturnType<typeof setTimeout>>()
+  const searchTimeout = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // ============================================================
   // Date range helper

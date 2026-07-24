@@ -7,6 +7,7 @@ import { WorkshopRepository } from '@/domain/repositories'
 import { Workshop, WorkshopMember, WorkshopWithRole } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { WorkshopMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaWorkshopRepository implements WorkshopRepository {
   async findById(id: string): Promise<Workshop | null> {
@@ -60,7 +61,7 @@ export class PrismaWorkshopRepository implements WorkshopRepository {
   async create(
     data: Omit<Workshop, 'id' | 'createdAt' | 'updatedAt'> & { id?: string },
   ): Promise<Workshop> {
-    const plain = data.toPlainObject ? data.toPlainObject() : data
+    const plain = toPlain(data)
     const createData: Record<string, unknown> = {
       name: plain.name,
       slug: plain.slug,

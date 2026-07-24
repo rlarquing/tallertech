@@ -38,6 +38,7 @@ export class CreateRepairUseCase {
 
     // 4. Create repair order
     const repair = await this.repairRepository.create({
+      workshopId: request.workshopId,
       code,
       userId: user.id,
       userName: user.name,
@@ -50,7 +51,7 @@ export class CreateRepairUseCase {
       costEstimate: request.costEstimate || 0,
       estimatedReady: request.estimatedReady ? new Date(request.estimatedReady) : null,
       notes: request.notes || null,
-    } as Omit<import('@/domain/entities').RepairOrder, 'id' | 'createdAt' | 'updatedAt'>)
+    } as unknown as Omit<import('@/domain/entities').RepairOrder, 'id' | 'createdAt' | 'updatedAt'>)
 
     // 5. Log audit trail
     await this.auditPort.log({

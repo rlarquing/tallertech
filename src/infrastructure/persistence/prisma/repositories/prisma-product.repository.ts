@@ -7,6 +7,7 @@ import { ProductRepository } from '@/domain/repositories'
 import { Product, StockMovement } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { ProductMapper, StockMovementMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaProductRepository implements ProductRepository {
   async findById(id: string): Promise<Product | null> {
@@ -76,24 +77,25 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async create(data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
-    const plain = data.toPlainObject()
+    const plain = toPlain(data)
     const product = await prisma.product.create({
       data: {
-        name: plain.name,
-        sku: plain.sku,
-        description: plain.description,
-        categoryId: plain.categoryId,
-        supplierId: plain.supplierId,
-        costPrice: plain.costPrice,
-        salePrice: plain.salePrice,
-        quantity: plain.quantity,
-        minStock: plain.minStock,
-        unit: plain.unit,
-        type: plain.type,
-        brand: plain.brand,
-        model: plain.model,
-        location: plain.location,
-        active: plain.active,
+        workshopId: plain.workshopId as string,
+        name: plain.name as string,
+        sku: plain.sku as string | null,
+        description: plain.description as string | null,
+        categoryId: plain.categoryId as string | null,
+        supplierId: plain.supplierId as string | null,
+        costPrice: plain.costPrice as number,
+        salePrice: plain.salePrice as number,
+        quantity: plain.quantity as number,
+        minStock: plain.minStock as number,
+        unit: plain.unit as string,
+        type: plain.type as 'product' | 'service' | 'part',
+        brand: plain.brand as string | null,
+        model: plain.model as string | null,
+        location: plain.location as string | null,
+        active: plain.active as boolean,
       },
     })
     return ProductMapper.toDomain(product)
@@ -130,7 +132,9 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async findBySku(sku: string): Promise<Product | null> {
-    const product = await prisma.product.findUnique({ where: { sku } })
+    // sku is not @unique in the schema (it's nullable and workshop-scoped),
+    // so use findFirst instead of findUnique.
+    const product = await prisma.product.findFirst({ where: { sku } })
     return product ? ProductMapper.toDomain(product) : null
   }
 

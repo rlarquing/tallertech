@@ -1035,7 +1035,7 @@ export function WorkshopBIView() {
 
 function generateFallbackData(): BIData {
   const days = 30
-  const chartData = []
+  const chartData: { date: string; revenue: number; expenses: number }[] = []
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date()
     date.setDate(date.getDate() - i)

@@ -373,7 +373,7 @@ export async function cacheDashboardData(data: TallerTechDB['dashboardCache']['v
 
 export async function getCachedDashboardData(): Promise<TallerTechDB['dashboardCache']['value'] | null> {
   const db = await getDB()
-  return db.get('dashboardCache', 'main')
+  return (await db.get('dashboardCache', 'main')) ?? null
 }
 
 // ============================================================

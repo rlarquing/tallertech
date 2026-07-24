@@ -145,6 +145,7 @@ const formatCurrency = (amount: number | string | null | undefined) =>
 
 export function RepairsView() {
   const setPendingRepairsCount = useAppStore((s) => s.setPendingRepairsCount)
+  const currentWorkshopId = useAppStore((s) => s.currentWorkshopId)
 
   // Filters
   const [statusFilter, setStatusFilter] = useState('all')
@@ -203,8 +204,8 @@ export function RepairsView() {
   // Add part form
   const [partQuantity, setPartQuantity] = useState('1')
 
-  const searchTimeout = useRef<ReturnType<typeof setTimeout>>()
-  const partSearchTimeout = useRef<ReturnType<typeof setTimeout>>()
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const partSearchTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // ============================================================
   // Fetch repairs
@@ -314,7 +315,12 @@ export function RepairsView() {
   // ============================================================
 
   const createRepair = async () => {
+    if (!currentWorkshopId) {
+      toast.error('Selecciona un taller primero')
+      return
+    }
     const formData = {
+      workshopId: currentWorkshopId,
       device: formDevice,
       brand: formBrand || undefined,
       imei: formImei || undefined,
@@ -340,6 +346,7 @@ export function RepairsView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          workshopId: currentWorkshopId,
           device: formDevice,
           brand: formBrand || undefined,
           imei: formImei || undefined,

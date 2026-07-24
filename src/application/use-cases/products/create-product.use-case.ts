@@ -39,6 +39,7 @@ export class CreateProductUseCase {
 
     // 4. Build product data for persistence
     const productData = {
+      workshopId: request.workshopId,
       name: request.name,
       sku: request.sku ?? null,
       description: request.description ?? null,

@@ -84,6 +84,7 @@ export class CreateSaleUseCase {
     // 6. Create sale with items
     const sale = await this.saleRepository.createWithItems(
       {
+        workshopId: request.workshopId,
         code,
         userId: user.id,
         userName: user.name,

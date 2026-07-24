@@ -35,6 +35,7 @@ export class CreateExpenseUseCase {
 
     // 3. Build expense data for persistence
     const expenseData = {
+      workshopId: request.workshopId,
       category: request.category,
       description: request.description,
       amount: request.amount,

@@ -7,6 +7,7 @@ import { BaseRepository, SupplierRepository } from '@/domain/repositories'
 import { Supplier } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { SupplierMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaSupplierRepository implements SupplierRepository {
   async findById(id: string): Promise<Supplier | null> {
@@ -61,16 +62,16 @@ export class PrismaSupplierRepository implements SupplierRepository {
   }
 
   async create(data: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>): Promise<Supplier> {
-    const plain = data.toPlainObject()
+    const plain = toPlain(data)
     const supplier = await prisma.supplier.create({
       data: {
-        workshopId: plain.workshopId || '',
-        name: plain.name,
-        phone: plain.phone,
-        email: plain.email,
-        address: plain.address,
-        notes: plain.notes,
-        active: plain.active,
+        workshopId: plain.workshopId as string,
+        name: plain.name as string,
+        phone: plain.phone as string | null,
+        email: plain.email as string | null,
+        address: plain.address as string | null,
+        notes: plain.notes as string | null,
+        active: plain.active as boolean,
       },
     })
     return SupplierMapper.toDomain(supplier)

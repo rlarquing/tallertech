@@ -93,6 +93,7 @@ interface SaleResponse {
 
 export function PosView() {
   const setCartItemCount = useAppStore((s) => s.setCartItemCount)
+  const currentWorkshopId = useAppStore((s) => s.currentWorkshopId)
 
   // Cart state
   const [cart, setCart] = useState<CartItem[]>([])
@@ -114,7 +115,7 @@ export function PosView() {
   const [completedSale, setCompletedSale] = useState<SaleResponse | null>(null)
   const [showReceipt, setShowReceipt] = useState(false)
 
-  const searchTimeout = useRef<ReturnType<typeof setTimeout>>()
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // Sync cart count with global store for mobile nav badge
   useEffect(() => {
@@ -236,9 +237,15 @@ export function PosView() {
   const completeSale = async () => {
     setValidationErrors({})
 
+    if (!currentWorkshopId) {
+      toast.error('Selecciona un taller primero')
+      return
+    }
+
     // Validate sale-level fields
     const discountValue = discountType === 'percentage' ? discount : discountAmount
     const saleData = {
+      workshopId: currentWorkshopId,
       paymentMethod,
       discount: discountValue,
       notes: notes || undefined,
@@ -307,6 +314,7 @@ export function PosView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          workshopId: currentWorkshopId,
           items: cart.map((item) => ({
             productId: item.productId,
             name: item.name,

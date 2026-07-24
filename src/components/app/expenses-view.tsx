@@ -67,6 +67,7 @@ import { useToast } from '@/hooks/use-toast'
 import { offlineFetch } from '@/lib/offline-fetch'
 import { expenseSchema } from '@/lib/validations'
 import { formatCurrency as safeFormatCurrency } from '@/lib/format'
+import { useAppStore } from '@/lib/store'
 
 interface Expense {
   id: string
@@ -117,6 +118,7 @@ type DateFilter = 'today' | 'week' | 'month' | 'custom'
 
 export function ExpensesView() {
   const { toast } = useToast()
+  const currentWorkshopId = useAppStore((s) => s.currentWorkshopId)
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -233,8 +235,14 @@ export function ExpensesView() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!currentWorkshopId) {
+      toast({ title: 'Error', description: 'Selecciona un taller primero', variant: 'destructive' })
+      return
+    }
+
     // Validate with Zod
     const result = expenseSchema.safeParse({
+      workshopId: currentWorkshopId,
       category: form.category,
       description: form.description,
       amount: parseFloat(form.amount),
@@ -259,6 +267,7 @@ export function ExpensesView() {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          workshopId: currentWorkshopId,
           category: form.category,
           description: form.description,
           amount: parseFloat(form.amount),

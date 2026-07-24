@@ -33,6 +33,7 @@ import {
 import { offlineFetch } from '@/lib/offline-fetch'
 import { productSchema, stockAdjustmentSchema } from '@/lib/validations'
 import { formatCurrency as safeFormatCurrency } from '@/lib/format'
+import { useAppStore } from '@/lib/store'
 
 // Types
 interface Category {
@@ -128,6 +129,7 @@ const unitLabels: Record<string, string> = {
 
 export function ProductsView() {
   const { toast } = useToast()
+  const currentWorkshopId = useAppStore((s) => s.currentWorkshopId)
 
   // Data state
   const [products, setProducts] = useState<Product[]>([])
@@ -274,8 +276,14 @@ export function ProductsView() {
     e.preventDefault()
     setFormValidationErrors({})
 
+    if (!currentWorkshopId) {
+      toast({ title: 'Error', description: 'Selecciona un taller primero', variant: 'destructive' })
+      return
+    }
+
     // Build data for validation
     const validationData = {
+      workshopId: currentWorkshopId,
       name: formData.name,
       sku: formData.sku || undefined,
       description: formData.description || undefined,
@@ -307,6 +315,7 @@ export function ProductsView() {
 
     try {
       const payload = {
+        workshopId: currentWorkshopId,
         name: formData.name,
         sku: formData.sku || null,
         description: formData.description || null,

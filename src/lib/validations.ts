@@ -17,6 +17,7 @@ function optionalString(maxLen: number, maxMessage: string) {
   return z.union([
     z.string().max(maxLen, { message: maxMessage }),
     z.literal(''),
+    z.null(),
   ]).optional()
 }
 
@@ -28,6 +29,7 @@ function optionalStringWithValidation(
   return z.union([
     z.string().max(maxLen, { message: maxMessage }).regex(validation.regex, { message: validation.message }),
     z.literal(''),
+    z.null(),
   ]).optional()
 }
 
@@ -35,6 +37,7 @@ function optionalEmail(maxMessage: string, emailMessage: string) {
   return z.union([
     z.string().max(254, { message: maxMessage }).email({ message: emailMessage }),
     z.literal(''),
+    z.null(),
   ]).optional()
 }
 
@@ -55,6 +58,8 @@ export const loginSchema = z.object({
 // ============================================================
 
 export const productSchema = z.object({
+  workshopId: z.string({ message: 'El taller es requerido' })
+    .min(1, { message: 'Debe seleccionar un taller' }),
   name: z.string({ message: 'El nombre es requerido' })
     .min(2, { message: 'El nombre debe tener al menos 2 caracteres' })
     .max(150, { message: 'El nombre no puede exceder 150 caracteres' }),
@@ -86,8 +91,8 @@ export const productSchema = z.object({
   brand: optionalString(80, 'La marca no puede exceder 80 caracteres'),
   model: optionalString(80, 'El modelo no puede exceder 80 caracteres'),
   location: optionalString(100, 'La ubicación no puede exceder 100 caracteres'),
-  categoryId: z.string().optional(),
-  supplierId: z.string().optional(),
+  categoryId: z.union([z.string(), z.null()]).optional(),
+  supplierId: z.union([z.string(), z.null()]).optional(),
 }).refine(
   (data) => data.salePrice >= data.costPrice,
   {
@@ -116,6 +121,8 @@ export const stockAdjustmentSchema = z.object({
 // ============================================================
 
 export const supplierSchema = z.object({
+  workshopId: z.string({ message: 'El taller es requerido' })
+    .min(1, { message: 'Debe seleccionar un taller' }),
   name: z.string({ message: 'El nombre es requerido' })
     .min(2, { message: 'El nombre debe tener al menos 2 caracteres' })
     .max(150, { message: 'El nombre no puede exceder 150 caracteres' }),
@@ -134,6 +141,8 @@ export const supplierSchema = z.object({
 // ============================================================
 
 export const categorySchema = z.object({
+  workshopId: z.string({ message: 'El taller es requerido' })
+    .min(1, { message: 'Debe seleccionar un taller' }),
   name: z.string({ message: 'El nombre es requerido' })
     .min(2, { message: 'El nombre debe tener al menos 2 caracteres' })
     .max(80, { message: 'El nombre no puede exceder 80 caracteres' }),
@@ -148,6 +157,8 @@ export const categorySchema = z.object({
 // ============================================================
 
 export const repairSchema = z.object({
+  workshopId: z.string({ message: 'El taller es requerido' })
+    .min(1, { message: 'Debe seleccionar un taller' }),
   device: z.string({ message: 'El dispositivo es requerido' })
     .min(2, { message: 'El dispositivo debe tener al menos 2 caracteres' })
     .max(150, { message: 'El dispositivo no puede exceder 150 caracteres' }),
@@ -155,6 +166,7 @@ export const repairSchema = z.object({
   imei: z.union([
     z.string().regex(imeiRegex, { message: 'El IMEI debe tener exactamente 15 dígitos' }),
     z.literal(''),
+    z.null(),
   ]).optional(),
   issue: z.string({ message: 'El problema reportado es requerido' })
     .min(3, { message: 'El problema debe tener al menos 3 caracteres' })
@@ -228,6 +240,8 @@ export const repairPartSchema = z.object({
 // ============================================================
 
 export const expenseSchema = z.object({
+  workshopId: z.string({ message: 'El taller es requerido' })
+    .min(1, { message: 'Debe seleccionar un taller' }),
   category: z.enum(['supplies', 'rent', 'salary', 'utilities', 'other'], {
     message: 'Categoría de gasto inválida',
   }),
@@ -254,7 +268,7 @@ export const expenseSchema = z.object({
 // ============================================================
 
 export const saleItemSchema = z.object({
-  productId: z.string().optional(),
+  productId: z.union([z.string(), z.null()]).optional(),
   name: z.string({ message: 'El nombre es requerido' })
     .min(1, { message: 'El nombre es requerido' })
     .max(150, { message: 'El nombre no puede exceder 150 caracteres' }),
@@ -275,6 +289,8 @@ export const saleItemSchema = z.object({
 // ============================================================
 
 export const saleSchema = z.object({
+  workshopId: z.string({ message: 'El taller es requerido' })
+    .min(1, { message: 'Debe seleccionar un taller' }),
   paymentMethod: z.enum(['efectivo', 'transferencia', 'mixto'], {
     message: 'Método de pago inválido',
   }),

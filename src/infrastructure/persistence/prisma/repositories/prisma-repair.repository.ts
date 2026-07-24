@@ -7,6 +7,7 @@ import { RepairRepository } from '@/domain/repositories'
 import { RepairOrder, RepairPart } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { RepairOrderMapper, RepairPartMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaRepairRepository implements RepairRepository {
   async findById(id: string): Promise<RepairOrder | null> {
@@ -73,32 +74,32 @@ export class PrismaRepairRepository implements RepairRepository {
   }
 
   async create(data: Omit<RepairOrder, 'id' | 'createdAt' | 'updatedAt'>): Promise<RepairOrder> {
-    const plain = data.toPlainObject()
+    const plain = toPlain(data)
     const repair = await prisma.repairOrder.create({
       data: {
-        workshopId: plain.workshopId || '',
-        code: plain.code,
-        userId: plain.userId,
-        userName: plain.userName,
-        device: plain.device,
-        brand: plain.brand,
-        imei: plain.imei,
-        issue: plain.issue,
-        diagnosis: plain.diagnosis,
-        solution: plain.solution,
-        status: plain.status,
-        priority: plain.priority,
-        costEstimate: plain.costEstimate,
-        laborCost: plain.laborCost,
-        partsCost: plain.partsCost,
-        totalCost: plain.totalCost,
-        paymentMethod: plain.paymentMethod,
-        paid: plain.paid,
-        receivedAt: plain.receivedAt,
-        estimatedReady: plain.estimatedReady,
-        completedAt: plain.completedAt,
-        deliveredAt: plain.deliveredAt,
-        notes: plain.notes,
+        workshopId: plain.workshopId as string,
+        code: plain.code as string,
+        userId: plain.userId as string,
+        userName: plain.userName as string,
+        device: plain.device as string,
+        brand: plain.brand as string | null,
+        imei: plain.imei as string | null,
+        issue: plain.issue as string,
+        diagnosis: plain.diagnosis as string | null,
+        solution: plain.solution as string | null,
+        status: plain.status as string,
+        priority: plain.priority as string,
+        costEstimate: plain.costEstimate as number,
+        laborCost: plain.laborCost as number,
+        partsCost: plain.partsCost as number,
+        totalCost: plain.totalCost as number,
+        paymentMethod: plain.paymentMethod as string,
+        paid: plain.paid as boolean,
+        receivedAt: plain.receivedAt as Date,
+        estimatedReady: plain.estimatedReady as Date | null,
+        completedAt: plain.completedAt as Date | null,
+        deliveredAt: plain.deliveredAt as Date | null,
+        notes: plain.notes as string | null,
       },
       include: {
         parts: true,

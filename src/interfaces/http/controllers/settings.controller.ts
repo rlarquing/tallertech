@@ -29,7 +29,7 @@ const singleSettingSchema = z.object({
   key: z.string({ message: 'La clave es requerida' })
     .min(1, { message: 'La clave es requerida' })
     .max(100, { message: 'La clave no puede exceder 100 caracteres' }),
-  value: z.unknown({ message: 'El valor es requerido' }),
+  value: z.unknown(),
 })
 
 export class SettingsController {

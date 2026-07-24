@@ -7,6 +7,7 @@ import { ExpenseRepository } from '@/domain/repositories'
 import { Expense } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { ExpenseMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaExpenseRepository implements ExpenseRepository {
   async findById(id: string): Promise<Expense | null> {
@@ -72,17 +73,17 @@ export class PrismaExpenseRepository implements ExpenseRepository {
   }
 
   async create(data: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): Promise<Expense> {
-    const plain = data.toPlainObject()
+    const plain = toPlain(data)
     const expense = await prisma.expense.create({
       data: {
-        workshopId: plain.workshopId || '',
-        category: plain.category,
-        description: plain.description,
-        amount: plain.amount,
-        userId: plain.userId,
-        userName: plain.userName,
-        date: plain.date,
-        notes: plain.notes,
+        workshopId: plain.workshopId as string,
+        category: plain.category as string,
+        description: plain.description as string,
+        amount: plain.amount as number,
+        userId: plain.userId as string,
+        userName: plain.userName as string,
+        date: plain.date as Date,
+        notes: plain.notes as string | null,
       },
     })
     return ExpenseMapper.toDomain(expense)

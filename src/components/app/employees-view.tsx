@@ -133,7 +133,7 @@ export function EmployeesView() {
   const [assigning, setAssigning] = useState(false)
 
   // Workshops each member belongs to
-  const [memberWorkshops, setMemberWorkshops] = useState<Record<string, Array<{ name: string; role: string }>>>({})
+  const [memberWorkshops, setMemberWorkshops] = useState<Record<string, Array<{ name: string; role: string; workshopId: string }>>>({})
 
   // Activity data
   const [employeeActivities, setEmployeeActivities] = useState<Record<string, { salesCount: number; salesTotal: number; repairsCount: number }>>({})

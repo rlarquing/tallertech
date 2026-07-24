@@ -7,6 +7,7 @@ import { SaleRepository } from '@/domain/repositories'
 import { Sale, SaleItem } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { SaleMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaSaleRepository implements SaleRepository {
   async findById(id: string): Promise<Sale | null> {
@@ -82,20 +83,20 @@ export class PrismaSaleRepository implements SaleRepository {
   }
 
   async create(data: Omit<Sale, 'id' | 'createdAt' | 'updatedAt' | 'items'>): Promise<Sale> {
-    const plain = data.toPlainObject()
+    const plain = toPlain(data)
     const sale = await prisma.sale.create({
       data: {
-        workshopId: plain.workshopId || '',
-        code: plain.code,
-        userId: plain.userId,
-        userName: plain.userName,
-        subtotal: plain.subtotal,
-        discount: plain.discount,
-        tax: plain.tax,
-        total: plain.total,
-        paymentMethod: plain.paymentMethod,
-        status: plain.status,
-        notes: plain.notes,
+        workshopId: plain.workshopId as string,
+        code: plain.code as string,
+        userId: plain.userId as string,
+        userName: plain.userName as string,
+        subtotal: plain.subtotal as number,
+        discount: plain.discount as number,
+        tax: plain.tax as number,
+        total: plain.total as number,
+        paymentMethod: plain.paymentMethod as string,
+        status: plain.status as string,
+        notes: plain.notes as string | null,
       },
       include: {
         items: { include: { product: true } },
@@ -139,22 +140,22 @@ export class PrismaSaleRepository implements SaleRepository {
     data: Omit<Sale, 'id' | 'createdAt' | 'updatedAt' | 'items'>,
     items: Omit<SaleItem, 'id' | 'saleId'>[]
   ): Promise<Sale> {
-    const plain = data.toPlainObject()
+    const plain = toPlain(data)
 
     const sale = await prisma.$transaction(async (tx) => {
       // Create sale with items
       const newSale = await tx.sale.create({
         data: {
-          workshopId: plain.workshopId || '',
-          code: plain.code,
-          userId: plain.userId,
-          userName: plain.userName,
-          subtotal: plain.subtotal,
-          discount: plain.discount,
-          tax: plain.tax,
-          total: plain.total,
-          paymentMethod: plain.paymentMethod,
-          notes: plain.notes,
+          workshopId: plain.workshopId as string,
+          code: plain.code as string,
+          userId: plain.userId as string,
+          userName: plain.userName as string,
+          subtotal: plain.subtotal as number,
+          discount: plain.discount as number,
+          tax: plain.tax as number,
+          total: plain.total as number,
+          paymentMethod: plain.paymentMethod as string,
+          notes: plain.notes as string | null,
           items: {
             create: items.map((item) => ({
               productId: item.productId || null,
@@ -199,9 +200,9 @@ export class PrismaSaleRepository implements SaleRepository {
                 type: 'out',
                 quantity: item.quantity || 1,
                 reason: 'Venta',
-                reference: plain.code,
-                userId: plain.userId,
-                userName: plain.userName,
+                reference: plain.code as string,
+                userId: plain.userId as string,
+                userName: plain.userName as string,
               },
             })
           }

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { offlineFetch } from '@/lib/offline-fetch'
 import { categorySchema } from '@/lib/validations'
+import { useAppStore } from '@/lib/store'
 
 // Types
 interface Category {
@@ -72,6 +73,7 @@ const typeColors: Record<string, string> = {
 
 export function CategoriesView() {
   const { toast } = useToast()
+  const currentWorkshopId = useAppStore((s) => s.currentWorkshopId)
 
   // Data state
   const [categories, setCategories] = useState<Category[]>([])
@@ -136,8 +138,14 @@ export function CategoriesView() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!currentWorkshopId) {
+      toast({ title: 'Error', description: 'Selecciona un taller primero', variant: 'destructive' })
+      return
+    }
+
     // Validate with Zod
     const result = categorySchema.safeParse({
+      workshopId: currentWorkshopId,
       name: formData.name,
       description: formData.description || undefined,
       type: formData.type,
@@ -156,6 +164,7 @@ export function CategoriesView() {
 
     try {
       const payload = {
+        workshopId: currentWorkshopId,
         name: formData.name,
         description: formData.description || null,
         type: formData.type,

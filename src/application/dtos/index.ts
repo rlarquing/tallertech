@@ -40,20 +40,21 @@ export interface AuthResponse {
 // ─── Product DTOs ────────────────────────────────────────────
 
 export interface CreateProductRequest {
+  workshopId: string
   name: string
-  sku?: string
-  description?: string
-  categoryId?: string
-  supplierId?: string
+  sku?: string | null
+  description?: string | null
+  categoryId?: string | null
+  supplierId?: string | null
   costPrice?: number
   salePrice?: number
   quantity?: number
   minStock?: number
   unit?: string
   type?: 'product' | 'service' | 'part'
-  brand?: string
-  model?: string
-  location?: string
+  brand?: string | null
+  model?: string | null
+  location?: string | null
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {
@@ -70,15 +71,16 @@ export interface ProductFilters extends PaginationParams {
 // ─── Sale DTOs ───────────────────────────────────────────────
 
 export interface CreateSaleRequest {
+  workshopId: string
   items: CreateSaleItemRequest[]
   discount?: number
   tax?: number
   paymentMethod?: 'efectivo' | 'transferencia' | 'mixto'
-  notes?: string
+  notes?: string | null
 }
 
 export interface CreateSaleItemRequest {
-  productId?: string
+  productId?: string | null
   name: string
   quantity?: number
   unitPrice?: number
@@ -95,15 +97,16 @@ export interface SaleFilters extends PaginationParams {
 // ─── Repair DTOs ─────────────────────────────────────────────
 
 export interface CreateRepairRequest {
+  workshopId: string
   device: string
-  brand?: string
-  imei?: string
+  brand?: string | null
+  imei?: string | null
   issue: string
-  diagnosis?: string
+  diagnosis?: string | null
   priority?: 'low' | 'normal' | 'high' | 'urgent'
   costEstimate?: number
-  estimatedReady?: string
-  notes?: string
+  estimatedReady?: string | null
+  notes?: string | null
 }
 
 export interface UpdateRepairRequest extends Partial<CreateRepairRequest> {
@@ -128,8 +131,9 @@ export interface RepairFilters extends PaginationParams {
 // ─── Category DTOs ───────────────────────────────────────────
 
 export interface CreateCategoryRequest {
+  workshopId: string
   name: string
-  description?: string
+  description?: string | null
   type?: 'product' | 'service' | 'part'
 }
 
@@ -141,11 +145,12 @@ export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
 // ─── Supplier DTOs ───────────────────────────────────────────
 
 export interface CreateSupplierRequest {
+  workshopId: string
   name: string
-  phone?: string
-  email?: string
-  address?: string
-  notes?: string
+  phone?: string | null
+  email?: string | null
+  address?: string | null
+  notes?: string | null
 }
 
 export interface UpdateSupplierRequest extends Partial<CreateSupplierRequest> {
@@ -156,11 +161,12 @@ export interface UpdateSupplierRequest extends Partial<CreateSupplierRequest> {
 // ─── Expense DTOs ────────────────────────────────────────────
 
 export interface CreateExpenseRequest {
+  workshopId: string
   category: 'supplies' | 'rent' | 'salary' | 'utilities' | 'other'
   description: string
   amount: number
   date?: string
-  notes?: string
+  notes?: string | null
 }
 
 export interface UpdateExpenseRequest extends Partial<CreateExpenseRequest> {
@@ -260,10 +266,10 @@ export interface RestoreBackupResponse {
 export interface CreateWorkshopRequest {
   name: string
   slug?: string
-  description?: string
-  address?: string
-  phone?: string
-  email?: string
+  description?: string | null
+  address?: string | null
+  phone?: string | null
+  email?: string | null
   currency?: string
   timezone?: string
 }
@@ -271,10 +277,10 @@ export interface CreateWorkshopRequest {
 export interface UpdateWorkshopRequest {
   id: string
   name?: string
-  description?: string
-  address?: string
-  phone?: string
-  email?: string
+  description?: string | null
+  address?: string | null
+  phone?: string | null
+  email?: string | null
   currency?: string
   timezone?: string
   active?: boolean
@@ -304,12 +310,12 @@ export interface WorkshopFilters extends PaginationParams {
 export interface CreateDailyClosingRequest {
   workshopId: string
   date: string
-  notes?: string
+  notes?: string | null
 }
 
 export interface CloseDailyClosingRequest {
   id: string
-  notes?: string
+  notes?: string | null
 }
 
 export interface DailyClosingFilters extends PaginationParams {

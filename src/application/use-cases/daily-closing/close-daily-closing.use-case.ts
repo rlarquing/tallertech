@@ -88,7 +88,7 @@ export class CloseDailyClosingUseCase {
       repairsTotal,
       expensesTotal,
     })
-    dailyClosing.close(request.notes)
+    dailyClosing.close(request.notes ?? undefined)
 
     // 6. Persist
     const closedDailyClosing = await this.dailyClosingRepository.update(

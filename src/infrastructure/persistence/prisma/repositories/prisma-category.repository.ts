@@ -7,6 +7,7 @@ import { BaseRepository, CategoryRepository } from '@/domain/repositories'
 import { Category } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { CategoryMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaCategoryRepository implements CategoryRepository {
   async findById(id: string): Promise<Category | null> {
@@ -63,14 +64,14 @@ export class PrismaCategoryRepository implements CategoryRepository {
   }
 
   async create(data: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category> {
-    const plain = data.toPlainObject()
+    const plain = toPlain(data)
     const category = await prisma.category.create({
       data: {
-        workshopId: plain.workshopId || '',
-        name: plain.name,
-        description: plain.description,
-        type: plain.type,
-        active: plain.active,
+        workshopId: plain.workshopId as string,
+        name: plain.name as string,
+        description: plain.description as string | null,
+        type: plain.type as string,
+        active: plain.active as boolean,
       },
     })
     return CategoryMapper.toDomain(category)

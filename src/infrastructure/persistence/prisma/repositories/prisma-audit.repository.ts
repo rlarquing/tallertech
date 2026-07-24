@@ -7,20 +7,21 @@ import { AuditRepository } from '@/domain/repositories'
 import { AuditLog } from '@/domain/entities'
 import { prisma } from '../prisma-client'
 import { AuditLogMapper } from '../mappers'
+import { toPlain } from '../utils/to-plain'
 
 export class PrismaAuditRepository implements AuditRepository {
   async log(entry: Omit<AuditLog, 'id' | 'createdAt'>): Promise<AuditLog> {
-    const plain = entry.toPlainObject()
+    const plain = toPlain(entry)
     const log = await prisma.auditLog.create({
       data: {
-        workshopId: plain.workshopId || '',
-        userId: plain.userId,
-        userName: plain.userName,
-        action: plain.action,
-        entity: plain.entity,
-        entityId: plain.entityId,
-        details: plain.details,
-        ip: plain.ip,
+        workshopId: (plain.workshopId as string) || '',
+        userId: plain.userId as string,
+        userName: plain.userName as string,
+        action: plain.action as string,
+        entity: plain.entity as string,
+        entityId: plain.entityId as string,
+        details: plain.details as string | null,
+        ip: plain.ip as string | null,
       },
     })
     return AuditLogMapper.toDomain(log)

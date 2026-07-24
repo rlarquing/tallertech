@@ -32,6 +32,7 @@ export class CreateCategoryUseCase {
 
     // 3. Build category data for persistence
     const categoryData = {
+      workshopId: request.workshopId,
       name: request.name,
       description: request.description ?? null,
       type: (request.type || 'product') as 'product' | 'service' | 'part',
