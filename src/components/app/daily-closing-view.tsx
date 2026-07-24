@@ -42,6 +42,9 @@ import {
   PlayCircle,
   Lock,
   Calculator,
+  User,
+  Users,
+  AlertCircle,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { offlineFetch } from '@/lib/offline-fetch'
@@ -104,14 +107,19 @@ export function DailyClosingView() {
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [closingsLoading, setClosingsLoading] = useState(false)
 
-  // Closing state
-  const [todayClosing, setTodayClosing] = useState<DailyClosing | null>(null)
+  // Today's closings (all of them, for the owner to manage)
+  const [todayClosings, setTodayClosings] = useState<DailyClosing[]>([])
+  const [todayClosingsLoading, setTodayClosingsLoading] = useState(false)
+
+  // Closing action state
   const [closingLoading, setClosingLoading] = useState(false)
   const [closeDialogOpen, setCloseDialogOpen] = useState(false)
   const [closeNotes, setCloseNotes] = useState('')
+  const [closingToClose, setClosingToClose] = useState<DailyClosing | null>(null)
 
   const activeWorkshopId = selectedWorkshopId || currentWorkshopId
   const currentWorkshop = workshops.find(w => w.id === activeWorkshopId)
+  const isOwnerOrAdmin = currentWorkshop?.role === 'owner' || currentWorkshop?.role === 'admin'
 
   const limit = 20
 
@@ -170,26 +178,32 @@ export function DailyClosingView() {
     }
   }, [activeWorkshopId, closingsPage])
 
-  const fetchTodayClosing = useCallback(async () => {
+  // Fetch ALL of today's closings (for the owner to manage each employee's closing)
+  const fetchTodayClosings = useCallback(async () => {
     if (!activeWorkshopId) return
+    setTodayClosingsLoading(true)
     try {
       const today = new Date().toISOString().split('T')[0]
       const params = new URLSearchParams({
         workshopId: activeWorkshopId,
         dateFrom: today,
         dateTo: today,
-        limit: '10',
+        limit: '50',
       })
       const res = await offlineFetch(`/api/daily-closings?${params}`)
       if (res.ok) {
         const data = await res.json()
-        const todayClosings = (data.data || []).filter(
-          (c: DailyClosing) => c.date && new Date(c.date).toISOString().split('T')[0] === today
+        const all = (data.data || []) as DailyClosing[]
+        // Filter strictly to today (defensive)
+        const todays = all.filter(
+          (c) => c.date && new Date(c.date).toISOString().split('T')[0] === today
         )
-        setTodayClosing(todayClosings.length > 0 ? todayClosings[0] : null)
+        setTodayClosings(todays)
       }
     } catch {
       // Silently fail
+    } finally {
+      setTodayClosingsLoading(false)
     }
   }, [activeWorkshopId])
 
@@ -201,14 +215,21 @@ export function DailyClosingView() {
 
   useEffect(() => {
     fetchSummary()
-    fetchTodayClosing()
-  }, [fetchSummary, fetchTodayClosing])
+    fetchTodayClosings()
+  }, [fetchSummary, fetchTodayClosings])
 
   useEffect(() => {
     fetchClosings()
   }, [fetchClosings])
 
-  const handleCreateClosing = async () => {
+  // The employee's own closing for today (employees only manage their own)
+  const myTodayClosing = todayClosings.length > 0 ? todayClosings[0] : null
+
+  // Owner: open closings today (pending to be closed)
+  const openClosingsToday = todayClosings.filter(c => c.status === 'open')
+  const closedClosingsToday = todayClosings.filter(c => c.status === 'closed')
+
+  const handleCreateMyClosing = async () => {
     if (!activeWorkshopId) return
     setClosingLoading(true)
     try {
@@ -223,8 +244,8 @@ export function DailyClosingView() {
         toast({ title: 'Error', description: data.error || 'Error al crear cierre', variant: 'destructive' })
         return
       }
-      toast({ title: 'Cierre iniciado', description: 'El cierre diario fue creado correctamente' })
-      fetchTodayClosing()
+      toast({ title: 'Cierre iniciado', description: 'Tu cierre diario fue creado. Recuerda cerrarlo al finalizar tu día.' })
+      fetchTodayClosings()
       fetchClosings()
       fetchSummary()
     } catch {
@@ -234,11 +255,17 @@ export function DailyClosingView() {
     }
   }
 
+  const openCloseDialog = (closing: DailyClosing) => {
+    setClosingToClose(closing)
+    setCloseNotes(closing.notes || '')
+    setCloseDialogOpen(true)
+  }
+
   const handleCloseClosing = async () => {
-    if (!todayClosing) return
+    if (!closingToClose) return
     setClosingLoading(true)
     try {
-      const res = await offlineFetch(`/api/daily-closings/${todayClosing.id}`, {
+      const res = await offlineFetch(`/api/daily-closings/${closingToClose.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: closeNotes || undefined }),
@@ -248,10 +275,17 @@ export function DailyClosingView() {
         toast({ title: 'Error', description: data.error || 'Error al cerrar', variant: 'destructive' })
         return
       }
-      toast({ title: 'Cierre realizado', description: 'El cierre diario fue completado exitosamente' })
+      const targetName = isOwnerOrAdmin && closingToClose.userName
+        ? closingToClose.userName
+        : 'tu cierre'
+      toast({
+        title: 'Cierre realizado',
+        description: `Se completó ${targetName === 'tu cierre' ? targetName : `el cierre de ${targetName}`} exitosamente.`,
+      })
       setCloseDialogOpen(false)
       setCloseNotes('')
-      fetchTodayClosing()
+      setClosingToClose(null)
+      fetchTodayClosings()
       fetchClosings()
       fetchSummary()
     } catch {
@@ -284,6 +318,14 @@ export function DailyClosingView() {
     })
   }
 
+  const formatTime = (dateStr: string | null) => {
+    if (!dateStr) return '—'
+    return new Date(dateStr).toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   const isToday = selectedDate === new Date().toISOString().split('T')[0]
   const totalPages = Math.ceil(closingsTotal / limit)
 
@@ -303,6 +345,19 @@ export function DailyClosingView() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+      {/* Header: role-aware title */}
+      <div className="flex flex-col gap-1">
+        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <Calculator className="h-5 w-5 text-primary" />
+          {isOwnerOrAdmin ? 'Cierre Diario del Taller' : 'Mi Cierre Diario'}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {isOwnerOrAdmin
+            ? 'Controla los cierres diarios de todos los empleados del taller.'
+            : 'Inicia y cierra tu jornada de trabajo. Tu dueño revisará y controlará tu cierre.'}
+        </p>
+      </div>
+
       {/* Date Selector & Workshop Selector */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -340,38 +395,38 @@ export function DailyClosingView() {
           )}
         </div>
 
-        {/* Closing Action */}
-        {isToday && (
+        {/* Employee: single close action for their own closing */}
+        {!isOwnerOrAdmin && isToday && (
           <div className="flex items-center gap-2">
-            {!todayClosing ? (
-              <Button onClick={handleCreateClosing} disabled={closingLoading}>
+            {!myTodayClosing ? (
+              <Button onClick={handleCreateMyClosing} disabled={closingLoading}>
                 {closingLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <PlayCircle className="mr-2 h-4 w-4" />
                 )}
-                Iniciar Cierre
+                Iniciar Mi Cierre
               </Button>
-            ) : todayClosing.status === 'open' ? (
-              <Button onClick={() => setCloseDialogOpen(true)} disabled={closingLoading}>
+            ) : myTodayClosing.status === 'open' ? (
+              <Button onClick={() => openCloseDialog(myTodayClosing)} disabled={closingLoading}>
                 {closingLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Lock className="mr-2 h-4 w-4" />
                 )}
-                Cerrar Cierre
+                Cerrar Mi Día
               </Button>
             ) : (
               <Badge variant="secondary" className="bg-chart-2/10 text-chart-2 px-3 py-1.5 text-sm">
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                Cierre Realizado — {formatDateTime(todayClosing.closedAt)}
+                Día Cerrado — {formatDateTime(myTodayClosing.closedAt)}
               </Badge>
             )}
           </div>
         )}
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards — role-aware labels */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -380,7 +435,9 @@ export function DailyClosingView() {
                 <ShoppingCart className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Ventas del Día</p>
+                <p className="text-sm text-muted-foreground">
+                  {isOwnerOrAdmin ? 'Ventas del Taller' : 'Mis Ventas'}
+                </p>
                 {summaryLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 ) : (
@@ -401,7 +458,9 @@ export function DailyClosingView() {
                 <Wrench className="h-5 w-5 text-chart-2" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Reparaciones del Día</p>
+                <p className="text-sm text-muted-foreground">
+                  {isOwnerOrAdmin ? 'Reparaciones del Taller' : 'Mis Reparaciones'}
+                </p>
                 {summaryLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 ) : (
@@ -422,7 +481,9 @@ export function DailyClosingView() {
                 <Receipt className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Gastos del Día</p>
+                <p className="text-sm text-muted-foreground">
+                  {isOwnerOrAdmin ? 'Gastos del Taller' : 'Mis Gastos'}
+                </p>
                 {summaryLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 ) : (
@@ -440,7 +501,9 @@ export function DailyClosingView() {
                 <DollarSign className="h-5 w-5 text-chart-4" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Ingreso Neto</p>
+                <p className="text-sm text-muted-foreground">
+                  {isOwnerOrAdmin ? 'Ingreso Neto del Taller' : 'Mi Ingreso Neto'}
+                </p>
                 {summaryLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 ) : (
@@ -456,9 +519,131 @@ export function DailyClosingView() {
 
       <Separator />
 
+      {/* OWNER: today's closings management (controla todo) */}
+      {isOwnerOrAdmin && isToday && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Cierres de Hoy por Empleado
+            </h3>
+            {openClosingsToday.length > 0 && (
+              <Badge variant="secondary" className="bg-warning/10 text-warning">
+                {openClosingsToday.length} pendiente{openClosingsToday.length !== 1 ? 's' : ''} de cerrar
+              </Badge>
+            )}
+          </div>
+
+          {todayClosingsLoading ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-10">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Cargando cierres de hoy...</span>
+              </CardContent>
+            </Card>
+          ) : todayClosings.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                <AlertCircle className="h-10 w-10 text-muted-foreground/50" />
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Ningún empleado ha iniciado su cierre diario hoy.
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Los empleados deben iniciar su cierre desde su vista de &quot;Mi Cierre Diario&quot;.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {todayClosings.map((closing) => (
+                <Card key={closing.id} className={closing.status === 'open' ? 'border-warning/40' : ''}>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{closing.userName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {closing.status === 'open'
+                              ? `Iniciado ${formatTime(closing.createdAt)}`
+                              : `Cerrado ${formatTime(closing.closedAt)}`}
+                          </p>
+                        </div>
+                      </div>
+                      {closing.status === 'open' ? (
+                        <Badge variant="secondary" className="bg-warning/10 text-warning shrink-0">
+                          Abierto
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-chart-2/10 text-chart-2 shrink-0">
+                          Cerrado
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Ventas:</span>
+                        <span className="font-medium">{formatCurrency(closing.salesTotal)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Reparaciones:</span>
+                        <span className="font-medium">{formatCurrency(closing.repairsTotal)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Gastos:</span>
+                        <span className="font-medium">{formatCurrency(closing.expensesTotal)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Neto:</span>
+                        <span className={`font-semibold ${closing.netTotal >= 0 ? '' : 'text-destructive'}`}>
+                          {formatCurrency(closing.netTotal)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {closing.status === 'open' && (
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() => openCloseDialog(closing)}
+                        disabled={closingLoading}
+                      >
+                        {closingLoading && closingToClose?.id === closing.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Lock className="mr-2 h-4 w-4" />
+                        )}
+                        Cerrar Cierre
+                      </Button>
+                    )}
+                    {closing.status === 'closed' && closing.notes && (
+                      <p className="text-xs text-muted-foreground italic border-t pt-2">
+                        &quot;{closing.notes}&quot;
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {todayClosings.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {closedClosingsToday.length} de {todayClosings.length} cierre{todayClosings.length !== 1 ? 's' : ''} completado{todayClosings.length !== 1 ? 's' : ''} hoy.
+              Los totales se recalculan automáticamente al cerrar cada cierre.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Closings History Table */}
       <div>
-        <h3 className="text-base font-semibold mb-3">Historial de Cierres</h3>
+        <h3 className="text-base font-semibold mb-3">
+          {isOwnerOrAdmin ? 'Historial de Cierres del Taller' : 'Mi Historial de Cierres'}
+        </h3>
         <Card>
           <CardContent className="p-0">
             {closingsLoading ? (
@@ -473,12 +658,12 @@ export function DailyClosingView() {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-96 overflow-y-auto">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 bg-background z-10">
                       <TableRow>
                         <TableHead>Fecha</TableHead>
-                        <TableHead>Empleado</TableHead>
+                        {isOwnerOrAdmin && <TableHead>Empleado</TableHead>}
                         <TableHead className="text-right">Ventas</TableHead>
                         <TableHead className="text-right">Reparaciones</TableHead>
                         <TableHead className="text-right">Gastos</TableHead>
@@ -492,7 +677,9 @@ export function DailyClosingView() {
                           <TableCell className="whitespace-nowrap">
                             {formatDate(closing.date)}
                           </TableCell>
-                          <TableCell>{closing.userName}</TableCell>
+                          {isOwnerOrAdmin && (
+                            <TableCell className="whitespace-nowrap">{closing.userName}</TableCell>
+                          )}
                           <TableCell className="text-right whitespace-nowrap">
                             <div>
                               <span className="font-medium">{formatCurrency(closing.salesTotal)}</span>
@@ -560,33 +747,50 @@ export function DailyClosingView() {
         </Card>
       </div>
 
-      {/* Close Closing Dialog */}
+      {/* Close Closing Dialog (used by both employee and owner) */}
       <Dialog open={closeDialogOpen} onOpenChange={setCloseDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Cerrar Cierre Diario</DialogTitle>
+            <DialogTitle>
+              {isOwnerOrAdmin && closingToClose
+                ? `Cerrar Cierre de ${closingToClose.userName}`
+                : 'Cerrar Mi Cierre Diario'}
+            </DialogTitle>
             <DialogDescription>
-              Confirme el cierre del día. Esta acción no se puede deshacer.
+              {isOwnerOrAdmin && closingToClose
+                ? `Confirma el cierre del día de ${closingToClose.userName}. Los totales se recalcularán y el cierre quedará bloqueado.`
+                : 'Confirma el cierre de tu jornada. Esta acción no se puede deshacer.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {/* Summary in dialog */}
-            <div className="rounded-lg border p-3 space-y-2">
-              <p className="text-sm font-medium">Resumen del día</p>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="text-muted-foreground">Ventas:</div>
-                <div className="font-medium text-right">{formatCurrency(summary.salesTotal)} ({summary.salesCount})</div>
-                <div className="text-muted-foreground">Reparaciones:</div>
-                <div className="font-medium text-right">{formatCurrency(summary.repairsTotal)} ({summary.repairsCount})</div>
-                <div className="text-muted-foreground">Gastos:</div>
-                <div className="font-medium text-right">{formatCurrency(summary.expensesTotal)}</div>
-                <Separator className="col-span-2" />
-                <div className="text-muted-foreground font-medium">Ingreso Neto:</div>
-                <div className={`font-bold text-right ${summary.netTotal >= 0 ? '' : 'text-destructive'}`}>
-                  {formatCurrency(summary.netTotal)}
+            {/* Summary of the closing being closed */}
+            {closingToClose && (
+              <div className="rounded-lg border p-3 space-y-2">
+                <p className="text-sm font-medium">
+                  {isOwnerOrAdmin && closingToClose ? `Resumen de ${closingToClose.userName}` : 'Resumen de mi día'}
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-muted-foreground">Ventas:</div>
+                  <div className="font-medium text-right">
+                    {formatCurrency(closingToClose.salesTotal)} ({closingToClose.salesCount})
+                  </div>
+                  <div className="text-muted-foreground">Reparaciones:</div>
+                  <div className="font-medium text-right">
+                    {formatCurrency(closingToClose.repairsTotal)} ({closingToClose.repairsCount})
+                  </div>
+                  <div className="text-muted-foreground">Gastos:</div>
+                  <div className="font-medium text-right">{formatCurrency(closingToClose.expensesTotal)}</div>
+                  <Separator className="col-span-2" />
+                  <div className="text-muted-foreground font-medium">Ingreso Neto:</div>
+                  <div className={`font-bold text-right ${closingToClose.netTotal >= 0 ? '' : 'text-destructive'}`}>
+                    {formatCurrency(closingToClose.netTotal)}
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground italic">
+                  Los totales se recalcularán al confirmar el cierre.
+                </p>
               </div>
-            </div>
+            )}
             <div className="grid gap-2">
               <Label htmlFor="closeNotes">Notas / Observaciones</Label>
               <Textarea
@@ -599,7 +803,7 @@ export function DailyClosingView() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCloseDialogOpen(false)} disabled={closingLoading}>
+            <Button variant="outline" onClick={() => { setCloseDialogOpen(false); setClosingToClose(null) }} disabled={closingLoading}>
               Cancelar
             </Button>
             <Button onClick={handleCloseClosing} disabled={closingLoading}>

@@ -69,23 +69,27 @@ export class PrismaDailyClosingRepository implements DailyClosingRepository {
   }
 
   async create(data: Omit<DailyClosing, 'id' | 'createdAt' | 'updatedAt'>): Promise<DailyClosing> {
-    const plain = data.toPlainObject()
+    // Support both DailyClosing entity instances and plain data objects
+    // (use cases may pass a plain object literal cast to the entity type)
+    const source = data as unknown as { toPlainObject?: () => Record<string, unknown> } & Record<string, unknown>
+    const plain: Record<string, unknown> =
+      typeof source.toPlainObject === 'function' ? source.toPlainObject() : source
     const dailyClosing = await prisma.dailyClosing.create({
       data: {
-        workshopId: plain.workshopId,
-        userId: plain.userId,
-        userName: plain.userName,
-        date: plain.date,
-        salesCount: plain.salesCount,
-        salesTotal: plain.salesTotal,
-        repairsCount: plain.repairsCount,
-        repairsTotal: plain.repairsTotal,
-        expensesTotal: plain.expensesTotal,
-        totalIncome: plain.totalIncome,
-        netTotal: plain.netTotal,
-        notes: plain.notes,
-        status: plain.status,
-        closedAt: plain.closedAt,
+        workshopId: plain.workshopId as string,
+        userId: plain.userId as string,
+        userName: plain.userName as string,
+        date: plain.date as Date,
+        salesCount: plain.salesCount as number,
+        salesTotal: plain.salesTotal as number,
+        repairsCount: plain.repairsCount as number,
+        repairsTotal: plain.repairsTotal as number,
+        expensesTotal: plain.expensesTotal as number,
+        totalIncome: plain.totalIncome as number,
+        netTotal: plain.netTotal as number,
+        notes: (plain.notes as string | null) ?? null,
+        status: (plain.status as string) ?? 'open',
+        closedAt: (plain.closedAt as Date | null) ?? null,
       },
     })
     return DailyClosingMapper.toDomain(dailyClosing)
