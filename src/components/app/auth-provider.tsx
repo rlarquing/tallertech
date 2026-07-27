@@ -203,7 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         {/* Auth Card */}
         <Card className="border-border/50 shadow-xl">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-4 text-center">
             <CardTitle className="text-lg">Bienvenido de vuelta</CardTitle>
             <CardDescription>
               Ingrese sus credenciales para acceder al sistema
