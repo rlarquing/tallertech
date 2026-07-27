@@ -104,7 +104,7 @@ export function SettingsView() {
   const [backingUp, setBackingUp] = useState(false)
   const [restoring, setRestoring] = useState(false)
   const [restoreOpen, setRestoreOpen] = useState(false)
-  const [dbStats, setDbStats] = useState<{ fileSize: number; tables: { name: string; count: number }[] } | null>(null)
+  const [dbStats, setDbStats] = useState<{ fileSize: number; tables: Array<{ name: string; count: number }> } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Export
@@ -141,7 +141,9 @@ export function SettingsView() {
       const res = await offlineFetch('/api/backup/stats')
       if (res.ok) {
         const data = await res.json()
-        setDbStats(data)
+        // API returns tables as Record<string, number> — convert to array for .map()
+        const tables = Object.entries(data.tables || {}).map(([name, count]) => ({ name, count: count as number }))
+        setDbStats({ fileSize: data.fileSize ?? 0, tables })
       }
     } catch {
       // ignore
