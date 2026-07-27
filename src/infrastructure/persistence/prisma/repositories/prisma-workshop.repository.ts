@@ -111,12 +111,17 @@ export class PrismaWorkshopRepository implements WorkshopRepository {
     const memberships = await prisma.workshopUser.findMany({
       where: { userId },
       include: {
-        workshop: true,
+        workshop: {
+          include: {
+            _count: { select: { members: true } },
+          },
+        },
       },
     })
 
     return memberships.map((m) => ({
       ...WorkshopMapper.toDomain(m.workshop).toPlainObject(),
+      _count: m.workshop._count,
       userRole: m.role as 'owner' | 'employee',
     }))
   }

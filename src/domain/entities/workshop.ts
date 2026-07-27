@@ -128,4 +128,5 @@ export interface WorkshopMember {
 
 export interface WorkshopWithRole extends ReturnType<Workshop['toPlainObject']> {
   userRole: 'owner' | 'employee'
+  _count?: { members: number }
 }
