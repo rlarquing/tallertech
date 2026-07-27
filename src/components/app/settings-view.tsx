@@ -282,15 +282,36 @@ export function SettingsView() {
     setValidationErrors({})
     setProfileSaving(true)
     try {
-      if (userName.trim() !== user?.name) {
-        useAppStore.getState().setUser({ ...useAppStore.getState().user!, name: userName.trim() })
+      const body: Record<string, string> = {}
+      if (userName.trim() !== user?.name) body.name = userName.trim()
+      if (currentPassword || newPassword) {
+        body.currentPassword = currentPassword
+        body.newPassword = newPassword
+      }
+      if (Object.keys(body).length === 0) {
+        toast({ title: 'Sin cambios', description: 'No hay nada que actualizar' })
+        setProfileSaving(false)
+        return
+      }
+      const res = await offlineFetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast({ title: 'Error', description: data.error || 'Error al actualizar perfil', variant: 'destructive' })
+        return
+      }
+      if (data.user) {
+        useAppStore.getState().setUser(data.user)
       }
       toast({ title: 'Perfil actualizado', description: 'Sus datos se actualizaron correctamente' })
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch {
-      toast({ title: 'Error', description: 'Error al actualizar perfil', variant: 'destructive' })
+      toast({ title: 'Error', description: 'Error de conexión al actualizar perfil', variant: 'destructive' })
     } finally {
       setProfileSaving(false)
     }
