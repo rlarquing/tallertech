@@ -117,7 +117,7 @@ export class PrismaWorkshopRepository implements WorkshopRepository {
 
     return memberships.map((m) => ({
       ...WorkshopMapper.toDomain(m.workshop).toPlainObject(),
-      userRole: m.role as 'owner' | 'admin' | 'employee',
+      userRole: m.role as 'owner' | 'employee',
     }))
   }
 
@@ -136,7 +136,7 @@ export class PrismaWorkshopRepository implements WorkshopRepository {
       userName: m.user.name,
       userEmail: m.user.email,
       userImage: m.user.image,
-      role: m.role as 'owner' | 'admin' | 'employee',
+      role: m.role as 'owner' | 'employee',
       joinedAt: m.joinedAt,
     }))
   }
@@ -164,7 +164,7 @@ export class PrismaWorkshopRepository implements WorkshopRepository {
       userName: membership.user.name,
       userEmail: membership.user.email,
       userImage: membership.user.image,
-      role: membership.role as 'owner' | 'admin' | 'employee',
+      role: membership.role as 'owner' | 'employee',
       joinedAt: membership.joinedAt,
     }
   }

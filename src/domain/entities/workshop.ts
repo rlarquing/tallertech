@@ -122,10 +122,10 @@ export interface WorkshopMember {
   userName: string
   userEmail: string
   userImage: string | null
-  role: 'owner' | 'admin' | 'employee'
+  role: 'owner' | 'employee'
   joinedAt: Date
 }
 
 export interface WorkshopWithRole extends ReturnType<Workshop['toPlainObject']> {
-  userRole: 'owner' | 'admin' | 'employee'
+  userRole: 'owner' | 'employee'
 }

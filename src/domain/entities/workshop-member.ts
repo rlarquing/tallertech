@@ -3,7 +3,7 @@
  * Represents a user's membership in a workshop.
  */
 
-export type WorkshopRole = 'owner' | 'admin' | 'employee'
+export type WorkshopRole = 'owner' | 'employee'
 
 export interface WorkshopMember {
   id: string
