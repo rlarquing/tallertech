@@ -20,25 +20,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If force reset, delete all existing data in correct order
+    // If force reset, delete all existing data in FK-safe order
+    // Uses raw SQL with per-table error handling so it works even if
+    // some tables don't exist yet (e.g. Turso DB without migrations)
     if (force && userCount > 0) {
-      await db.$transaction([
-        db.dailyClosing.deleteMany(),
-        db.stockMovement.deleteMany(),
-        db.repairPart.deleteMany(),
-        db.repairOrder.deleteMany(),
-        db.saleItem.deleteMany(),
-        db.sale.deleteMany(),
-        db.expense.deleteMany(),
-        db.product.deleteMany(),
-        db.category.deleteMany(),
-        db.supplier.deleteMany(),
-        db.setting.deleteMany(),
-        db.auditLog.deleteMany(),
-        db.workshopUser.deleteMany(),
-        db.workshop.deleteMany(),
-        db.user.deleteMany(),
-      ]);
+      const tables = [
+        'DailyClosing', 'StockMovement', 'RepairPart', 'RepairOrder',
+        'SaleItem', 'Sale', 'Expense', 'Product', 'Category',
+        'Supplier', 'Setting', 'AuditLog', 'WorkshopUser',
+        'Workshop', 'User',
+      ]
+      for (const table of tables) {
+        try { await db.$executeRawUnsafe(`DELETE FROM "${table}"`) }
+        catch { /* table may not exist yet — skip */ }
+      }
     }
 
     // Create default admin user
