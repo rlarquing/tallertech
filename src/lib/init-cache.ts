@@ -2,7 +2,7 @@
 
 import { SyncManagerService } from './sync-manager'
 
-const CACHE_INITIALIZED_KEY = 'tallertech-cache-initialized'
+const CACHE_INITIALIZED_KEY = 'GesTaPlus-cache-initialized'
 
 /**
  * Initialize the offline cache on first successful login.
@@ -22,9 +22,9 @@ export async function initializeOfflineCache(): Promise<void> {
   try {
     await SyncManagerService.getInstance().refreshAllData()
     sessionStorage.setItem(CACHE_INITIALIZED_KEY, 'true')
-    console.log('[TallerTech] Offline cache initialized successfully')
+    console.log('[GesTaPlus] Offline cache initialized successfully')
   } catch (error) {
-    console.error('[TallerTech] Failed to initialize offline cache:', error)
+    console.error('[GesTaPlus] Failed to initialize offline cache:', error)
   }
 
   // Avoid unused variable warning

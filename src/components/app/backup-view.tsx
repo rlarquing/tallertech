@@ -238,7 +238,7 @@ export function BackupView() {
       a.href = url
       const contentDisposition = res.headers.get('content-disposition')
       const filenameMatch = contentDisposition?.match(/filename="?(.+?)"?$/)
-      a.download = filenameMatch?.[1] || `TallerTech_backup_${new Date().toISOString().split('T')[0]}.${backupFormat === 'json' ? 'json' : 'db'}`
+      a.download = filenameMatch?.[1] || `GesTaPlus_backup_${new Date().toISOString().split('T')[0]}.${backupFormat === 'json' ? 'json' : 'db'}`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -275,7 +275,7 @@ export function BackupView() {
         // Basic client-side validation
         const errors: string[] = []
         if (!backupData.version) errors.push('Versión no especificada')
-        if (backupData.app !== 'TallerTech') errors.push('No es un backup de TallerTech')
+        if (backupData.app !== 'GesTaPlus') errors.push('No es un backup de GesTaPlus')
         if (!backupData.data) errors.push('No se encontraron datos')
         if (!backupData.checksum) errors.push('Checksum faltante')
 

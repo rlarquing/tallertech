@@ -5,7 +5,7 @@
 
 import { createHash } from 'crypto'
 
-const SECRET = 'tallertech-secret-key-2024'
+const SECRET = 'GesTaPlus-secret-key-2024'
 
 export class PasswordHasher {
   /**

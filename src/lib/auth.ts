@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { createHash } from 'crypto';
 
-const SESSION_COOKIE = 'tallertech_session';
-const SECRET = 'tallertech-secret-key-2024';
+const SESSION_COOKIE = 'GesTaPlus_session';
+const SECRET = 'GesTaPlus-secret-key-2024';
 
 export function hashPassword(password: string): string {
   return createHash('sha256').update(password + SECRET).digest('hex');

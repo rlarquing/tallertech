@@ -20,7 +20,7 @@ function getExportMetadata(format: string, entity: string) {
   }
   const entityLabel = entityLabels[entity] || entity
   const dateStr = new Date().toISOString().split('T')[0]
-  const filename = `TallerTech_${entityLabel}_${dateStr}`
+  const filename = `GesTaPlus_${entityLabel}_${dateStr}`
 
   const contentTypes: Record<string, string> = {
     csv: 'text/csv; charset=utf-8',

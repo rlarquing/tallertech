@@ -16,10 +16,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TallerTech - Sistema de Gestión para Talleres",
-  description: "Sistema de gestión integral para talleres de reparación de teléfonos celulares. Inventario, ventas, reparaciones y más.",
-  keywords: ["TallerTech", "taller", "reparación", "celulares", "gestión", "inventario"],
-  authors: [{ name: "TallerTech" }],
+  title: "GesTaPlus - Gestión inteligente para tu taller",
+  description: "Sistema de gestión integral para talleres de reparación. Inventario, ventas, reparaciones, empleados y más.",
+  keywords: ["GesTaPlus", "taller", "reparación", "gestión", "inventario", "taller mecánico"],
+  authors: [{ name: "GesTaPlus" }],
   manifest: "/manifest.json",
   icons: {
     icon: "/icon-192.png",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "TallerTech",
+    title: "GesTaPlus",
   },
 };
 

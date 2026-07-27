@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Form fields (pre-filled with demo creds in development)
   const isDev = process.env.NODE_ENV === 'development'
-  const [email, setEmail] = useState(isDev ? 'admin@tallertech.com' : '')
+  const [email, setEmail] = useState(isDev ? 'admin@GesTaPlus.app' : '')
   const [password, setPassword] = useState(isDev ? 'admin123' : '')
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
@@ -156,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           <div className="relative">
             <Image
               src="/logo-generated.png"
-              alt="TallerTech"
+              alt="GesTaPlus"
               width={64}
               height={64}
               className="rounded-2xl shadow-lg"
@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           <div className="relative">
             <Image
               src="/logo-generated.png"
-              alt="TallerTech"
+              alt="GesTaPlus"
               width={64}
               height={64}
               className="rounded-2xl shadow-lg shadow-primary/25"
@@ -193,10 +193,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              TallerTech
+              GesTaPlus
             </h1>
             <p className="text-sm text-muted-foreground">
-              Sistema de Gestión para Talleres
+              Gestión inteligente para tu taller
             </p>
           </div>
         </div>
@@ -275,7 +275,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          TallerTech © {new Date().getFullYear()} — Sistema de Gestión
+          GesTaPlus © {new Date().getFullYear()} — Gestión inteligente para tu taller
         </p>
       </div>
     </div>

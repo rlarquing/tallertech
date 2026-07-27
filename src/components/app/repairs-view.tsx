@@ -462,7 +462,7 @@ export function RepairsView() {
   // Status change
   // ============================================================
 
-  const changeStatus = async (repairId: string, newStatus: string) => {
+  const chanGesTaPlustus = async (repairId: string, newStatus: string) => {
     try {
       const res = await offlineFetch(`/api/repairs/${repairId}`, {
         method: 'PUT',
@@ -566,7 +566,7 @@ export function RepairsView() {
           .total { font-size: 1.2em; font-weight: bold; }
         </style></head>
         <body>
-          <h2>TallerTech</h2>
+          <h2>GesTaPlus</h2>
           <p style="text-align:center;">Orden de Reparación</p>
           <div class="line"></div>
           <div class="row"><span>Código:</span><span>${repair.code}</span></div>
@@ -737,7 +737,7 @@ export function RepairsView() {
                                 <DropdownMenuItem className="text-primary" onClick={() => {
                                   const currentIdx = statusWorkflow.indexOf(repair.status)
                                   if (currentIdx < statusWorkflow.length - 1) {
-                                    changeStatus(repair.id, statusWorkflow[currentIdx + 1])
+                                    chanGesTaPlustus(repair.id, statusWorkflow[currentIdx + 1])
                                   }
                                 }}>
                                   <ArrowRight className="mr-2 size-4" /> Avanzar Estado
@@ -833,7 +833,7 @@ export function RepairsView() {
                         <DropdownMenuItem className="text-primary" onClick={() => {
                           const currentIdx = statusWorkflow.indexOf(repair.status)
                           if (currentIdx < statusWorkflow.length - 1) {
-                            changeStatus(repair.id, statusWorkflow[currentIdx + 1])
+                            chanGesTaPlustus(repair.id, statusWorkflow[currentIdx + 1])
                           }
                         }}>
                           <ArrowRight className="mr-2 size-4" /> Avanzar

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Create default admin user
     const admin = await db.user.create({
       data: {
-        email: 'admin@tallertech.com',
+        email: 'admin@GesTaPlus.app',
         name: 'Administrador',
         password: hashPassword('admin123'),
         role: 'admin',
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     const employee = await db.user.create({
       data: {
-        email: 'empleado@tallertech.com',
+        email: 'empleado@GesTaPlus.app',
         name: 'Carlos García',
         password: hashPassword('empleado123'),
         role: 'employee',
@@ -63,12 +63,12 @@ export async function POST(request: NextRequest) {
     // Create default workshop
     const workshop = await db.workshop.create({
       data: {
-        name: 'TallerTech Principal',
-        slug: 'tallertech-principal',
+        name: 'GesTaPlus Principal',
+        slug: 'GesTaPlus-principal',
         description: 'Taller principal de reparación de celulares',
         address: 'Av. Siempre Viva 742, Buenos Aires',
         phone: '+54 11 5555-9999',
-        email: 'info@tallertech.com',
+        email: 'info@gesta.app',
         currency: 'ARS',
         timezone: 'America/Havana',
       },
@@ -538,10 +538,10 @@ export async function POST(request: NextRequest) {
     // Create default settings
     await db.setting.createMany({
       data: [
-        { workshopId, key: 'shop_name', value: 'TallerTech' },
+        { workshopId, key: 'shop_name', value: 'GesTaPlus' },
         { workshopId, key: 'shop_phone', value: '+54 11 5555-9999' },
         { workshopId, key: 'shop_address', value: 'Av. Siempre Viva 742, Buenos Aires' },
-        { workshopId, key: 'shop_email', value: 'info@tallertech.com' },
+        { workshopId, key: 'shop_email', value: 'info@gesta.app' },
         { workshopId, key: 'currency', value: 'ARS' },
         { workshopId, key: 'tax_rate', value: '21' },
         { workshopId, key: 'receipt_footer', value: 'Gracias por su compra!' },

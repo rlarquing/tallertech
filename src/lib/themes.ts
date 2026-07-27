@@ -502,7 +502,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
 export const defaultTheme: ThemeName = 'taller-clasico'
 
 /** LocalStorage key for persisting the color theme */
-export const COLOR_THEME_STORAGE_KEY = 'tallertech-color-theme'
+export const COLOR_THEME_STORAGE_KEY = 'gesta-color-theme'
 
 /** Settings API key for persisting the color theme on the server */
 export const COLOR_THEME_SETTINGS_KEY = 'color_theme'

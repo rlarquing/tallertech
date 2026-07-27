@@ -12,7 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
-const DISMISS_KEY = 'tallertech-pwa-dismissed'
+const DISMISS_KEY = 'GesTaPlus-pwa-dismissed'
 
 export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
@@ -97,7 +97,7 @@ export function PwaInstallPrompt() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-foreground">
-                    Instalar TallerTech
+                    Instalar GesTaPlus
                   </h3>
                   <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
                     Instala la app en tu dispositivo para usarla sin conexión y acceso rápido.

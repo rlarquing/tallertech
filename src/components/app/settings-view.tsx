@@ -331,7 +331,7 @@ export function SettingsView() {
       a.href = url
       const contentDisposition = res.headers.get('content-disposition')
       const filenameMatch = contentDisposition?.match(/filename="?(.+?)"?$/)
-      a.download = filenameMatch?.[1] || `TallerTech_backup_${new Date().toISOString().split('T')[0]}.json`
+      a.download = filenameMatch?.[1] || `GesTaPlus_backup_${new Date().toISOString().split('T')[0]}.json`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -406,7 +406,7 @@ export function SettingsView() {
       a.href = url
       const contentDisposition = res.headers.get('content-disposition')
       const filenameMatch = contentDisposition?.match(/filename="?(.+?)"?$/)
-      a.download = filenameMatch?.[1] || `TallerTech_${exportEntity}_${new Date().toISOString().split('T')[0]}.${exportFormat}`
+      a.download = filenameMatch?.[1] || `GesTaPlus_${exportEntity}_${new Date().toISOString().split('T')[0]}.${exportFormat}`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -473,7 +473,7 @@ export function SettingsView() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="shopName">Nombre del Negocio</Label>
-                    <Input id="shopName" value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="TallerTech" />
+                    <Input id="shopName" value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="GesTaPlus" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="shopLogo">Texto Logo</Label>
@@ -487,7 +487,7 @@ export function SettingsView() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="shopEmail">Email</Label>
-                    <Input id="shopEmail" type="email" value={shopEmail} onChange={(e) => { setShopEmail(e.target.value); setValidationErrors((prev) => { const { shop_email, ...rest } = prev; return rest }) }} placeholder="info@tallertech.com" />
+                    <Input id="shopEmail" type="email" value={shopEmail} onChange={(e) => { setShopEmail(e.target.value); setValidationErrors((prev) => { const { shop_email, ...rest } = prev; return rest }) }} placeholder="info@gesta.app" />
                     {validationErrors.shop_email && (
                       <p className="text-xs text-destructive">{validationErrors.shop_email}</p>
                     )}

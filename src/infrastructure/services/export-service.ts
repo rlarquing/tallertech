@@ -204,7 +204,7 @@ async function generatePDF(
     doc
       .fontSize(18)
       .font('Helvetica-Bold')
-    doc.text(`TallerTech - Reporte de ${getEntityLabel(entity)}`, { align: 'center' })
+    doc.text(`GesTaPlus - Reporte de ${getEntityLabel(entity)}`, { align: 'center' })
     doc
       .fontSize(10)
       .font('Helvetica')
@@ -331,7 +331,7 @@ export async function exportData(params: ExportParams): Promise<{
       return {
         buffer: Buffer.from(csv, 'utf-8'),
         contentType: 'text/csv; charset=utf-8',
-        filename: `TallerTech_${entityLabel}_${dateStr}.csv`,
+        filename: `GesTaPlus_${entityLabel}_${dateStr}.csv`,
       }
     }
     case 'xlsx': {
@@ -340,7 +340,7 @@ export async function exportData(params: ExportParams): Promise<{
         buffer,
         contentType:
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        filename: `TallerTech_${entityLabel}_${dateStr}.xlsx`,
+        filename: `GesTaPlus_${entityLabel}_${dateStr}.xlsx`,
       }
     }
     case 'pdf': {
@@ -348,7 +348,7 @@ export async function exportData(params: ExportParams): Promise<{
       return {
         buffer,
         contentType: 'application/pdf',
-        filename: `TallerTech_${entityLabel}_${dateStr}.pdf`,
+        filename: `GesTaPlus_${entityLabel}_${dateStr}.pdf`,
       }
     }
     default:

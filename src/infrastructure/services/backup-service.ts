@@ -130,7 +130,7 @@ export class BackupService {
       }
     }
     // Remove from settings
-    const key = `backup_${filename.replace('tallertech_backup_', '').replace(/\.(db|json)$/, '')}`
+    const key = `backup_${filename.replace('GesTaPlus_backup_', '').replace(/\.(db|json)$/, '')}`
     await prisma.setting.deleteMany({ where: { key } })
     return true
   }
@@ -184,7 +184,7 @@ export class BackupService {
     }
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const filename = `tallertech_backup_${timestamp}.db`
+    const filename = `GesTaPlus_backup_${timestamp}.db`
     const backupPath = path.join(BACKUP_DIR, filename)
 
     await copyFile(DB_PATH, backupPath)
@@ -254,7 +254,7 @@ export class BackupService {
     path: string
   }> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const filename = `tallertech_backup_${timestamp}.json`
+    const filename = `GesTaPlus_backup_${timestamp}.json`
 
     const data = await this.exportAllData()
     const jsonStr = JSON.stringify(data, null, 2)

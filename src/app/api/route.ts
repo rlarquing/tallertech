@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  return NextResponse.json({ message: 'TallerTech API v2 - Clean Architecture' })
+  return NextResponse.json({ message: 'GesTaPlus API - Gestión inteligente para tu taller' })
 }

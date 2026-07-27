@@ -26,7 +26,7 @@ interface RepairPartOffline {
   total: number
 }
 
-interface TallerTechDB extends DBSchema {
+interface GesTaPlusDB extends DBSchema {
   products: {
     key: string
     value: {
@@ -166,15 +166,15 @@ interface TallerTechDB extends DBSchema {
 // Database Singleton
 // ============================================================
 
-const DB_NAME = 'tallertech-offline'
+const DB_NAME = 'GesTaPlus-offline'
 const DB_VERSION = 1
 
-let dbInstance: IDBPDatabase<TallerTechDB> | null = null
+let dbInstance: IDBPDatabase<GesTaPlusDB> | null = null
 
-export async function getDB(): Promise<IDBPDatabase<TallerTechDB>> {
+export async function getDB(): Promise<IDBPDatabase<GesTaPlusDB>> {
   if (dbInstance) return dbInstance
 
-  dbInstance = await openDB<TallerTechDB>(DB_NAME, DB_VERSION, {
+  dbInstance = await openDB<GesTaPlusDB>(DB_NAME, DB_VERSION, {
     upgrade(db) {
       // Products store
       if (!db.objectStoreNames.contains('products')) {
@@ -233,7 +233,7 @@ export async function getDB(): Promise<IDBPDatabase<TallerTechDB>> {
 // Products
 // ============================================================
 
-export async function cacheProducts(products: TallerTechDB['products']['value'][]): Promise<void> {
+export async function cacheProducts(products: GesTaPlusDB['products']['value'][]): Promise<void> {
   const db = await getDB()
   const tx = db.transaction('products', 'readwrite')
   const store = tx.objectStore('products')
@@ -247,7 +247,7 @@ export async function cacheProducts(products: TallerTechDB['products']['value'][
   await tx.done
 }
 
-export async function getCachedProducts(): Promise<TallerTechDB['products']['value'][]> {
+export async function getCachedProducts(): Promise<GesTaPlusDB['products']['value'][]> {
   const db = await getDB()
   return db.getAll('products')
 }
@@ -256,7 +256,7 @@ export async function getCachedProducts(): Promise<TallerTechDB['products']['val
 // Sales
 // ============================================================
 
-export async function cacheSales(sales: TallerTechDB['sales']['value'][]): Promise<void> {
+export async function cacheSales(sales: GesTaPlusDB['sales']['value'][]): Promise<void> {
   const db = await getDB()
   const tx = db.transaction('sales', 'readwrite')
   const store = tx.objectStore('sales')
@@ -269,7 +269,7 @@ export async function cacheSales(sales: TallerTechDB['sales']['value'][]): Promi
   await tx.done
 }
 
-export async function getCachedSales(): Promise<TallerTechDB['sales']['value'][]> {
+export async function getCachedSales(): Promise<GesTaPlusDB['sales']['value'][]> {
   const db = await getDB()
   return db.getAll('sales')
 }
@@ -278,7 +278,7 @@ export async function getCachedSales(): Promise<TallerTechDB['sales']['value'][]
 // Repair Orders
 // ============================================================
 
-export async function cacheRepairOrders(repairs: TallerTechDB['repairOrders']['value'][]): Promise<void> {
+export async function cacheRepairOrders(repairs: GesTaPlusDB['repairOrders']['value'][]): Promise<void> {
   const db = await getDB()
   const tx = db.transaction('repairOrders', 'readwrite')
   const store = tx.objectStore('repairOrders')
@@ -291,7 +291,7 @@ export async function cacheRepairOrders(repairs: TallerTechDB['repairOrders']['v
   await tx.done
 }
 
-export async function getCachedRepairOrders(): Promise<TallerTechDB['repairOrders']['value'][]> {
+export async function getCachedRepairOrders(): Promise<GesTaPlusDB['repairOrders']['value'][]> {
   const db = await getDB()
   return db.getAll('repairOrders')
 }
@@ -300,7 +300,7 @@ export async function getCachedRepairOrders(): Promise<TallerTechDB['repairOrder
 // Categories
 // ============================================================
 
-export async function cacheCategories(categories: TallerTechDB['categories']['value'][]): Promise<void> {
+export async function cacheCategories(categories: GesTaPlusDB['categories']['value'][]): Promise<void> {
   const db = await getDB()
   const tx = db.transaction('categories', 'readwrite')
   const store = tx.objectStore('categories')
@@ -313,7 +313,7 @@ export async function cacheCategories(categories: TallerTechDB['categories']['va
   await tx.done
 }
 
-export async function getCachedCategories(): Promise<TallerTechDB['categories']['value'][]> {
+export async function getCachedCategories(): Promise<GesTaPlusDB['categories']['value'][]> {
   const db = await getDB()
   return db.getAll('categories')
 }
@@ -322,7 +322,7 @@ export async function getCachedCategories(): Promise<TallerTechDB['categories'][
 // Suppliers
 // ============================================================
 
-export async function cacheSuppliers(suppliers: TallerTechDB['suppliers']['value'][]): Promise<void> {
+export async function cacheSuppliers(suppliers: GesTaPlusDB['suppliers']['value'][]): Promise<void> {
   const db = await getDB()
   const tx = db.transaction('suppliers', 'readwrite')
   const store = tx.objectStore('suppliers')
@@ -335,7 +335,7 @@ export async function cacheSuppliers(suppliers: TallerTechDB['suppliers']['value
   await tx.done
 }
 
-export async function getCachedSuppliers(): Promise<TallerTechDB['suppliers']['value'][]> {
+export async function getCachedSuppliers(): Promise<GesTaPlusDB['suppliers']['value'][]> {
   const db = await getDB()
   return db.getAll('suppliers')
 }
@@ -344,7 +344,7 @@ export async function getCachedSuppliers(): Promise<TallerTechDB['suppliers']['v
 // Expenses
 // ============================================================
 
-export async function cacheExpenses(expenses: TallerTechDB['expenses']['value'][]): Promise<void> {
+export async function cacheExpenses(expenses: GesTaPlusDB['expenses']['value'][]): Promise<void> {
   const db = await getDB()
   const tx = db.transaction('expenses', 'readwrite')
   const store = tx.objectStore('expenses')
@@ -357,7 +357,7 @@ export async function cacheExpenses(expenses: TallerTechDB['expenses']['value'][
   await tx.done
 }
 
-export async function getCachedExpenses(): Promise<TallerTechDB['expenses']['value'][]> {
+export async function getCachedExpenses(): Promise<GesTaPlusDB['expenses']['value'][]> {
   const db = await getDB()
   return db.getAll('expenses')
 }
@@ -366,12 +366,12 @@ export async function getCachedExpenses(): Promise<TallerTechDB['expenses']['val
 // Dashboard Cache
 // ============================================================
 
-export async function cacheDashboardData(data: TallerTechDB['dashboardCache']['value']): Promise<void> {
+export async function cacheDashboardData(data: GesTaPlusDB['dashboardCache']['value']): Promise<void> {
   const db = await getDB()
   await db.put('dashboardCache', data)
 }
 
-export async function getCachedDashboardData(): Promise<TallerTechDB['dashboardCache']['value'] | null> {
+export async function getCachedDashboardData(): Promise<GesTaPlusDB['dashboardCache']['value'] | null> {
   const db = await getDB()
   return (await db.get('dashboardCache', 'main')) ?? null
 }
@@ -388,7 +388,7 @@ export async function addToSyncQueue(
 ): Promise<string> {
   const db = await getDB()
   const id = `sync-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-  const item: TallerTechDB['syncQueue']['value'] = {
+  const item: GesTaPlusDB['syncQueue']['value'] = {
     id,
     action,
     endpoint,
@@ -402,7 +402,7 @@ export async function addToSyncQueue(
   return id
 }
 
-export async function getSyncQueue(): Promise<TallerTechDB['syncQueue']['value'][]> {
+export async function getSyncQueue(): Promise<GesTaPlusDB['syncQueue']['value'][]> {
   const db = await getDB()
   return db.getAll('syncQueue')
 }

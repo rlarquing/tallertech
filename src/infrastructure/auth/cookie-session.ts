@@ -5,7 +5,7 @@
 
 import { cookies } from 'next/headers'
 
-const SESSION_COOKIE = 'tallertech_session'
+const SESSION_COOKIE = 'GesTaPlus_session'
 
 export interface SessionUser {
   id: string

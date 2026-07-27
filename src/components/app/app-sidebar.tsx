@@ -190,16 +190,16 @@ export function AppSidebar() {
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden">
                 <Image
                   src="/logo-small.png"
-                  alt="TallerTech"
+                  alt="GesTaPlus"
                   width={32}
                   height={32}
                   className="size-8 rounded-lg object-cover"
                 />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-bold">TallerTech</span>
+                <span className="truncate font-bold">GesTaPlus</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  Sistema de Gestión
+                  Gestión inteligente para tu taller
                 </span>
               </div>
             </SidebarMenuButton>

@@ -49,14 +49,14 @@ export class BackupController {
         return ResponsePresenter.binary(
           buffer,
           'application/json',
-          `TallerTech_backup_${dateStr}.json`,
+          `GesTaPlus_backup_${dateStr}.json`,
         )
       }
 
       return ResponsePresenter.binary(
         buffer,
         'application/x-sqlite3',
-        `TallerTech_backup_${dateStr}.db`,
+        `GesTaPlus_backup_${dateStr}.db`,
       )
     } catch (error) {
       return ResponsePresenter.error(error)

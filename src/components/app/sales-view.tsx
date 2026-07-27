@@ -278,7 +278,7 @@ export function SalesView() {
           .total { font-size: 1.2em; font-weight: bold; }
         </style></head>
         <body>
-          <h2>TallerTech</h2>
+          <h2>GesTaPlus</h2>
           <p style="text-align:center;">Comprobante de Venta</p>
           <div class="line"></div>
           <div class="row"><span>Código:</span><span>${sale.code}</span></div>

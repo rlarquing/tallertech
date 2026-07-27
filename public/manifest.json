@@ -1,6 +1,6 @@
 {
-  "name": "TallerTech - Sistema de Gestión",
-  "short_name": "TallerTech",
+  "name": "GesTaPlus - Gestión inteligente para tu taller",
+  "short_name": "GesTaPlus",
   "description": "Sistema de gestión para talleres de reparación de celulares",
   "start_url": "/",
   "display": "standalone",
