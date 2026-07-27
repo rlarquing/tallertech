@@ -37,7 +37,7 @@ export class GetWorkshopUseCase {
     // 4. Return with role
     return {
       ...workshop.toPlainObject(),
-      userRole: role as 'owner' | 'admin' | 'employee',
+      userRole: role as 'owner' | 'employee',
     }
   }
 }

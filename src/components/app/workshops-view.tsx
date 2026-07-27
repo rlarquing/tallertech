@@ -911,7 +911,6 @@ export function WorkshopsView() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="owner">Dueño</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
                       <SelectItem value="employee">Empleado</SelectItem>
                     </SelectContent>
                   </Select>
@@ -1002,7 +1001,6 @@ export function WorkshopsView() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="owner">Dueño</SelectItem>
-                                  <SelectItem value="admin">Administrador</SelectItem>
                                   <SelectItem value="employee">Empleado</SelectItem>
                                 </SelectContent>
                               </Select>

@@ -290,13 +290,13 @@ export interface AddWorkshopMemberRequest {
   workshopId: string
   userId?: string
   email?: string
-  role: 'owner' | 'admin' | 'employee'
+  role: 'owner' | 'employee'
 }
 
 export interface UpdateWorkshopMemberRequest {
   workshopId: string
   userId: string
-  role: 'owner' | 'admin' | 'employee'
+  role: 'owner' | 'employee'
 }
 
 export interface WorkshopFilters extends PaginationParams {

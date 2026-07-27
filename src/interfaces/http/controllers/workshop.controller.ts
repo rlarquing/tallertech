@@ -16,14 +16,14 @@ const useCases = UseCaseContainer.getInstance()
 const addMemberSchema = z.object({
   email: z.string({ message: 'El email es requerido' })
     .email({ message: 'Formato de email inválido' }),
-  role: z.enum(['owner', 'admin', 'employee'], {
+  role: z.enum(['owner', 'employee'], {
     message: 'Rol inválido',
   }),
 })
 
 // Schema for updating a workshop member role
 const updateMemberSchema = z.object({
-  role: z.enum(['owner', 'admin', 'employee'], {
+  role: z.enum(['owner', 'employee'], {
     message: 'Rol inválido',
   }),
 })
