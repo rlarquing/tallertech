@@ -77,6 +77,7 @@ interface CreateEmployeeForm {
   password: string
   role: string
   workshopId: string
+  isSystemAdmin: boolean
 }
 
 interface EditEmployeeForm {
@@ -91,6 +92,7 @@ const emptyCreateForm: CreateEmployeeForm = {
   password: '',
   role: 'employee',
   workshopId: '',
+  isSystemAdmin: false,
 }
 
 const roleLabels: Record<string, string> = {
@@ -262,6 +264,7 @@ export function EmployeesView() {
           password: createForm.password,
           role: createForm.role,
           workshopId: targetWorkshopId,
+          isSystemAdmin: createForm.isSystemAdmin,
         }),
       })
       const data = await res.json()
@@ -571,6 +574,7 @@ export function EmployeesView() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="owner">Dueño</SelectItem>
                             <SelectItem value="admin">Administrador</SelectItem>
                             <SelectItem value="employee">Empleado</SelectItem>
                           </SelectContent>
@@ -723,17 +727,46 @@ export function EmployeesView() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="create-role">Rol</Label>
+                <Label htmlFor="create-role">Rol en el taller</Label>
                 <Select value={createForm.role} onValueChange={(v) => setCreateForm({ ...createForm, role: v })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="owner">Dueño</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                     <SelectItem value="employee">Empleado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {user?.role === 'admin' && (
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Shield className="h-5 w-5 text-primary shrink-0" />
+                  <div className="flex-1">
+                    <label className="text-sm font-medium leading-none cursor-pointer" htmlFor="create-sysadmin">
+                      Administrador del Sistema
+                    </label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Acceso completo a toda la aplicación. Solo visible para admins del sistema.
+                    </p>
+                  </div>
+                  <button
+                    id="create-sysadmin"
+                    type="button"
+                    role="switch"
+                    aria-checked={createForm.isSystemAdmin}
+                    onClick={() => setCreateForm({ ...createForm, isSystemAdmin: !createForm.isSystemAdmin })}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      createForm.isSystemAdmin ? 'bg-primary' : 'bg-input'
+                    }`}
+                  >
+                    <span className={`pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                      createForm.isSystemAdmin ? 'translate-x-4' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)} disabled={creating}>
@@ -890,6 +923,7 @@ export function EmployeesView() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="owner">Dueño</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                     <SelectItem value="employee">Empleado</SelectItem>
                   </SelectContent>

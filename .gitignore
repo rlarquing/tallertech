@@ -56,6 +56,11 @@ server.log
 # Skills directory
 /skills/
 
+# Agent tools
+.agents/
+.atl/
+knowledge.md
+
 # Database
 /db/
 /tallertech/

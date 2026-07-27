@@ -130,6 +130,9 @@ export function AppShell() {
     useAppStore.getState().setUser(null)
   }
 
+  const currentWorkshop = workshops.find((w) => w.id === currentWorkshopId)
+  const effectiveRole = (user?.role === 'admin' ? 'admin' : (currentWorkshop?.role || user?.role || 'employee')) as 'owner' | 'admin' | 'employee'
+
   const userInitials = user?.name
     ? user.name
         .split(' ')
@@ -176,32 +179,35 @@ export function AppShell() {
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('workshops')}>
                     🏢 Mis Talleres
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('employees')}>
-                    👥 Empleados
+                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('workshop-bi')}>
+                    📈 BI Taller
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('daily-closing')}>
                     📋 Cierre Diario
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('workshop-bi')}>
-                    📈 BI Taller
-                  </DropdownMenuItem>
+                  {effectiveRole !== 'employee' && (
+                    <>
+                      <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('employees')}>
+                        👥 Empleados
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('reports')}>
+                        📈 Reportes
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('expenses')}>
+                        💵 Gastos
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('audit')}>
+                        🔍 Auditoría
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('backup')}>
+                        💾 Backup
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('reports')}>
-                    📈 Reportes
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('expenses')}>
-                    💵 Gastos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('audit')}>
-                    🔍 Auditoría
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('backup')}>
-                    💾 Backup
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('settings')}>
                     ⚙️ Configuración
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => useAppStore.getState().setCurrentView('categories')}>
                     🏷️ Categorías
                   </DropdownMenuItem>

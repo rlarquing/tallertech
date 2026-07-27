@@ -16,9 +16,6 @@ export async function PUT(
     if ('status' in authResult) return authResult
 
     const currentUser = authResult
-    if (currentUser.role !== 'owner' && currentUser.role !== 'admin') {
-      return ResponsePresenter.error({ message: 'Solo el propietario o administrador puede editar empleados', code: 'AUTHORIZATION_ERROR' })
-    }
 
     const { id } = await params
     const body = await request.json()
@@ -30,14 +27,17 @@ export async function PUT(
       return ResponsePresenter.error({ message: 'Usuario no encontrado', code: 'ENTITY_NOT_FOUND' })
     }
 
-    // 3. If workshopId provided, verify caller has admin/owner access
-    if (workshopId) {
+    // 3. Check authorization: system admin OR workshop admin/owner
+    const isSystemAdmin = currentUser.role === 'admin'
+    if (workshopId && !isSystemAdmin) {
       const membership = await prisma.workshopUser.findUnique({
         where: { workshopId_userId: { workshopId, userId: currentUser.id } },
       })
       if (!membership || (membership.role !== 'owner' && membership.role !== 'admin')) {
         return ResponsePresenter.error({ message: 'No tiene permisos para editar empleados en este taller', code: 'AUTHORIZATION_ERROR' })
       }
+    } else if (!workshopId && !isSystemAdmin) {
+      return ResponsePresenter.error({ message: 'Debe especificar un taller o ser administrador del sistema', code: 'AUTHORIZATION_ERROR' })
     }
 
     // 4. Check email uniqueness if changing email

@@ -49,11 +49,15 @@ import { offlineFetch } from '@/lib/offline-fetch'
 import { useTheme } from 'next-themes'
 import { ThemeSwitcher } from '@/components/app/theme-switcher'
 
+type SidebarRole = 'owner' | 'admin' | 'employee'
+
 interface NavItem {
   id: ViewType
   label: string
   icon: React.ElementType
   subItems?: { id: ViewType; label: string }[]
+  /** If set, only users with one of these roles see the item. Admins always see everything. */
+  allowedRoles?: SidebarRole[]
 }
 
 const navItems: NavItem[] = [
@@ -100,6 +104,7 @@ const navItems: NavItem[] = [
     id: 'employees',
     label: 'Empleados',
     icon: Users,
+    allowedRoles: ['owner', 'admin'],
   },
   {
     id: 'daily-closing',
@@ -110,21 +115,25 @@ const navItems: NavItem[] = [
     id: 'reports',
     label: 'Reportes',
     icon: BarChart3,
+    allowedRoles: ['owner', 'admin'],
   },
   {
     id: 'expenses',
     label: 'Gastos',
     icon: Receipt,
+    allowedRoles: ['owner', 'admin'],
   },
   {
     id: 'audit',
     label: 'Auditoría',
     icon: Shield,
+    allowedRoles: ['owner', 'admin'],
   },
   {
     id: 'backup',
     label: 'Backup',
     icon: Database,
+    allowedRoles: ['owner', 'admin'],
   },
   {
     id: 'settings',
@@ -133,9 +142,21 @@ const navItems: NavItem[] = [
   },
 ]
 
+function getEffectiveRole(userRole: string | undefined, workshopRole: string | undefined): SidebarRole {
+  // Global admin sees everything regardless of workshop role
+  if (userRole === 'admin') return 'admin'
+  return (workshopRole as SidebarRole) || (userRole as SidebarRole) || 'employee'
+}
+
 export function AppSidebar() {
-  const { currentView, setCurrentView, user } = useAppStore()
+  const { currentView, setCurrentView, user, currentWorkshopId, workshops } = useAppStore()
   const { resolvedTheme, setTheme } = useTheme()
+  const currentWorkshop = workshops.find((w) => w.id === currentWorkshopId)
+  const effectiveRole = getEffectiveRole(user?.role, currentWorkshop?.role)
+
+  const visibleItems = navItems.filter(
+    (item) => !item.allowedRoles || item.allowedRoles.includes(effectiveRole),
+  )
 
   const handleLogout = async () => {
     try {
@@ -196,7 +217,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => {
+              {visibleItems.map((item) => {
                 const isActive =
                   currentView === item.id ||
                   item.subItems?.some((sub) => sub.id === currentView)

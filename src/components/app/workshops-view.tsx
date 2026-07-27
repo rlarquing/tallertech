@@ -205,7 +205,7 @@ export function WorkshopsView() {
             id: w.id,
             name: w.name,
             slug: w.slug,
-            role: (w as { role?: string }).role || 'employee',
+            role: String((w as { userRole?: string }).userRole ?? (w as { role?: string }).role ?? 'employee'),
             active: w.active,
           }))
         )
@@ -910,6 +910,7 @@ export function WorkshopsView() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="owner">Dueño</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
                       <SelectItem value="employee">Empleado</SelectItem>
                     </SelectContent>
@@ -1000,6 +1001,7 @@ export function WorkshopsView() {
                                   )}
                                 </SelectTrigger>
                                 <SelectContent>
+                                  <SelectItem value="owner">Dueño</SelectItem>
                                   <SelectItem value="admin">Administrador</SelectItem>
                                   <SelectItem value="employee">Empleado</SelectItem>
                                 </SelectContent>

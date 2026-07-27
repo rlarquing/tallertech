@@ -18,13 +18,10 @@ export async function POST(request: NextRequest) {
     if ('status' in authResult) return authResult // 401 response
 
     const currentUser = authResult
-    if (currentUser.role !== 'owner' && currentUser.role !== 'admin') {
-      return ResponsePresenter.error({ message: 'Solo el propietario o administrador puede crear empleados', code: 'AUTHORIZATION_ERROR' })
-    }
 
     // 2. Parse and validate body
     const body = await request.json()
-    const { name, email, password, role, workshopId } = body
+    const { name, email, password, role, workshopId, isSystemAdmin: makeSystemAdmin } = body
 
     if (!name || !email || !password || !workshopId) {
       return ResponsePresenter.error({ message: 'Nombre, email, contraseña y taller son requeridos', code: 'VALIDATION_ERROR' })
@@ -34,14 +31,13 @@ export async function POST(request: NextRequest) {
       return ResponsePresenter.error({ message: 'La contraseña debe tener al menos 6 caracteres', code: 'VALIDATION_ERROR' })
     }
 
-    // 3. Check caller is member of the workshop
-    const callerRole = await useCases.addWorkshopMember.execute
-      ? null
-      : null
+    // 3. Check caller has admin/owner role in this workshop (or is system admin)
+    const isSystemAdmin = currentUser.role === 'admin'
     const membership = await prisma.workshopUser.findUnique({
       where: { workshopId_userId: { workshopId, userId: currentUser.id } },
     })
-    if (!membership || (membership.role !== 'owner' && membership.role !== 'admin')) {
+    const isWorkshopAdmin = membership?.role === 'owner' || membership?.role === 'admin'
+    if (!isSystemAdmin && !isWorkshopAdmin) {
       return ResponsePresenter.error({ message: 'No tiene permisos para agregar empleados a este taller', code: 'AUTHORIZATION_ERROR' })
     }
 
@@ -59,14 +55,15 @@ export async function POST(request: NextRequest) {
       }
       userId = existingUser.id
     } else {
-      // Create new user
+      // Create new user — only system admins can create other system admins
+      const globalRole = makeSystemAdmin && currentUser.role === 'admin' ? 'admin' : 'employee'
       const hashedPassword = passwordHasher.hash(password)
       const newUser = await prisma.user.create({
         data: {
           email,
           name,
           password: hashedPassword,
-          role: role || 'employee',
+          role: globalRole,
           active: true,
         },
       })
@@ -96,7 +93,7 @@ export async function POST(request: NextRequest) {
           action: 'CREATE',
           entity: 'employee',
           entityId: userId,
-          details: JSON.stringify({ employeeName: name, employeeEmail: email, role: memberRole }),
+          details: JSON.stringify({ employeeName: name, employeeEmail: email, role: memberRole, isSystemAdmin: !!makeSystemAdmin }),
         },
       })
     } catch {
