@@ -208,6 +208,27 @@ CREATE TABLE IF NOT EXISTS Expense (
   FOREIGN KEY (workshopId) REFERENCES Workshop(id)
 );
 
+CREATE TABLE IF NOT EXISTS DailyClosing (
+  id TEXT PRIMARY KEY NOT NULL,
+  workshopId TEXT NOT NULL,
+  userId TEXT NOT NULL,
+  userName TEXT NOT NULL,
+  date DATETIME NOT NULL,
+  salesCount INTEGER NOT NULL DEFAULT 0,
+  salesTotal REAL NOT NULL DEFAULT 0,
+  repairsCount INTEGER NOT NULL DEFAULT 0,
+  repairsTotal REAL NOT NULL DEFAULT 0,
+  expensesTotal REAL NOT NULL DEFAULT 0,
+  totalIncome REAL NOT NULL DEFAULT 0,
+  netTotal REAL NOT NULL DEFAULT 0,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'open',
+  closedAt DATETIME,
+  createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (workshopId) REFERENCES Workshop(id)
+);
+
 CREATE TABLE IF NOT EXISTS AuditLog (
   id TEXT PRIMARY KEY NOT NULL,
   workshopId TEXT NOT NULL,
@@ -238,6 +259,9 @@ CREATE INDEX IF NOT EXISTS RepairPart_productId_idx ON RepairPart(productId);
 CREATE INDEX IF NOT EXISTS StockMovement_productId_idx ON StockMovement(productId);
 CREATE INDEX IF NOT EXISTS Expense_workshopId_idx ON Expense(workshopId);
 CREATE INDEX IF NOT EXISTS Setting_workshopId_idx ON Setting(workshopId);
+CREATE INDEX IF NOT EXISTS DailyClosing_workshopId_idx ON DailyClosing(workshopId);
+CREATE INDEX IF NOT EXISTS DailyClosing_userId_idx ON DailyClosing(userId);
+CREATE UNIQUE INDEX IF NOT EXISTS DailyClosing_workshopId_userId_date_idx ON DailyClosing(workshopId, userId, date);
 CREATE INDEX IF NOT EXISTS AuditLog_workshopId_idx ON AuditLog(workshopId);
 `
 
