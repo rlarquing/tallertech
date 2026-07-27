@@ -94,6 +94,7 @@ export function SettingsView() {
 
   // User profile
   const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -155,6 +156,7 @@ export function SettingsView() {
     fetchDbStats()
     if (user) {
       setUserName(user.name)
+      setUserEmail(user.email)
     }
   }, [fetchSettings, fetchDbStats, user])
 
@@ -286,6 +288,7 @@ export function SettingsView() {
     try {
       const body: Record<string, string> = {}
       if (userName.trim() !== user?.name) body.name = userName.trim()
+      if (userEmail.trim() !== user?.email) body.email = userEmail.trim()
       if (currentPassword || newPassword) {
         body.currentPassword = currentPassword
         body.newPassword = newPassword
@@ -626,8 +629,7 @@ export function SettingsView() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" value={user?.email || ''} disabled className="bg-muted" />
-                  <p className="text-xs text-muted-foreground">El email no puede ser cambiado</p>
+                  <Input id="email" type="email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} placeholder="correo@ejemplo.com" />
                 </div>
                 <Separator />
                 <p className="text-sm font-medium">Cambiar Contraseña</p>
