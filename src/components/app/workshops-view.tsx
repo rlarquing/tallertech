@@ -259,7 +259,7 @@ export function WorkshopsView() {
       const res = await offlineFetch(`/api/workshops/${workshop.id}/members`)
       if (res.ok) {
         const data = await res.json()
-        setMembers(data.data || [])
+        setMembers(Array.isArray(data) ? data : data.data || [])
       }
     } catch {
       toast({ title: 'Error', description: 'Error al cargar miembros', variant: 'destructive' })
@@ -420,7 +420,7 @@ export function WorkshopsView() {
       const membersRes = await offlineFetch(`/api/workshops/${selectedWorkshop.id}/members`)
       if (membersRes.ok) {
         const membersData = await membersRes.json()
-        setMembers(membersData.data || [])
+        setMembers(Array.isArray(membersData) ? membersData : membersData.data || [])
       }
     } catch {
       toast({ title: 'Error', description: 'Error de conexión', variant: 'destructive' })
